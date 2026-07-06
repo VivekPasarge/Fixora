@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { HiOutlineMenuAlt3, HiOutlineX } from "react-icons/hi";
-import { FiUser } from "react-icons/fi";
+import { FiUser, FiUserPlus } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 
 import logo from "../../assets/logos/fixora-logo.png";
@@ -62,8 +62,8 @@ export default function Navbar() {
                 className={({ isActive }) =>
                   `relative text-sm font-medium transition ${
                     isActive
-                      ? "text-cyan-400"
-                      : "text-white hover:text-cyan-400"
+                      ? "text-[#00F5C4]"
+                      : "text-white hover:text-[#00F5C4]"
                   }`
                 }
               >
@@ -74,7 +74,7 @@ export default function Navbar() {
                     {isActive && (
                       <motion.div
                         layoutId="activeNav"
-                        className="absolute left-0 -bottom-2 w-full h-[2px] bg-cyan-400"
+                        className="absolute left-[10%] bottom-[-8px] w-[80%] h-[3px] bg-[#00F5C4] rounded-full"
                       />
                     )}
                   </>
@@ -87,20 +87,20 @@ export default function Navbar() {
 
           <div className="hidden lg:flex items-center gap-4">
             <button
-              className="px-5 py-2 rounded-xl border border-cyan-500
-              text-cyan-400 hover:bg-cyan-500 hover:text-black
-              transition"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#00F5C4]/30
+              text-[#00F5C4] hover:bg-[#00F5C4]/10 transition font-medium text-sm"
             >
+              <FiUserPlus size={16} />
               Become a Provider
             </button>
 
             <button
               className="flex items-center gap-2
-              px-5 py-2 rounded-xl
-              bg-blue-600 hover:bg-blue-700
-              text-white transition"
+              px-5 py-2.5 rounded-xl
+              bg-[#0066FF] hover:bg-[#0055E0]
+              text-white transition font-medium text-sm shadow-lg shadow-blue-600/20"
             >
-              <FiUser size={18} />
+              <FiUser size={16} />
               Login / Sign Up
             </button>
           </div>
@@ -136,8 +136,8 @@ export default function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
                     isActive
-                      ? "text-cyan-400"
-                      : "text-white"
+                      ? "text-[#00F5C4] font-semibold"
+                      : "text-white hover:text-[#00F5C4]"
                   }
                 >
                   {item.name}
@@ -145,18 +145,20 @@ export default function Navbar() {
               ))}
 
               <button
-                className="mt-2 py-3 rounded-xl
-                border border-cyan-500
-                text-cyan-400"
+                className="mt-2 py-3 rounded-xl flex items-center justify-center gap-2
+                border border-[#00F5C4]/30
+                text-[#00F5C4]"
               >
+                <FiUserPlus size={18} />
                 Become a Provider
               </button>
 
               <button
-                className="py-3 rounded-xl
-                bg-blue-600
+                className="py-3 rounded-xl flex items-center justify-center gap-2
+                bg-[#0066FF]
                 text-white"
               >
+                <FiUser size={18} />
                 Login / Sign Up
               </button>
             </div>
