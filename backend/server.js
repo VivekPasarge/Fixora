@@ -12,8 +12,12 @@ const serviceRoutes = require("./routes/serviceRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const partnerRoutes = require("./routes/partnerRoutes");
-
+const adminRoutes = require("./routes/adminRoutes");
 const app = express();
+const adminCustomerRoutes = require("./routes/adminCustomerRoutes");
+const adminTechnicianRoutes = require("./routes/adminTechnicianRoutes");
+const adminBookingRoutes = require("./routes/adminBookingRoutes");
+
 
 connectDB();
 
@@ -29,10 +33,22 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/partners", partnerRoutes);
-
+app.use("/api/admin", adminRoutes);
 app.get("/", (req, res) => {
   res.send("Welcome to Fixora Backend");
 });
+app.use(
+  "/api/admin/customers",
+  adminCustomerRoutes
+);
+app.use(
+  "/api/admin/technicians",
+  adminTechnicianRoutes
+);
+app.use(
+  "/api/admin/bookings",
+  adminBookingRoutes
+);
 
 // =========================
 // Socket.IO Setup
@@ -65,14 +81,16 @@ io.on("connection", (socket) => {
 
   socket.on("send-location", (data) => {
 
-    console.log("📍 Technician Location:", data);
+  console.log("📍 Received From Technician:", data);
 
-    io.to(data.bookingId).emit(
-      "receive-location",
-      data
-    );
+  io.to(data.bookingId).emit(
+    "receive-location",
+    data
+  );
 
-  });
+  console.log("📤 Sent To Customer Room:", data.bookingId);
+
+});
 
   socket.on("disconnect", () => {
 

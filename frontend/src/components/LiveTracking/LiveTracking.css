@@ -1,0 +1,347 @@
+/* ==========================================
+   LIVE TRACKING SECTION
+========================================== */
+
+.tracking-section {
+    position: relative;
+    overflow: hidden;
+    padding: 120px 0;
+    background:
+        radial-gradient(circle at top left,
+            rgba(37,99,235,.10),
+            transparent 35%),
+
+        radial-gradient(circle at bottom right,
+            rgba(6,182,212,.10),
+            transparent 35%),
+
+        linear-gradient(
+            180deg,
+            #eef5ff 0%,
+            #f7fbff 45%,
+            #edf6ff 100%);
+}
+
+/* Background Blur */
+
+.tracking-section::before{
+    content:"";
+    position:absolute;
+    width:500px;
+    height:500px;
+    top:-180px;
+    left:-180px;
+    border-radius:50%;
+    background:rgba(37,99,235,.10);
+    filter:blur(120px);
+}
+
+.tracking-section::after{
+    content:"";
+    position:absolute;
+    width:450px;
+    height:450px;
+    right:-150px;
+    bottom:-120px;
+    border-radius:50%;
+    background:rgba(6,182,212,.10);
+    filter:blur(120px);
+}
+
+/* ==========================================
+   CONTAINER
+========================================== */
+
+.tracking-container{
+    position:relative;
+    z-index:2;
+    width:90%;
+    max-width:1280px;
+    margin:auto;
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.tracking-header{
+    max-width:760px;
+    margin:0 auto 70px;
+    text-align:center;
+}
+
+.tracking-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+
+    padding:10px 20px;
+
+    border-radius:999px;
+
+    background:#eff6ff;
+
+    color:#2563eb;
+
+    border:1px solid #bfdbfe;
+
+    font-size:14px;
+    font-weight:700;
+}
+
+.tracking-title{
+    margin-top:24px;
+    font-size:56px;
+    line-height:1.1;
+    font-weight:900;
+    color:#0f172a;
+}
+
+.tracking-title span{
+    display:block;
+    margin-top:8px;
+
+    background:linear-gradient(
+        90deg,
+        #2563eb,
+        #06b6d4
+    );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.tracking-description{
+    max-width:680px;
+    margin:24px auto 0;
+
+    color:#64748b;
+
+    font-size:18px;
+    line-height:1.8;
+}
+
+/* ==========================================
+   GRID
+========================================== */
+
+.tracking-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:42px;
+    align-items:start;
+}
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width:1200px){
+
+    .tracking-container{
+        width:92%;
+    }
+
+    .tracking-grid{
+        gap:32px;
+    }
+
+    .tracking-title{
+        font-size:50px;
+    }
+
+}
+
+/* ==========================================
+   LAPTOP
+========================================== */
+
+@media (max-width:1024px){
+
+    .tracking-section{
+        padding:100px 0;
+    }
+
+    .tracking-grid{
+        grid-template-columns:1fr;
+        gap:40px;
+    }
+
+    .tracking-header{
+        margin-bottom:60px;
+    }
+
+    .tracking-title{
+        font-size:44px;
+    }
+
+    .tracking-description{
+        font-size:17px;
+    }
+
+}
+
+/* ==========================================
+   TABLET SMALL
+========================================== */
+
+@media (max-width:768px){
+
+    .tracking-section{
+        padding:90px 0;
+    }
+
+    .tracking-container{
+        width:94%;
+    }
+
+    .tracking-header{
+        margin-bottom:50px;
+    }
+
+    .tracking-badge{
+        font-size:13px;
+        padding:9px 18px;
+    }
+
+    .tracking-title{
+        font-size:36px;
+    }
+
+    .tracking-description{
+        font-size:16px;
+        line-height:1.7;
+    }
+
+}
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width:576px){
+
+    .tracking-section{
+        padding:80px 0;
+    }
+
+    .tracking-container{
+        width:94%;
+    }
+
+    .tracking-header{
+        margin-bottom:40px;
+    }
+
+    .tracking-badge{
+        padding:8px 16px;
+        font-size:12px;
+    }
+
+    .tracking-title{
+        font-size:30px;
+        line-height:1.2;
+    }
+
+    .tracking-title span{
+        margin-top:6px;
+    }
+
+    .tracking-description{
+        margin-top:18px;
+        font-size:15px;
+        line-height:1.7;
+    }
+
+    .tracking-grid{
+        gap:28px;
+    }
+
+}
+
+/* ==========================================
+   SMALL MOBILE
+========================================== */
+
+@media (max-width:400px){
+
+    .tracking-section{
+        padding:70px 0;
+    }
+
+    .tracking-container{
+        width:95%;
+    }
+
+    .tracking-title{
+        font-size:26px;
+    }
+
+    .tracking-description{
+        font-size:14px;
+    }
+
+    .tracking-badge{
+        font-size:11px;
+        padding:8px 14px;
+    }
+
+}
+
+/* ==========================================
+   LARGE DESKTOP
+========================================== */
+
+@media (min-width:1440px){
+
+    .tracking-container{
+        max-width:1400px;
+    }
+
+    .tracking-grid{
+        gap:48px;
+    }
+
+}
+.truck-icon{
+    position: relative;
+
+    width:74px;
+    height:74px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    border-radius:50%;
+
+    background:linear-gradient(
+        135deg,
+        #10b981,
+        #22c55e
+    );
+
+    color:#fff;
+
+    box-shadow:
+        0 0 0 10px rgba(34,197,94,.18),
+        0 0 30px rgba(34,197,94,.45);
+
+    z-index:2;
+}
+@keyframes liveGlow{
+
+    0%{
+        transform:scale(.9);
+        opacity:.8;
+    }
+
+    70%{
+        transform:scale(1.45);
+        opacity:0;
+    }
+
+    100%{
+        transform:scale(1.45);
+        opacity:0;
+    }
+
+}

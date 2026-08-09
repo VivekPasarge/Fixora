@@ -1,0 +1,850 @@
+/* ==========================================
+   FIXORA TECHNICIAN MANAGEMENT
+   ========================================== */
+
+.technician-management {
+  min-height: 100vh;
+  padding: 110px 6% 60px;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+
+/* ==========================================
+   PAGE HEADER
+   ========================================== */
+
+.technician-header {
+  margin-bottom: 30px;
+}
+
+.technician-header h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: #0f172a;
+}
+
+.technician-header p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 15px;
+}
+
+
+/* ==========================================
+   SUMMARY
+   ========================================== */
+
+.technician-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 22px 25px;
+  margin-bottom: 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+.technician-summary-label {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.technician-summary-count {
+  margin: 5px 0 0;
+
+  color: #2563eb;
+
+  font-size: 30px;
+  font-weight: 800;
+}
+
+
+/* ==========================================
+   SEARCH
+   ========================================== */
+
+.technician-search-card {
+  display: flex;
+  align-items: center;
+
+  padding: 20px;
+  margin-bottom: 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+}
+
+.technician-search-wrapper {
+  position: relative;
+
+  width: 100%;
+  max-width: 560px;
+}
+
+.technician-search-icon {
+  position: absolute;
+
+  left: 15px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #94a3b8;
+
+  font-size: 17px;
+
+  pointer-events: none;
+}
+
+.technician-search-input {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 13px 16px 13px 44px;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #0f172a;
+
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.technician-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.technician-search-input:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+
+/* ==========================================
+   TECHNICIAN DETAILS
+   ========================================== */
+
+.technician-details {
+  margin-bottom: 25px;
+
+  padding: 26px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+
+  box-shadow:
+    0 8px 25px rgba(15, 23, 42, 0.05);
+}
+
+.technician-details-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 24px;
+}
+
+.technician-details-header h2 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.technician-details-header p {
+  margin: 5px 0 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+.technician-close-btn {
+  padding: 8px 14px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #f1f5f9;
+  color: #475569;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.technician-close-btn:hover {
+  background: #e2e8f0;
+
+  color: #0f172a;
+}
+
+
+/* ==========================================
+   DETAILS GRID
+   ========================================== */
+
+.technician-details-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 16px;
+}
+
+.technician-detail-item {
+  padding: 17px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 12px;
+}
+
+.technician-detail-item label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #64748b;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.4px;
+}
+
+.technician-detail-item p {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  word-break: break-word;
+}
+
+
+/* ==========================================
+   TECHNICIAN TABLE
+   ========================================== */
+
+.technician-table-card {
+  width: 100%;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 6px 20px rgba(15, 23, 42, 0.04);
+}
+
+.technician-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+}
+
+.technician-table {
+  width: 100%;
+
+  min-width: 1000px;
+
+  border-collapse: collapse;
+}
+
+.technician-table thead {
+  background: #f8fafc;
+}
+
+.technician-table th {
+  padding: 16px 18px;
+
+  border-bottom: 1px solid #e2e8f0;
+
+  color: #475569;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  text-align: left;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.4px;
+}
+
+.technician-table td {
+  padding: 17px 18px;
+
+  border-bottom: 1px solid #f1f5f9;
+
+  color: #475569;
+
+  font-size: 14px;
+
+  vertical-align: middle;
+}
+
+.technician-table tbody tr {
+  transition:
+    background 0.2s ease;
+}
+
+.technician-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.technician-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* ==========================================
+   TECHNICIAN NAME
+   ========================================== */
+
+.technician-name {
+  color: #0f172a;
+
+  font-weight: 700;
+}
+
+
+/* ==========================================
+   AVAILABILITY
+   ========================================== */
+
+.technician-availability {
+  display: inline-flex;
+
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  background: #ecfdf5;
+
+  color: #059669;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.technician-availability.unavailable {
+  background: #fef2f2;
+
+  color: #dc2626;
+}
+
+.technician-availability.busy {
+  background: #fff7ed;
+
+  color: #ea580c;
+}
+
+
+/* ==========================================
+   ACTIONS
+   ========================================== */
+
+.technician-actions {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+}
+
+
+/* ==========================================
+   VIEW BUTTON
+   ========================================== */
+
+.technician-view-btn {
+  padding: 8px 16px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: #2563eb;
+
+  color: #ffffff;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.technician-view-btn:hover {
+  background: #1d4ed8;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 5px 12px
+    rgba(37, 99, 235, 0.2);
+}
+
+.technician-view-btn:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+
+  transform: none;
+
+  box-shadow: none;
+}
+
+
+/* ==========================================
+   BOOKING HISTORY
+   ========================================== */
+
+.technician-bookings {
+  margin-top: 28px;
+
+  padding-top: 25px;
+
+  border-top: 1px solid #e2e8f0;
+}
+
+.technician-bookings-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.technician-bookings-header h3 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 18px;
+
+  font-weight: 800;
+}
+
+.technician-bookings-header p {
+  margin: 5px 0 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+.technician-booking-count {
+  padding: 6px 11px;
+
+  border-radius: 999px;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+
+/* ==========================================
+   BOOKING TABLE
+   ========================================== */
+
+.technician-booking-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 12px;
+}
+
+.technician-booking-table {
+  width: 100%;
+
+  min-width: 700px;
+
+  border-collapse: collapse;
+}
+
+.technician-booking-table thead {
+  background: #f8fafc;
+}
+
+.technician-booking-table th {
+  padding: 13px 15px;
+
+  color: #475569;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  text-align: left;
+
+  text-transform: uppercase;
+}
+
+.technician-booking-table td {
+  padding: 14px 15px;
+
+  border-top: 1px solid #f1f5f9;
+
+  color: #475569;
+
+  font-size: 13px;
+}
+
+.technician-booking-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+
+/* ==========================================
+   BOOKING STATUS
+   ========================================== */
+
+.technician-booking-status {
+  display: inline-flex;
+
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  background: #f1f5f9;
+
+  color: #475569;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.technician-booking-status.pending {
+  background: #fff7ed;
+
+  color: #c2410c;
+}
+
+.technician-booking-status.accepted {
+  background: #eff6ff;
+
+  color: #2563eb;
+}
+
+.technician-booking-status.in-progress {
+  background: #f5f3ff;
+
+  color: #7c3aed;
+}
+
+.technician-booking-status.completed {
+  background: #ecfdf5;
+
+  color: #059669;
+}
+
+.technician-booking-status.cancelled {
+  background: #fef2f2;
+
+  color: #dc2626;
+}
+
+
+/* ==========================================
+   BOOKING LOADING / EMPTY
+   ========================================== */
+
+.technician-booking-loading,
+.technician-booking-empty {
+  padding: 30px;
+
+  border: 1px dashed #cbd5e1;
+
+  border-radius: 12px;
+
+  text-align: center;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+
+/* ==========================================
+   DANGER ZONE
+   ========================================== */
+
+.technician-danger-zone {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-top: 30px;
+
+  padding: 20px;
+
+  background: #fffafa;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 12px;
+}
+
+.technician-danger-zone h3 {
+  margin: 0;
+
+  color: #991b1b;
+
+  font-size: 15px;
+
+  font-weight: 700;
+}
+
+.technician-danger-zone p {
+  margin: 5px 0 0;
+
+  color: #7f1d1d;
+
+  font-size: 13px;
+}
+
+.technician-delete-btn {
+  padding: 10px 16px;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 8px;
+
+  background: #fef2f2;
+
+  color: #dc2626;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.technician-delete-btn:hover {
+  background: #fee2e2;
+
+  border-color: #fca5a5;
+
+  transform: translateY(-1px);
+}
+
+
+/* ==========================================
+   EMPTY STATE
+   ========================================== */
+
+.technician-empty {
+  padding: 60px 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 18px;
+
+  text-align: center;
+}
+
+.technician-empty h3 {
+  margin: 0 0 8px;
+
+  color: #334155;
+
+  font-size: 18px;
+
+  font-weight: 700;
+}
+
+.technician-empty p {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+
+/* ==========================================
+   LOADING
+   ========================================== */
+
+.technician-loading {
+  min-height: 100vh;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background: #f8fafc;
+}
+
+.technician-loading h2 {
+  color: #475569;
+
+  font-size: 18px;
+}
+
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 1100px) {
+
+  .technician-details-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 768px) {
+
+  .technician-management {
+    padding: 95px 20px 40px;
+  }
+
+  .technician-header h1 {
+    font-size: 28px;
+  }
+
+  .technician-summary {
+    padding: 18px 20px;
+  }
+
+  .technician-details {
+    padding: 20px;
+  }
+
+  .technician-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .technician-details-header {
+    align-items: flex-start;
+
+    gap: 15px;
+  }
+
+  .technician-danger-zone {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .technician-management {
+    padding: 90px 14px 30px;
+  }
+
+  .technician-header h1 {
+    font-size: 25px;
+  }
+
+  .technician-search-card {
+    padding: 15px;
+  }
+
+  .technician-details {
+    padding: 17px;
+  }
+
+  .technician-details-header {
+    flex-direction: column;
+  }
+
+  .technician-close-btn {
+    align-self: flex-start;
+  }
+
+}

@@ -1,0 +1,208 @@
+/* ===========================
+   Booking Card
+=========================== */
+
+.booking-card {
+  position: sticky;
+  top: 110px;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+
+  padding: 32px;
+
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08);
+}
+
+/* ===========================
+   Price
+=========================== */
+
+.booking-subtitle {
+  font-size: 15px;
+  color: #64748b;
+  margin-bottom: 10px;
+}
+
+.booking-price {
+  font-size: 52px;
+  font-weight: 800;
+  color: #2563eb;
+  line-height: 1;
+}
+
+/* ===========================
+   Details
+=========================== */
+
+.booking-details {
+  margin-top: 35px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.booking-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.booking-detail-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  color: #64748b;
+  font-size: 15px;
+}
+
+.booking-detail-value {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* ===========================
+   Divider
+=========================== */
+
+.booking-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 35px 0;
+}
+
+/* ===========================
+   Benefits
+=========================== */
+
+.booking-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  color: #334155;
+  font-size: 15px;
+}
+
+/* ===========================
+   Icons
+=========================== */
+
+.detail-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.detail-icon.blue {
+  color: #2563eb;
+}
+
+.detail-icon.green {
+  color: #16a34a;
+}
+
+.detail-icon.yellow {
+  color: #f59e0b;
+}
+
+/* ===========================
+   Buttons
+=========================== */
+
+.booking-buttons {
+  margin-top: 40px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.book-btn {
+  display: block;
+  width: 100%;
+
+  padding: 16px 20px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  text-align: center;
+  text-decoration: none;
+
+  font-size: 17px;
+  font-weight: 600;
+
+  border-radius: 18px;
+
+  transition: all 0.3s ease;
+}
+
+.book-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+.support-btn {
+  width: 100%;
+
+  padding: 16px 20px;
+
+  background: #ffffff;
+  color: #334155;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 18px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.support-btn:hover {
+  color: #2563eb;
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width: 992px) {
+  .booking-card {
+    position: static;
+    margin-top: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .booking-card {
+    padding: 24px;
+    border-radius: 20px;
+  }
+
+  .booking-price {
+    font-size: 42px;
+  }
+
+  .booking-detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .book-btn,
+  .support-btn {
+    padding: 14px;
+  }
+}

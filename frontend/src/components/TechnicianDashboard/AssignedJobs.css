@@ -1,0 +1,86 @@
+.assigned-jobs{
+  margin-top:40px;
+}
+
+.assigned-jobs h2{
+  font-size:28px;
+  font-weight:700;
+  color:#1e293b;
+  margin-bottom:25px;
+}
+
+.jobs-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:25px;
+}
+
+.job-card{
+  background:#fff;
+  border-radius:18px;
+  padding:24px;
+  box-shadow:0 10px 25px rgba(15,23,42,.08);
+  border:1px solid #e2e8f0;
+  transition:.3s;
+}
+
+.job-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 15px 35px rgba(15,23,42,.12);
+}
+
+.job-card h3{
+  font-size:22px;
+  color:#0f172a;
+  margin-bottom:18px;
+}
+
+.job-card p{
+  margin:10px 0;
+  color:#475569;
+  font-size:15px;
+}
+
+.job-card strong{
+  color:#0f172a;
+}
+
+.job-card h4{
+  margin-top:20px;
+  font-size:24px;
+  color:#16a34a;
+}
+
+.loading{
+  text-align:center;
+  color:#64748b;
+  font-size:16px;
+  padding:30px;
+}
+
+.start-btn,
+.complete-btn,
+.completed-btn{
+  width:100%;
+  margin-top:20px;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.start-btn{
+  background:#2563eb;
+}
+
+.complete-btn{
+  background:#16a34a;
+}
+
+.completed-btn{
+  background:#64748b;
+  cursor:not-allowed;
+}

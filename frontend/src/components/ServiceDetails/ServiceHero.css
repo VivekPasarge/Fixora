@@ -1,0 +1,309 @@
+/* ===========================
+   Hero Section
+=========================== */
+
+.service-hero {
+  position: relative;
+  overflow: hidden;
+
+  background: linear-gradient(135deg, #f8fafc, #ffffff, #eff6ff);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.service-hero-container {
+  position: relative;
+
+  max-width: 1200px;
+  margin: 0 auto;
+
+  padding: 80px 20px;
+}
+
+/* ===========================
+   Background Blur
+=========================== */
+
+.hero-blur {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  filter: blur(100px);
+}
+
+.hero-blur-left {
+  top: -100px;
+  left: -100px;
+  background: rgba(96, 165, 250, 0.35);
+}
+
+.hero-blur-right {
+  bottom: -100px;
+  right: -100px;
+  background: rgba(103, 232, 249, 0.35);
+}
+
+/* ===========================
+   Back Button
+=========================== */
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 20px;
+
+  background: #fff;
+  color: #334155;
+
+  text-decoration: none;
+  font-weight: 500;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+
+  transition: 0.3s;
+}
+
+.back-button:hover {
+  color: #2563eb;
+  border-color: #2563eb;
+}
+
+/* ===========================
+   Layout
+=========================== */
+
+.hero-content {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 60px;
+
+  align-items: center;
+  margin-top: 50px;
+}
+
+/* ===========================
+   Left Side
+=========================== */
+
+.service-icon-box {
+  width: 96px;
+  height: 96px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #2563eb;
+  color: #fff;
+
+  border-radius: 24px;
+
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.25);
+}
+
+.service-category {
+  margin-top: 24px;
+
+  color: #2563eb;
+
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.service-title {
+  margin-top: 10px;
+
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1.15;
+
+  color: #0f172a;
+}
+
+.service-description {
+  max-width: 600px;
+
+  margin-top: 24px;
+
+  font-size: 18px;
+  line-height: 1.8;
+
+  color: #64748b;
+}
+
+/* ===========================
+   Info
+=========================== */
+
+.service-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+
+  margin-top: 35px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: #334155;
+}
+
+.info-value {
+  font-weight: 700;
+}
+
+.info-text {
+  color: #64748b;
+}
+
+.star-icon {
+  color: #facc15;
+}
+
+.clock-icon {
+  color: #2563eb;
+}
+
+.location-icon {
+  color: #16a34a;
+}
+
+/* ===========================
+   Right Card
+=========================== */
+
+.price-card {
+  background: #fff;
+
+  padding: 35px;
+
+  border-radius: 24px;
+
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.price-label {
+  color: #64748b;
+}
+
+.price-value {
+  margin-top: 10px;
+
+  font-size: 52px;
+  font-weight: 800;
+
+  color: #2563eb;
+}
+
+.price-details {
+  margin-top: 35px;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+
+  padding: 14px 0;
+
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.price-row:last-child {
+  border-bottom: none;
+}
+
+.price-row span {
+  color: #64748b;
+}
+
+.price-row strong {
+  color: #0f172a;
+}
+
+.warranty {
+  color: #16a34a !important;
+}
+
+/* ===========================
+   Button
+=========================== */
+
+.book-service-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+
+  margin-top: 35px;
+  padding: 16px;
+
+  background: #2563eb;
+  color: #fff;
+
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 600;
+
+  border-radius: 18px;
+
+  transition: 0.3s;
+}
+
+.book-service-btn:hover {
+  background: #1d4ed8;
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width: 992px) {
+
+  .hero-content {
+    grid-template-columns: 1fr;
+    gap: 50px;
+  }
+
+  .service-title {
+    font-size: 42px;
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .service-hero-container {
+    padding: 60px 16px;
+  }
+
+  .service-title {
+    font-size: 34px;
+  }
+
+  .service-description {
+    font-size: 16px;
+  }
+
+  .service-info {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .price-card {
+    padding: 25px;
+  }
+
+  .price-value {
+    font-size: 42px;
+  }
+
+}

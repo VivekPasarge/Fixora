@@ -1,0 +1,174 @@
+/* ==========================================
+   LAYOUT UTILITIES
+========================================== */
+
+/* Main Container */
+
+.container {
+  width: min(100% - 32px, var(--container-width));
+  margin-inline: auto;
+}
+
+/* Sections */
+
+.section {
+  padding: var(--space-11) 0;
+}
+
+.section-sm {
+  padding: var(--space-9) 0;
+}
+
+.section-lg {
+  padding: 120px 0;
+}
+
+/* Section Header */
+
+.section-header {
+  max-width: 720px;
+  margin: 0 auto var(--space-9);
+  text-align: center;
+}
+
+/* ==========================================
+   FLEX UTILITIES
+========================================== */
+
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================
+   GRID
+========================================== */
+
+.grid {
+  display: grid;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-6);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+/* ==========================================
+   TEXT
+========================================== */
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* ==========================================
+   SPACING
+========================================== */
+
+.mt-1 { margin-top: var(--space-2); }
+.mt-2 { margin-top: var(--space-4); }
+.mt-3 { margin-top: var(--space-6); }
+.mt-4 { margin-top: var(--space-8); }
+
+.mb-1 { margin-bottom: var(--space-2); }
+.mb-2 { margin-bottom: var(--space-4); }
+.mb-3 { margin-bottom: var(--space-6); }
+.mb-4 { margin-bottom: var(--space-8); }
+
+/* ==========================================
+   WIDTH
+========================================== */
+
+.w-100 {
+  width: 100%;
+}
+
+/* ==========================================
+   DISPLAY
+========================================== */
+
+.hidden {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 992px) {
+
+  .grid-4,
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .section {
+    padding: 72px 0;
+  }
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .flex-between {
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .section-header {
+    margin-bottom: var(--space-7);
+  }
+
+}

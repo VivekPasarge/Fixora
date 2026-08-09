@@ -1,0 +1,220 @@
+/* ===========================
+   Service Card
+=========================== */
+
+.service-card {
+  position: relative;
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+
+  padding: 24px;
+
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+
+  transition: all 0.35s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-10px);
+  border-color: #bfdbfe;
+  box-shadow: 0 22px 45px rgba(15, 23, 42, 0.12);
+}
+
+/* ===========================
+   Background Glow
+=========================== */
+
+.service-card-glow {
+  position: absolute;
+
+  top: -40px;
+  right: -40px;
+
+  width: 130px;
+  height: 130px;
+
+  border-radius: 50%;
+
+  background: rgba(59, 130, 246, 0.15);
+
+  filter: blur(50px);
+
+  opacity: 0;
+  transition: 0.5s;
+}
+
+.service-card:hover .service-card-glow {
+  opacity: 1;
+}
+
+/* ===========================
+   Icon
+=========================== */
+
+.service-card-icon {
+  width: 64px;
+  height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 24px;
+
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  color: #ffffff;
+
+  font-size: 30px;
+
+  border-radius: 18px;
+
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.25);
+
+  transition: all 0.35s ease;
+}
+
+.service-card:hover .service-card-icon {
+  transform: rotate(6deg) scale(1.1);
+}
+
+/* ===========================
+   Content
+=========================== */
+
+.service-card-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.service-card-description {
+  margin-top: 12px;
+
+  font-size: 15px;
+  line-height: 1.8;
+
+  color: #64748b;
+}
+
+/* ===========================
+   Rating
+=========================== */
+
+.service-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-top: 24px;
+}
+
+.service-card-rating,
+.service-card-arrival {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.service-card-rating {
+  color: #f59e0b;
+}
+
+.service-card-rating span {
+  color: #334155;
+  font-weight: 600;
+}
+
+.service-card-arrival {
+  color: #64748b;
+}
+
+/* ===========================
+   Price
+=========================== */
+
+.service-card-price {
+  margin-top: 24px;
+}
+
+.service-card-price p {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.service-card-price h2 {
+  margin-top: 6px;
+
+  font-size: 34px;
+  font-weight: 700;
+
+  color: #2563eb;
+}
+
+/* ===========================
+   Button
+=========================== */
+
+.service-card-button {
+  width: 100%;
+
+  margin-top: 30px;
+  padding: 14px 20px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  border: none;
+  border-radius: 14px;
+
+  background: #0f172a;
+  color: #ffffff;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.service-card-button:hover {
+  background: #2563eb;
+}
+
+.service-card-button svg {
+  transition: transform 0.3s;
+}
+
+.service-card:hover .service-card-button svg {
+  transform: translateX(5px);
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width: 768px) {
+  .service-card {
+    padding: 20px;
+  }
+
+  .service-card-title {
+    font-size: 24px;
+  }
+
+  .service-card-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .service-card-price h2 {
+    font-size: 30px;
+  }
+}

@@ -1,0 +1,61 @@
+/* ===========================
+   Category Filter
+=========================== */
+
+.category-filter {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  margin-top: 32px;
+}
+
+/* ===========================
+   Category Button
+=========================== */
+
+.category-btn {
+  padding: 12px 24px;
+
+  background: #ffffff;
+  color: #334155;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+
+  font-size: 15px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.category-btn:hover {
+  color: #2563eb;
+  border-color: #2563eb;
+}
+
+.category-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width: 768px) {
+  .category-filter {
+    gap: 10px;
+  }
+
+  .category-btn {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+}

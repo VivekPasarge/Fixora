@@ -1,0 +1,72 @@
+/* ===========================
+   Search Bar
+=========================== */
+
+.search-bar {
+  position: relative;
+  width: 100%;
+}
+
+/* ===========================
+   Search Icon
+=========================== */
+
+.search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  font-size: 24px;
+  color: #94a3b8;
+
+  pointer-events: none;
+}
+
+/* ===========================
+   Search Input
+=========================== */
+
+.search-input {
+  width: 100%;
+
+  padding: 16px 20px 16px 58px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+
+  font-size: 18px;
+  color: #0f172a;
+
+  outline: none;
+
+  transition: all 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: #94a3b8;
+}
+
+.search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width: 768px) {
+  .search-icon {
+    left: 16px;
+    font-size: 22px;
+  }
+
+  .search-input {
+    padding: 14px 18px 14px 52px;
+    font-size: 16px;
+  }
+}

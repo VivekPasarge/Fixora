@@ -5,6 +5,7 @@ const {
   createReview,
   getTechnicianReviews,
   getTechnicianRating,
+  checkReview,
 } = require("../controllers/reviewController");
 
 const { protect, authorizeRoles } = require("../middleware/authMiddleware");
@@ -22,5 +23,13 @@ router.get("/technician/:id", getTechnicianReviews);
 
 // Get technician average rating
 router.get("/technician/:id/rating", getTechnicianRating);
+router.get(
+  "/check/:bookingId",
+  protect,
+  authorizeRoles("customer"),
+  checkReview
+);
+
+
 
 module.exports = router;

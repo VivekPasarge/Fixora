@@ -1,0 +1,42 @@
+.customer-dashboard{
+    min-height:100vh;
+    background:linear-gradient(135deg,#f7faff,#eef6ff,#ffffff);
+    padding-top:110px;
+    padding-bottom:60px;
+}
+
+.dashboard-container{
+    width:92%;
+    max-width:1400px;
+    margin:auto;
+    display:flex;
+    flex-direction:column;
+    gap:35px;
+}
+
+.dashboard-bottom{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:30px;
+}
+
+@media(max-width:992px){
+
+.dashboard-bottom{
+grid-template-columns:1fr;
+}
+
+}
+
+@media(max-width:768px){
+
+.customer-dashboard{
+padding-top:90px;
+}
+
+.dashboard-container{
+width:95%;
+gap:25px;
+}
+
+}

@@ -162,9 +162,78 @@ const getPartnerById = async (req, res) => {
 // Update Partner Status
 // ===============================
 
+// const updatePartnerStatus = async (req, res) => {
+//   try {
+//     const { status } = req.body;
+
+//     const partner = await Partner.findById(req.params.id);
+
+//     if (!partner) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Partner not found",
+//       });
+//     }
+
+//     // Create technician account only once
+//     if (status === "Approved" && !partner.user) {
+
+//       const existingUser = await User.findOne({
+//         email: partner.email,
+//       });
+
+//       if (!existingUser) {
+
+//         const technician = await User.create({
+//           name: partner.fullName,
+//           email: partner.email,
+//           phone: partner.phone,
+//           password: partner.password,
+//           role: "technician",
+//         });
+
+//         partner.user = technician._id;
+
+//       } else {
+
+//         partner.user = existingUser._id;
+
+//       }
+//     }
+
+//     partner.status = status;
+
+//     await partner.save();
+
+//     res.status(200).json({
+//       success: true,
+//       message: `Partner ${status} successfully`,
+//       partner,
+//     });
+
+//   } catch (error) {
+//     console.error(error);
+
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 const updatePartnerStatus = async (req, res) => {
   try {
     const { status } = req.body;
+
+    console.log("========== UPDATE PARTNER STATUS ==========");
+    console.log("Partner ID:", req.params.id);
+    console.log("Requested Status:", status);
+
+    if (!["Approved", "Rejected", "Pending"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status",
+      });
+    }
 
     const partner = await Partner.findById(req.params.id);
 
@@ -175,52 +244,175 @@ const updatePartnerStatus = async (req, res) => {
       });
     }
 
-    // Create technician account only once
-    if (status === "Approved" && !partner.user) {
+    console.log("Partner:", partner.fullName);
+    console.log("Email:", partner.email);
+    console.log("Password exists:", !!partner.password);
 
-      const existingUser = await User.findOne({
-        email: partner.email,
-      });
+    // ==========================================
+    // APPROVE PARTNER
+    // ==========================================
 
-      if (!existingUser) {
+    if (status === "Approved") {
 
-        const technician = await User.create({
-          name: partner.fullName,
+      // Technician account doesn't exist
+      if (!partner.user) {
+
+        console.log("Creating technician account...");
+
+        let technician = await User.findOne({
           email: partner.email,
-          phone: partner.phone,
-          password: partner.password,
-          role: "technician",
         });
 
+        // ==========================================
+        // CREATE TECHNICIAN USER
+        // ==========================================
+
+        if (!technician) {
+
+          let technicianPassword;
+
+          // Existing partner has password
+          if (partner.password) {
+
+            technicianPassword = partner.password;
+
+          } else {
+
+            console.log(
+              "Partner has no password."
+            );
+
+            console.log(
+              "Generating temporary password..."
+            );
+
+            technicianPassword = await bcrypt.hash(
+              "Fixora@123",
+              10
+            );
+
+            // IMPORTANT:
+            // Save the generated password
+            // into the Partner document too.
+            partner.password = technicianPassword;
+          }
+
+          technician = await User.create({
+            name: partner.fullName,
+
+            email: partner.email,
+
+            phone: partner.phone,
+
+            password: technicianPassword,
+
+            role: "technician",
+
+            profession: partner.profession || "",
+
+            experience: partner.experience || "",
+
+            workingCity: partner.workingCity || "",
+
+            languages: partner.languages || "",
+
+            profilePhoto: partner.profilePhoto || "",
+
+            availability: "Available",
+
+            profileCompleted: false,
+          });
+
+          console.log(
+            "Technician created:",
+            technician._id
+          );
+
+        } else {
+
+          console.log(
+            "Existing User found:",
+            technician._id
+          );
+
+          if (technician.role !== "technician") {
+            return res.status(400).json({
+              success: false,
+              message:
+                "A user already exists with this email and is not a technician.",
+            });
+          }
+
+          // If old partner has no password,
+          // copy the existing user's password
+          // into the Partner document.
+          if (!partner.password && technician.password) {
+            partner.password = technician.password;
+          }
+        }
+
+        // Connect Partner → User
         partner.user = technician._id;
+      }
 
-      } else {
+      // ==========================================
+      // SAFETY CHECK
+      // ==========================================
 
-        partner.user = existingUser._id;
+      // Partner password is required by schema.
+      // Make absolutely sure it exists before save.
+      if (!partner.password) {
+
+        partner.password = await bcrypt.hash(
+          "Fixora@123",
+          10
+        );
 
       }
     }
+
+    // ==========================================
+    // UPDATE STATUS
+    // ==========================================
 
     partner.status = status;
 
     await partner.save();
 
-    res.status(200).json({
+    console.log(
+      "Partner saved successfully."
+    );
+
+    console.log(
+      "Status:",
+      partner.status
+    );
+
+    console.log(
+      "User:",
+      partner.user
+    );
+
+    return res.status(200).json({
       success: true,
       message: `Partner ${status} successfully`,
       partner,
     });
 
   } catch (error) {
+
+    console.error(
+      "========== UPDATE PARTNER STATUS ERROR =========="
+    );
+
     console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
-
 module.exports = {
   registerPartner,
   getAllPartners,

@@ -1,0 +1,265 @@
+/* ===========================
+   Active Job Section
+=========================== */
+
+.active-job-section {
+  margin-bottom: 40px;
+}
+
+.active-job-card {
+  background: #ffffff;
+
+  border: 1px solid #f1f5f9;
+  border-radius: 32px;
+
+  padding: 32px;
+
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08);
+}
+
+/* ===========================
+   Header
+=========================== */
+
+.active-job-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  margin-bottom: 40px;
+}
+
+.active-job-badge {
+  display: inline-block;
+
+  padding: 8px 18px;
+
+  background: #dcfce7;
+  color: #15803d;
+
+  border-radius: 999px;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.active-job-title {
+  margin-top: 20px;
+
+  font-size: 34px;
+  font-weight: 700;
+
+  color: #1e293b;
+}
+
+.active-job-subtitle {
+  margin-top: 8px;
+
+  color: #64748b;
+  font-size: 16px;
+}
+
+.job-id {
+  background: #eff6ff;
+
+  padding: 14px 22px;
+
+  border-radius: 16px;
+}
+
+.job-id span {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* ===========================
+   Layout
+=========================== */
+
+.active-job-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+
+/* ===========================
+   Left Cards
+=========================== */
+
+.job-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info-card {
+  background: #f8fafc;
+
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.info-icon {
+  font-size: 24px;
+  color: #2563eb;
+}
+
+.info-label {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.info-value {
+  margin-top: 4px;
+
+  font-size: 18px;
+  font-weight: 700;
+
+  color: #1e293b;
+}
+
+/* ===========================
+   OTP Card
+=========================== */
+
+.otp-card {
+  background: #eff6ff;
+
+  padding: 24px;
+
+  border-radius: 20px;
+}
+
+.otp-icon {
+  font-size: 28px;
+  color: #2563eb;
+}
+
+.otp-code {
+  margin-top: 8px;
+
+  font-size: 42px;
+  font-weight: 700;
+
+  letter-spacing: 6px;
+
+  color: #1e293b;
+}
+
+/* ===========================
+   Buttons
+=========================== */
+
+.job-actions {
+  display: grid;
+  gap: 16px;
+
+  margin-top: 32px;
+}
+
+.start-btn,
+.complete-btn,
+.outline-btn {
+  width: 100%;
+
+  padding: 14px 20px;
+
+  border-radius: 14px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.start-btn {
+  border: none;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
+}
+
+.start-btn:hover {
+  background: #1d4ed8;
+}
+
+.complete-btn {
+  border: none;
+
+  background: #16a34a;
+  color: #ffffff;
+
+  box-shadow: 0 10px 25px rgba(22, 163, 74, 0.25);
+}
+
+.complete-btn:hover {
+  background: #15803d;
+}
+
+.outline-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  background: #ffffff;
+
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+.outline-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width: 992px) {
+  .active-job-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .active-job-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .job-id {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .active-job-card {
+    padding: 24px;
+    border-radius: 24px;
+  }
+
+  .active-job-title {
+    font-size: 28px;
+  }
+
+  .otp-code {
+    font-size: 34px;
+    letter-spacing: 4px;
+  }
+
+  .start-btn,
+  .complete-btn,
+  .outline-btn {
+    padding: 13px 16px;
+  }
+}

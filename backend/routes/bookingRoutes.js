@@ -7,6 +7,10 @@ const {
 } = require("../middleware/authMiddleware");
 
 const {
+  getActiveBooking,
+} = require("../controllers/bookingController");
+
+const {
   createBooking,
   getAllBookings,
   getMyBookings,
@@ -19,6 +23,10 @@ const {
   getAvailableJobs,
   getBookingById,
   payForBooking,
+  getPaymentHistory,
+  getTechnicianStats,
+  getTechnicianEarnings,
+  
 } = require("../controllers/bookingController");
 
 // ==========================================
@@ -69,7 +77,7 @@ router.get(
 
 // Assigned Jobs
 router.get(
-  "/assigned",
+  "/technician/assigned",
   protect,
   authorizeRoles("technician"),
   getAssignedBookings
@@ -110,7 +118,11 @@ router.put(
 // ==========================================
 // Common Routes
 // ==========================================
-
+router.get(
+  "/active",
+  protect,
+  getActiveBooking
+);
 // Get Single Booking
 router.get(
   "/:id",
@@ -122,6 +134,28 @@ router.get(
 router.get(
   "/",
   getAllBookings
+);
+
+router.get(
+  "/payment-history",
+  protect,
+  authorizeRoles("customer"),
+  getPaymentHistory
+);
+
+router.get(
+  "/technician/stats",
+  protect,
+  authorizeRoles("technician"),
+  getTechnicianStats
+);
+
+
+router.get(
+  "/technician/earnings",
+  protect,
+  authorizeRoles("technician"),
+  getTechnicianEarnings
 );
 
 module.exports = router;

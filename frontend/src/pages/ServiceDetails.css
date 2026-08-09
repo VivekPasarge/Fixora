@@ -1,0 +1,30 @@
+.service-details-page {
+  background: #f8fafc;
+  padding-top: 80px;
+  min-height: 100vh;
+}
+
+.service-details-section {
+  padding: 80px 0;
+}
+
+.service-details-container {
+  width: 90%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 40px;
+}
+
+.service-details-left {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+@media (max-width: 992px) {
+  .service-details-container {
+    grid-template-columns: 1fr;
+  }
+}

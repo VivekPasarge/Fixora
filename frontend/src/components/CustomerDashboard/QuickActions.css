@@ -1,0 +1,147 @@
+.quick-actions{
+margin-top:35px;
+}
+
+.section-heading{
+margin-bottom:25px;
+}
+
+.section-heading h2{
+font-size:28px;
+color:#0f172a;
+margin-bottom:8px;
+}
+
+.section-heading p{
+color:#64748b;
+}
+
+.actions-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:25px;
+}
+
+.action-card{
+background:#fff;
+border-radius:22px;
+padding:30px;
+box-shadow:0 15px 40px rgba(117, 133, 170, 0.08);
+transition:.3s;
+text-align:center;
+position:relative;
+overflow:hidden;
+}
+
+.action-card:hover{
+transform:translateY(-8px);
+box-shadow:0 20px 50px rgba(15,23,42,.12);
+}
+
+.action-card::before{
+content:"";
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:5px;
+}
+
+.blue::before{
+background:#2563eb;
+}
+
+.green::before{
+background:#16a34a;
+}
+
+.orange::before{
+background:#ea580c;
+}
+
+.purple::before{
+background:#9333ea;
+}
+
+.action-icon{
+width:80px;
+height:80px;
+margin:auto;
+border-radius:20px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:34px;
+color:#fff;
+margin-bottom:22px;
+}
+
+.blue .action-icon{
+background:linear-gradient(135deg,#4b74cb,#7da9df);
+}
+
+.green .action-icon{
+background:linear-gradient(135deg,#16a34a,#4ade80);
+}
+
+.orange .action-icon{
+background:linear-gradient(135deg,#ea580c,#fb923c);
+}
+
+.purple .action-icon{
+background:linear-gradient(135deg,#9333ea,#c084fc);
+}
+
+.action-card h3{
+font-size:22px;
+color:#68171b;
+margin-bottom:12px;
+}
+
+.action-card p{
+font-size:15px;
+line-height:1.7;
+color:#e30b82;
+margin-bottom:24px;
+}
+
+.action-card button{
+border:none;
+background:#2563eb;
+color:#fff;
+padding:14px 28px;
+border-radius:14px;
+cursor:pointer;
+font-size:15px;
+font-weight:600;
+transition:.3s;
+}
+
+.action-card button:hover{
+background:#1d4ed8;
+transform:translateY(-2px);
+}
+
+@media(max-width:1100px){
+
+.actions-grid{
+grid-template-columns:repeat(2,1fr);
+}
+
+}
+
+@media(max-width:768px){
+
+.actions-grid{
+grid-template-columns:1fr;
+}
+
+.action-card{
+padding:24px;
+}
+
+.section-heading h2{
+font-size:24px;
+}
+
+}

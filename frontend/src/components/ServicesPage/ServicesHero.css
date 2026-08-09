@@ -1,0 +1,174 @@
+/* ===========================
+   Services Hero
+=========================== */
+
+.services-hero {
+  position: relative;
+  overflow: hidden;
+
+  background: linear-gradient(135deg, #f8fafc, #ffffff, #eff6ff);
+
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.services-hero-container {
+  position: relative;
+
+  max-width: 1200px;
+  margin: 0 auto;
+
+  padding: 100px 20px;
+}
+
+/* ===========================
+   Background Blur
+=========================== */
+
+.services-hero-blur {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+}
+
+.services-hero-blur-left {
+  top: -100px;
+  left: -80px;
+
+  width: 300px;
+  height: 300px;
+
+  background: rgba(96, 165, 250, 0.35);
+}
+
+.services-hero-blur-right {
+  right: -80px;
+  bottom: -80px;
+
+  width: 340px;
+  height: 340px;
+
+  background: rgba(103, 232, 249, 0.35);
+}
+
+/* ===========================
+   Hero Content
+=========================== */
+
+.services-hero-content {
+  max-width: 850px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.services-hero-badge {
+  display: inline-flex;
+
+  padding: 8px 20px;
+
+  background: #dbeafe;
+  color: #1d4ed8;
+
+  border-radius: 999px;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.services-hero-title {
+  margin-top: 24px;
+
+  font-size: 60px;
+  font-weight: 800;
+  line-height: 1.15;
+
+  color: #0f172a;
+}
+
+.services-hero-title-blue {
+  display: block;
+  color: #2563eb;
+}
+
+.services-hero-description {
+  max-width: 760px;
+
+  margin: 24px auto 0;
+
+  font-size: 18px;
+  line-height: 1.8;
+
+  color: #64748b;
+}
+
+/* ===========================
+   Search
+=========================== */
+
+.services-search {
+  max-width: 760px;
+  margin: 50px auto 0;
+}
+
+/* ===========================
+   Stats
+=========================== */
+
+.services-stats {
+  margin-top: 70px;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+
+  text-align: center;
+}
+
+.stat-item h2 {
+  font-size: 42px;
+  font-weight: 700;
+
+  color: #2563eb;
+}
+
+.stat-item p {
+  margin-top: 10px;
+
+  color: #64748b;
+  font-size: 16px;
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width: 992px) {
+  .services-hero-title {
+    font-size: 48px;
+  }
+
+  .services-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .services-hero-container {
+    padding: 80px 16px;
+  }
+
+  .services-hero-title {
+    font-size: 36px;
+  }
+
+  .services-hero-description {
+    font-size: 16px;
+  }
+
+  .services-stats {
+    gap: 24px;
+  }
+
+  .stat-item h2 {
+    font-size: 34px;
+  }
+}

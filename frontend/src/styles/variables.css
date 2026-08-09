@@ -1,0 +1,92 @@
+/* ==========================================
+   FIXORA DESIGN TOKENS
+========================================== */
+
+:root {
+
+  /* ========= COLORS ========= */
+
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #dbeafe;
+
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-alt: #f1f5f9;
+
+  --text: #0f172a;
+  --text-light: #475569;
+  --text-muted: #94a3b8;
+
+  --border: #e2e8f0;
+
+  /* ========= TYPOGRAPHY ========= */
+
+  --font-family: "Poppins", sans-serif;
+
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-base: 16px;
+  --fs-lg: 18px;
+  --fs-xl: 20px;
+  --fs-2xl: 24px;
+  --fs-3xl: 30px;
+  --fs-4xl: 38px;
+  --fs-5xl: 48px;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  --lh-tight: 1.2;
+  --lh-normal: 1.6;
+
+  /* ========= SPACING (8px SYSTEM) ========= */
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 48px;
+  --space-9: 64px;
+  --space-10: 80px;
+  --space-11: 96px;
+
+  /* ========= BORDER RADIUS ========= */
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* ========= SHADOWS ========= */
+
+  --shadow-sm:
+      0 1px 3px rgba(15,23,42,.08);
+
+  --shadow-md:
+      0 8px 24px rgba(15,23,42,.08);
+
+  --shadow-lg:
+      0 20px 40px rgba(15,23,42,.12);
+
+  /* ========= TRANSITIONS ========= */
+
+  --transition-fast: 200ms ease;
+
+  --transition-normal: 300ms ease;
+
+  /* ========= CONTAINER ========= */
+
+  --container-width: 1280px;
+
+}

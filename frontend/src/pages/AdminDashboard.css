@@ -1,0 +1,712 @@
+/* ==========================================
+   FIXORA ADMIN DASHBOARD
+   ========================================== */
+
+.admin-page {
+  min-height: 100vh;
+  padding: 110px 6% 60px;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+
+/* ==========================================
+   HEADER
+   ========================================== */
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.admin-header h1 {
+  margin: 8px 0 8px;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: #0f172a;
+}
+
+.admin-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 15px;
+}
+
+
+/* ==========================================
+   ADMIN BADGE
+   ========================================== */
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+
+/* ==========================================
+   STATISTICS GRID
+   ========================================== */
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+
+/* ==========================================
+   STAT CARD
+   ========================================== */
+
+.admin-stat-card {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  min-height: 120px;
+  padding: 22px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.03),
+    0 12px 30px rgba(15, 23, 42, 0.04);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.admin-stat-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 8px 12px rgba(15, 23, 42, 0.05),
+    0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+
+/* ==========================================
+   STAT ICON
+   ========================================== */
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 14px;
+
+  background: #eff6ff;
+  color: #2563eb;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+
+/* ==========================================
+   STAT TEXT
+   ========================================== */
+
+.stat-label {
+  margin: 0 0 5px;
+
+  color: #64748b;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-stat-card h2 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 28px;
+  font-weight: 800;
+}
+
+
+/* ==========================================
+   BOOKING OVERVIEW
+   ========================================== */
+
+.booking-overview {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+
+  margin-bottom: 32px;
+}
+
+.overview-card {
+  padding: 18px 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.overview-card p {
+  margin: 0 0 6px;
+
+  color: #64748b;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.overview-card h3 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 24px;
+  font-weight: 800;
+}
+
+
+/* ==========================================
+   APPLICATION SECTION
+   ========================================== */
+
+.applications-section {
+  padding: 28px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.05);
+}
+
+
+/* ==========================================
+   SECTION HEADER
+   ========================================== */
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 25px;
+}
+
+.section-heading h2 {
+  margin: 9px 0 5px;
+
+  color: #0f172a;
+
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.section-heading p {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+
+/* ==========================================
+   APPLICATION COUNT
+   ========================================== */
+
+.application-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 75px;
+  min-height: 65px;
+
+  background: #fff7ed;
+
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
+
+  color: #ea580c;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.application-count span {
+  margin-top: 2px;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  color: #9a3412;
+}
+
+
+/* ==========================================
+   TABLE CONTAINER
+   ========================================== */
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+
+
+/* ==========================================
+   PARTNER TABLE
+   ========================================== */
+
+.partner-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  background: #ffffff;
+}
+
+.partner-table thead {
+  background: #f8fafc;
+}
+
+.partner-table th {
+  padding: 15px 18px;
+
+  color: #475569;
+
+  border-bottom: 1px solid #e2e8f0;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  text-align: left;
+
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.partner-table td {
+  padding: 17px 18px;
+
+  color: #334155;
+
+  border-bottom: 1px solid #f1f5f9;
+
+  font-size: 14px;
+}
+
+.partner-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.partner-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.partner-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* ==========================================
+   PENDING STATUS
+   ========================================== */
+
+.pending-status {
+  display: inline-flex;
+
+  padding: 6px 10px;
+
+  border-radius: 999px;
+
+  background: #fff7ed;
+  color: #ea580c;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+
+.approve-btn,
+.reject-btn {
+  border: none;
+  border-radius: 9px;
+
+  padding: 9px 14px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.approve-btn {
+  margin-right: 8px;
+
+  background: #16a34a;
+  color: #ffffff;
+
+  box-shadow: 0 4px 10px rgba(22, 163, 74, 0.18);
+}
+
+.reject-btn {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.approve-btn:hover,
+.reject-btn:hover {
+  transform: translateY(-1px);
+}
+
+.approve-btn:hover {
+  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.25);
+}
+
+.reject-btn:hover {
+  background: #fecaca;
+}
+
+.approve-btn:disabled,
+.reject-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* ==========================================
+   LOADING
+   ========================================== */
+
+.admin-loading {
+  padding: 50px;
+
+  color: #64748b;
+
+  text-align: center;
+
+  font-size: 15px;
+}
+
+
+/* ==========================================
+   EMPTY STATE
+   ========================================== */
+
+.empty-applications {
+  padding: 55px 20px;
+
+  text-align: center;
+
+  background: #f8fafc;
+
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+}
+
+.empty-applications h3 {
+  margin: 0 0 7px;
+
+  color: #334155;
+
+  font-size: 17px;
+}
+
+.empty-applications p {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 1200px) {
+
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .booking-overview {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+}
+
+
+@media (max-width: 768px) {
+
+  .admin-page {
+    padding: 95px 20px 40px;
+  }
+
+  .admin-header h1 {
+    font-size: 28px;
+  }
+
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .applications-section {
+    padding: 18px;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .admin-page {
+    padding: 90px 14px 30px;
+  }
+
+  .booking-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stat-card {
+    min-height: 105px;
+  }
+
+  .admin-stat-card h2 {
+    font-size: 24px;
+  }
+
+  .section-heading {
+    flex-direction: column;
+  }
+
+  .application-count {
+    align-self: flex-start;
+  }
+
+  .partner-table th,
+  .partner-table td {
+    padding: 12px;
+  }
+
+}
+
+/* ==========================================
+   ADMIN MANAGEMENT
+   ========================================== */
+
+.admin-management {
+  margin-top: 30px;
+  padding: 30px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+
+  box-shadow:
+    0 8px 25px rgba(15, 23, 42, 0.04);
+}
+
+.management-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 18px;
+
+  margin-top: 25px;
+}
+
+.management-card {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  gap: 15px;
+
+  min-height: 125px;
+
+  padding: 22px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 16px;
+
+  text-decoration: none;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.management-card:hover {
+  transform: translateY(-3px);
+
+  background: #ffffff;
+
+  border-color: #bfdbfe;
+
+  box-shadow:
+    0 10px 25px
+    rgba(37, 99, 235, 0.10);
+}
+
+.management-icon {
+  width: 52px;
+  height: 52px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background: #eff6ff;
+
+  font-size: 25px;
+}
+
+.management-card h3 {
+  margin: 0 0 6px;
+
+  color: #0f172a;
+
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.management-card p {
+  margin: 0;
+
+  max-width: 220px;
+
+  color: #64748b;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+.management-arrow {
+  position: absolute;
+
+  right: 18px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #2563eb;
+
+  font-size: 22px;
+  font-weight: 700;
+
+  transition:
+    transform 0.2s ease;
+}
+
+.management-card:hover
+.management-arrow {
+  transform:
+    translate(4px, -50%);
+}
+
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 900px) {
+
+  .management-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .admin-management {
+    padding: 20px;
+  }
+
+  .management-card {
+    min-height: 110px;
+  }
+
+}
+
+.management-card {
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.management-card:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.10);
+}

@@ -1,0 +1,82 @@
+.verify-otp-card{
+    background:#ffffff;
+    border-radius:22px;
+    padding:30px;
+    margin-top:30px;
+    border:1px solid #e2e8f0;
+    box-shadow:0 15px 35px rgba(15,23,42,.08);
+}
+
+.verify-otp-card h2{
+    font-size:24px;
+    color:#0f172a;
+    margin-bottom:12px;
+}
+
+.verify-otp-card p{
+    color:#64748b;
+    margin-bottom:25px;
+}
+
+.verify-otp-card strong{
+    color:#2563eb;
+}
+
+.verify-otp-card input{
+    width:100%;
+    padding:16px;
+    border:2px solid #dbeafe;
+    border-radius:12px;
+    font-size:18px;
+    text-align:center;
+    letter-spacing:8px;
+    font-weight:700;
+    outline:none;
+    transition:.3s;
+}
+
+.verify-otp-card input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+}
+
+.verify-otp-card button{
+    width:100%;
+    margin-top:20px;
+    padding:16px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:#fff;
+    font-size:17px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.verify-otp-card button:hover{
+    transform:translateY(-2px);
+    box-shadow:0 15px 30px rgba(37,99,235,.30);
+}
+
+.verify-otp-card button:disabled{
+    opacity:.7;
+    cursor:not-allowed;
+}
+
+@media(max-width:768px){
+
+    .verify-otp-card{
+        padding:22px;
+    }
+
+    .verify-otp-card h2{
+        font-size:20px;
+    }
+
+    .verify-otp-card input{
+        font-size:16px;
+        letter-spacing:5px;
+    }
+
+}

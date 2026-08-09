@@ -155,8 +155,38 @@ const getTechnicianRating = async (req, res) => {
   }
 };
 
+// @desc    Check if review already exists
+// @route   GET /api/reviews/check/:bookingId
+// @access  Private (Customer)
+
+const checkReview = async (req, res) => {
+
+  try {
+
+    const review = await Review.findOne({
+      booking: req.params.bookingId,
+      customer: req.user.id,
+    });
+
+    res.status(200).json({
+      success: true,
+      reviewed: !!review,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+
+};
+
 module.exports = {
   createReview,
   getTechnicianReviews,
   getTechnicianRating,
+  checkReview,
 };

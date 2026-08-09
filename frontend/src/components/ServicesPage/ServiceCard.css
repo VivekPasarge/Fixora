@@ -1,0 +1,211 @@
+/* ===========================
+   Service Card
+=========================== */
+
+.service-card {
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+
+  padding: 24px;
+
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+
+  transition: all 0.3s ease;
+}
+
+.service-card:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+}
+
+/* ===========================
+   Icon
+=========================== */
+
+.service-card-icon {
+  width: 64px;
+  height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #dbeafe;
+  color: #2563eb;
+
+  border-radius: 18px;
+
+  transition: all 0.3s ease;
+}
+
+.service-card:hover .service-card-icon {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* ===========================
+   Category
+=========================== */
+
+.service-card-category {
+  margin-top: 20px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  color: #2563eb;
+}
+
+/* ===========================
+   Title
+=========================== */
+
+.service-card-title {
+  margin-top: 8px;
+
+  font-size: 28px;
+  font-weight: 700;
+
+  color: #0f172a;
+}
+
+/* ===========================
+   Description
+=========================== */
+
+.service-card-description {
+  margin-top: 12px;
+
+  font-size: 16px;
+  line-height: 1.8;
+
+  color: #64748b;
+}
+
+/* ===========================
+   Rating & Duration
+=========================== */
+
+.service-card-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-top: 24px;
+}
+
+.service-card-rating,
+.service-card-duration {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.service-card-star {
+  color: #facc15;
+  fill: #facc15;
+}
+
+.rating-value {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.rating-count {
+  color: #64748b;
+}
+
+.service-card-duration {
+  color: #64748b;
+}
+
+/* ===========================
+   Price
+=========================== */
+
+.service-card-price {
+  margin-top: 24px;
+}
+
+.service-card-price p {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.service-card-price h2 {
+  margin-top: 6px;
+
+  font-size: 34px;
+  font-weight: 700;
+
+  color: #2563eb;
+}
+
+/* ===========================
+   Button
+=========================== */
+
+.service-card-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+
+  margin-top: 32px;
+  padding: 14px 20px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+
+  border-radius: 14px;
+
+  transition: all 0.3s ease;
+}
+
+.service-card-button:hover {
+  background: #1d4ed8;
+}
+
+.service-card-arrow {
+  transition: transform 0.3s ease;
+}
+
+.service-card-button:hover .service-card-arrow {
+  transform: translateX(5px);
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width: 768px) {
+  .service-card {
+    padding: 20px;
+  }
+
+  .service-card-title {
+    font-size: 24px;
+  }
+
+  .service-card-description {
+    font-size: 15px;
+  }
+
+  .service-card-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .service-card-price h2 {
+    font-size: 30px;
+  }
+}

@@ -1,0 +1,168 @@
+.choose-account-page{
+min-height:100vh;
+padding:120px 20px 80px;
+background:linear-gradient(180deg,#f8fafc 0%,#ffffff 100%);
+}
+
+.choose-account-container{
+max-width:1200px;
+margin:auto;
+}
+
+.choose-header{
+text-align:center;
+max-width:700px;
+margin:0 auto 60px;
+}
+
+.choose-badge{
+display:inline-block;
+padding:8px 18px;
+background:#dbeafe;
+color:#2563eb;
+font-size:13px;
+font-weight:600;
+border-radius:999px;
+margin-bottom:18px;
+letter-spacing:.5px;
+}
+
+.choose-header h1{
+font-size:48px;
+font-weight:700;
+color:#0f172a;
+margin-bottom:18px;
+}
+
+.choose-header p{
+font-size:18px;
+line-height:1.8;
+color:#64748b;
+}
+
+.account-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:35px;
+}
+
+.account-card{
+background:#fff;
+border:1px solid #e2e8f0;
+border-radius:24px;
+padding:40px;
+box-shadow:0 15px 40px rgba(15,23,42,.08);
+transition:.35s;
+display:flex;
+flex-direction:column;
+}
+
+.account-card:hover{
+border-color:#2563eb;
+box-shadow:0 25px 60px rgba(37,99,235,.18);
+}
+
+.account-icon{
+width:80px;
+height:80px;
+border-radius:20px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:36px;
+margin-bottom:28px;
+}
+
+.customer{
+background:#dbeafe;
+color:#2563eb;
+}
+
+.partner{
+background:#dcfce7;
+color:#16a34a;
+}
+
+.account-card h2{
+font-size:30px;
+color:#0f172a;
+margin-bottom:15px;
+}
+
+.account-card p{
+font-size:16px;
+line-height:1.7;
+color:#64748b;
+margin-bottom:30px;
+}
+
+.account-card ul{
+list-style:none;
+padding:0;
+margin:0 0 35px;
+display:flex;
+flex-direction:column;
+gap:16px;
+}
+
+.account-card li{
+display:flex;
+align-items:center;
+gap:12px;
+font-size:16px;
+color:#334155;
+}
+
+.account-card li svg{
+color:#22c55e;
+font-size:18px;
+}
+
+.account-btn{
+margin-top:auto;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:10px;
+padding:16px;
+border-radius:14px;
+background:#2563eb;
+color:#fff;
+text-decoration:none;
+font-weight:600;
+font-size:16px;
+transition:.3s;
+}
+
+.account-btn:hover{
+background:#1d4ed8;
+transform:translateY(-2px);
+}
+
+.partner-btn{
+background:#16a34a;
+}
+
+.partner-btn:hover{
+background:#15803d;
+}
+
+@media(max-width:900px){
+
+.account-grid{
+grid-template-columns:1fr;
+}
+
+.choose-header h1{
+font-size:36px;
+}
+
+.choose-header p{
+font-size:16px;
+}
+
+.account-card{
+padding:30px;
+}
+
+}

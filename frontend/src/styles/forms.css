@@ -1,0 +1,170 @@
+/* ==========================================
+   FORMS
+========================================== */
+
+/* Form */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Form Group */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Labels */
+
+.form-label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+/* ==========================================
+   INPUTS
+========================================== */
+
+.form-control,
+.form-select,
+.form-textarea {
+  width: 100%;
+  min-height: 52px;
+
+  padding: 0 16px;
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface);
+
+  color: var(--text);
+
+  font-size: var(--fs-base);
+
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background var(--transition-fast);
+}
+
+/* Textarea */
+
+.form-textarea {
+  min-height: 140px;
+  resize: vertical;
+  padding: 16px;
+}
+
+/* Placeholder */
+
+.form-control::placeholder,
+.form-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Focus */
+
+.form-control:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+
+  border-color: var(--primary);
+
+  box-shadow:
+    0 0 0 4px rgba(37,99,235,.12);
+}
+
+/* Disabled */
+
+.form-control:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background: var(--surface-alt);
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   CHECKBOX
+========================================== */
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+/* ==========================================
+   HELP TEXT
+========================================== */
+
+.form-help {
+  font-size: var(--fs-sm);
+  color: var(--text-light);
+}
+
+/* ==========================================
+   ERROR
+========================================== */
+
+.form-error {
+  color: var(--danger);
+  font-size: var(--fs-sm);
+}
+
+/* ==========================================
+   SUCCESS
+========================================== */
+
+.form-success {
+  color: var(--success);
+  font-size: var(--fs-sm);
+}
+
+/* ==========================================
+   SEARCH INPUT
+========================================== */
+
+.search-input {
+  position: relative;
+}
+
+.search-input input {
+  padding-left: 48px;
+}
+
+.search-input svg {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width:768px){
+
+.form-control,
+.form-select,
+.form-textarea{
+
+font-size:16px;
+
+}
+
+}

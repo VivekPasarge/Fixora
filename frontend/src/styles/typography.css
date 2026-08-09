@@ -1,0 +1,164 @@
+/* ==========================================
+   TYPOGRAPHY
+========================================== */
+
+/* Base */
+
+body {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-normal);
+  color: var(--text);
+}
+
+/* Headings */
+
+h1,
+.display-title {
+  font-size: var(--fs-5xl);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  color: var(--text);
+  letter-spacing: -1px;
+}
+
+h2,
+.section-title {
+  font-size: var(--fs-4xl);
+  font-weight: var(--fw-bold);
+  line-height: 1.25;
+  color: var(--text);
+}
+
+h3 {
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-semibold);
+  line-height: 1.3;
+  color: var(--text);
+}
+
+h4 {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+}
+
+h5 {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-semibold);
+}
+
+h6 {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+/* Paragraph */
+
+p {
+  font-size: var(--fs-base);
+  line-height: 1.8;
+  color: var(--text-light);
+}
+
+/* Small Text */
+
+small,
+.text-small {
+  font-size: var(--fs-sm);
+  color: var(--text-light);
+}
+
+/* Caption */
+
+.caption {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+/* Muted Text */
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+/* Section Subtitle */
+
+.section-subtitle {
+  max-width: 680px;
+  margin: 16px auto 0;
+  font-size: var(--fs-lg);
+  color: var(--text-light);
+  line-height: 1.8;
+  text-align: center;
+}
+
+/* Gradient Text (Optional) */
+
+.text-primary {
+  color: var(--primary);
+}
+
+/* Font Weight Utilities */
+
+.fw-regular {
+  font-weight: var(--fw-regular);
+}
+
+.fw-medium {
+  font-weight: var(--fw-medium);
+}
+
+.fw-semibold {
+  font-weight: var(--fw-semibold);
+}
+
+.fw-bold {
+  font-weight: var(--fw-bold);
+}
+
+/* Responsive Typography */
+
+@media (max-width: 992px) {
+
+  h1,
+  .display-title {
+    font-size: 42px;
+  }
+
+  h2,
+  .section-title {
+    font-size: 34px;
+  }
+
+  h3 {
+    font-size: 28px;
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  h1,
+  .display-title {
+    font-size: 34px;
+  }
+
+  h2,
+  .section-title {
+    font-size: 28px;
+  }
+
+  h3 {
+    font-size: 24px;
+  }
+
+  p {
+    font-size: 15px;
+  }
+
+  .section-subtitle {
+    font-size: 16px;
+  }
+
+}

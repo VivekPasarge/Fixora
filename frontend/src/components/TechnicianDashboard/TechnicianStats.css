@@ -1,0 +1,40 @@
+.tech-stats{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+gap:24px;
+margin:35px 0;
+}
+
+.tech-stat-card{
+background:#fff;
+border-radius:20px;
+padding:28px;
+box-shadow:0 12px 30px rgba(15,23,42,.08);
+border:1px solid #e2e8f0;
+transition:all .3s ease;
+text-align:center;
+}
+
+.tech-stat-card:hover{
+transform:translateY(-6px);
+box-shadow:0 20px 45px rgba(37,99,235,.15);
+}
+
+.tech-icon{
+font-size:42px;
+color:#2563eb;
+margin-bottom:18px;
+}
+
+.tech-stat-card h3{
+font-size:15px;
+font-weight:600;
+color:#64748b;
+margin-bottom:12px;
+}
+
+.tech-stat-card h2{
+font-size:34px;
+font-weight:700;
+color:#0f172a;
+}

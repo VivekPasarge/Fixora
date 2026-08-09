@@ -1,0 +1,89 @@
+.customer-dashboard {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 30px 20px 60px;
+  min-height: 100vh;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.customer-dashboard > * {
+  margin-bottom: 35px;
+}
+
+.dashboard-bottom {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 35px;
+  align-items: start;
+}
+
+.dashboard-left {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+}
+
+.dashboard-right {
+  position: sticky;
+  top: 25px;
+  align-self: start;
+}
+
+/* Large Screens */
+@media (max-width: 1200px) {
+  .dashboard-bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-right {
+    position: static;
+    width: 100%;
+  }
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+  .customer-dashboard {
+    padding: 25px 18px 50px;
+  }
+
+  .dashboard-bottom {
+    gap: 25px;
+  }
+
+  .dashboard-left {
+    gap: 25px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .customer-dashboard {
+    padding: 20px 15px 40px;
+  }
+
+  .customer-dashboard > * {
+    margin-bottom: 25px;
+  }
+
+  .dashboard-bottom {
+    gap: 20px;
+  }
+
+  .dashboard-left {
+    gap: 20px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .customer-dashboard {
+    padding: 15px 12px 30px;
+  }
+
+  .dashboard-bottom {
+    gap: 15px;
+  }
+}
