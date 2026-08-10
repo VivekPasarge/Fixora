@@ -1,170 +1,536 @@
-/* ===========================
-   Availability Card
-=========================== */
+/* =========================================================
+   AVAILABILITY CARD
+========================================================= */
 
 .availability-card {
+  width: 100%;
+  max-width: 520px;
+
+  padding: 28px;
+
+  box-sizing: border-box;
+
+  border-radius: 24px;
+
   background: #ffffff;
 
-  border: 1px solid #f1f5f9;
-  border-radius: 32px;
+  border: 1px solid #e2e8f0;
 
-  padding: 32px;
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.07);
 
-  height: 100%;
-
-  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
-/* ===========================
-   Header
-=========================== */
+.availability-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.10);
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.availability-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 22px;
+}
 
 .availability-title {
-  font-size: 34px;
-  font-weight: 700;
-  color: #1e293b;
+  margin: 0;
+
+  font-size: 25px;
+
+  font-weight: 800;
+
+  color: #0f172a;
+
+  letter-spacing: -0.5px;
 }
 
 .availability-subtitle {
-  margin-top: 8px;
+  margin: 6px 0 0;
 
-  font-size: 16px;
+  font-size: 13px;
+
   color: #64748b;
 }
 
-/* ===========================
-   Status Card
-=========================== */
 
-.status-card {
-  margin-top: 32px;
+/* =========================================================
+   HEADER ICON
+========================================================= */
 
-  padding: 24px;
+.availability-status-icon {
+  width: 48px;
+  height: 48px;
 
-  background: #f0fdf4;
+  flex-shrink: 0;
 
-  border: 1px solid #dcfce7;
-  border-radius: 24px;
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 14px;
 }
 
+.availability-status-icon.online {
+  color: #16a34a;
+
+  background: #dcfce7;
+}
+
+.availability-status-icon.offline {
+  color: #64748b;
+
+  background: #f1f5f9;
+}
+
+
+/* =========================================================
+   CURRENT STATUS CARD
+========================================================= */
+
+.status-card {
+  position: relative;
+
+  padding: 20px;
+
+  border-radius: 18px;
+
+  border: 1px solid #dbeafe;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fbff 0%,
+      #eff6ff 100%
+    );
+
+  overflow: hidden;
+}
+
+.status-card::after {
+  content: "";
+
+  position: absolute;
+
+  width: 120px;
+  height: 120px;
+
+  right: -55px;
+  top: -55px;
+
+  border-radius: 50%;
+
+  background: rgba(37, 99, 235, 0.06);
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   STATUS HEADER
+========================================================= */
+
 .status-header {
+  position: relative;
+
+  z-index: 1;
+
   display: flex;
-  justify-content: space-between;
+
   align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
 }
 
 .status-label {
+  margin: 0 0 5px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.8px;
+
   color: #64748b;
 }
 
-.status-text {
-  margin-top: 8px;
+.status-value-row {
+  display: flex;
 
-  font-size: 32px;
-  font-weight: 700;
+  align-items: center;
 
-  color: #16a34a;
+  gap: 10px;
 }
 
-.status-icon {
-  width: 64px;
-  height: 64px;
+.status-text {
+  margin: 0;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 24px;
 
-  background: #22c55e;
-  color: #ffffff;
+  font-weight: 800;
+
+  color: #0f172a;
+}
+
+
+/* =========================================================
+   STATUS DOT
+========================================================= */
+
+.status-dot {
+  width: 11px;
+  height: 11px;
+
+  flex-shrink: 0;
 
   border-radius: 50%;
 }
 
-/* ===========================
-   Details
-=========================== */
+.online-dot {
+  background: #22c55e;
 
-.availability-details {
-  margin-top: 32px;
+  box-shadow:
+    0 0 0 5px rgba(34, 197, 94, 0.13);
+}
+
+.offline-dot {
+  background: #94a3b8;
+
+  box-shadow:
+    0 0 0 5px rgba(148, 163, 184, 0.13);
+}
+
+
+/* =========================================================
+   POWER ICON
+========================================================= */
+
+.status-icon {
+  width: 42px;
+  height: 42px;
 
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 12px;
+}
+
+.status-icon.online {
+  color: #16a34a;
+
+  background: #dcfce7;
+}
+
+.status-icon.offline {
+  color: #64748b;
+
+  background: #e2e8f0;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.status-description {
+  position: relative;
+
+  z-index: 1;
+
+  margin: 15px 0 0;
+
+  font-size: 13px;
+
+  line-height: 1.55;
+
+  color: #64748b;
+}
+
+
+/* =========================================================
+   WORKING DETAILS
+========================================================= */
+
+.availability-details {
+  display: grid;
+
+  grid-template-columns: 1fr;
+
+  gap: 0;
+
+  margin-top: 18px;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 16px;
+
+  overflow: hidden;
+
+  background: #ffffff;
 }
 
 .detail-row {
   display: flex;
-  justify-content: space-between;
+
   align-items: center;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  min-height: 46px;
+
+  padding: 0 15px;
+
+  border-bottom: 1px solid #eef2f7;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
 }
 
 .detail-label {
+  font-size: 12px;
+
   color: #64748b;
 }
 
 .detail-row strong {
-  color: #1e293b;
+  font-size: 12px;
+
+  font-weight: 700;
+
+  color: #0f172a;
+
+  text-align: right;
 }
 
-/* ===========================
-   Button
-=========================== */
 
-.offline-btn {
+/* =========================================================
+   TOGGLE BUTTON
+========================================================= */
+
+.availability-toggle-btn {
   width: 100%;
 
-  margin-top: 32px;
-  padding: 14px 20px;
+  height: 48px;
+
+  margin-top: 18px;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
-  gap: 10px;
+
+  gap: 9px;
 
   border: none;
-  border-radius: 14px;
 
-  background: #ef4444;
-  color: #ffffff;
+  border-radius: 13px;
 
-  font-size: 16px;
-  font-weight: 600;
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 700;
 
   cursor: pointer;
 
-  transition: all 0.3s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
-.offline-btn:hover {
-  background: #dc2626;
+.availability-toggle-btn:hover {
+  transform: translateY(-2px);
 }
 
-/* ===========================
-   Responsive
-=========================== */
 
-@media (max-width: 768px) {
+/* =========================================================
+   GO OFFLINE
+========================================================= */
+
+.availability-toggle-btn.go-offline {
+  background: #0f172a;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.18);
+}
+
+.availability-toggle-btn.go-offline:hover {
+  background: #020617;
+
+  box-shadow:
+    0 12px 24px rgba(15, 23, 42, 0.24);
+}
+
+
+/* =========================================================
+   GO ONLINE
+========================================================= */
+
+.availability-toggle-btn.go-online {
+  background: #16a34a;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 18px rgba(22, 163, 74, 0.18);
+}
+
+.availability-toggle-btn.go-online:hover {
+  background: #15803d;
+
+  box-shadow:
+    0 12px 24px rgba(22, 163, 74, 0.24);
+}
+
+
+/* =========================================================
+   ONLINE STATE
+========================================================= */
+
+.availability-online {
+  border-color: #dbeafe;
+}
+
+
+/* =========================================================
+   OFFLINE STATE
+========================================================= */
+
+.availability-offline {
+  border-color: #e2e8f0;
+}
+
+.availability-offline .status-card {
+  background:
+    linear-gradient(
+      135deg,
+      #fafafa 0%,
+      #f8fafc 100%
+    );
+
+  border-color: #e2e8f0;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 992px) {
+
   .availability-card {
-    padding: 24px;
-    border-radius: 24px;
+    max-width: 100%;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .availability-card {
+    padding: 22px;
+
+    border-radius: 20px;
   }
 
   .availability-title {
-    font-size: 28px;
+    font-size: 22px;
+  }
+
+  .availability-header {
+    margin-bottom: 18px;
+  }
+
+  .status-card {
+    padding: 17px;
   }
 
   .status-text {
-    font-size: 28px;
-  }
-
-  .status-icon {
-    width: 56px;
-    height: 56px;
+    font-size: 22px;
   }
 
   .detail-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+    min-height: 44px;
+
+    padding: 0 12px;
   }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 400px) {
+
+  .availability-card {
+    padding: 18px;
+  }
+
+  .availability-status-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .availability-title {
+    font-size: 20px;
+  }
+
+  .status-card {
+    padding: 15px;
+  }
+
+  .detail-row {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    gap: 3px;
+
+    padding: 10px 12px;
+  }
+
+  .detail-row strong {
+    text-align: left;
+  }
+
 }

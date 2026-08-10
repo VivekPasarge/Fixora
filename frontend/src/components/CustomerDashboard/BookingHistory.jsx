@@ -1,3 +1,13 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  FiX,
+  FiCalendar,
+  FiMapPin,
+  FiCreditCard,
+  FiClock,
+} from "react-icons/fi";
+
 import "./BookingHistory.css";
 
 const bookings = [
@@ -32,60 +42,216 @@ const bookings = [
 ];
 
 const BookingHistory = () => {
+  const navigate = useNavigate();
+
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [showAllBookings, setShowAllBookings] = useState(false);
+
+  const handleViewAll = () => {
+    navigate("/my-bookings");
+  };
+
+  const handleViewDetails = (booking) => {
+    setSelectedBooking(booking);
+  };
+
+  const closeDetails = () => {
+    setSelectedBooking(null);
+  };
+
   return (
-    <section className="booking-history">
+    <>
+      <section className="booking-history">
 
-      <div className="history-header">
-        <div>
-          <h2>Booking History</h2>
-          <p>Your recent Fixora service bookings.</p>
+        <div className="history-header">
+          <div>
+            <h2>Booking History</h2>
+
+            <p>
+              Your recent Fixora service bookings.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="view-all-btn"
+            onClick={handleViewAll}
+          >
+            View All
+          </button>
         </div>
 
-        <button className="view-all-btn">
-          View All
-        </button>
-      </div>
+        <div className="history-table">
 
-      <div className="history-table">
+          <div className="table-head">
+            <span>Booking ID</span>
+            <span>Service</span>
+            <span>Date</span>
+            <span>Amount</span>
+            <span>Status</span>
+            <span>Action</span>
+          </div>
 
-        <div className="table-head">
+          {bookings.map((booking) => (
 
-          <span>Booking ID</span>
-          <span>Service</span>
-          <span>Date</span>
-          <span>Amount</span>
-          <span>Status</span>
-          <span>Action</span>
+            <div
+              className="table-row"
+              key={booking.id}
+            >
+
+              <span>{booking.id}</span>
+
+              <span>{booking.service}</span>
+
+              <span>{booking.date}</span>
+
+              <span>{booking.amount}</span>
+
+              <span
+                className={`status ${booking.status.toLowerCase()}`}
+              >
+                {booking.status}
+              </span>
+
+              <button
+                type="button"
+                className="details-btn"
+                onClick={() => handleViewDetails(booking)}
+              >
+                View Details
+              </button>
+
+            </div>
+
+          ))}
 
         </div>
 
-        {bookings.map((booking) => (
+      </section>
 
-          <div className="table-row" key={booking.id}>
+      {/* ================================
+          BOOKING DETAILS MODAL
+      ================================= */}
 
-            <span>{booking.id}</span>
+      {selectedBooking && (
+        <div
+          className="booking-details-overlay"
+          onClick={closeDetails}
+        >
 
-            <span>{booking.service}</span>
+          <div
+            className="booking-details-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
 
-            <span>{booking.date}</span>
+            <button
+              type="button"
+              className="booking-details-close"
+              onClick={closeDetails}
+              aria-label="Close booking details"
+            >
+              <FiX />
+            </button>
 
-            <span>{booking.amount}</span>
+            <div className="booking-details-icon">
+              <FiCalendar />
+            </div>
 
-            <span className={`status ${booking.status.toLowerCase()}`}>
-              {booking.status}
+            <span className="booking-details-label">
+              Booking Details
             </span>
 
-            <button className="details-btn">
-              View Details
+            <h2>
+              {selectedBooking.service}
+            </h2>
+
+            <p className="booking-id-text">
+              {selectedBooking.id}
+            </p>
+
+            <div className="booking-info-grid">
+
+              <div className="booking-info-card">
+
+                <FiCalendar />
+
+                <div>
+                  <span>Date</span>
+                  <strong>
+                    {selectedBooking.date}
+                  </strong>
+                </div>
+
+              </div>
+
+              <div className="booking-info-card">
+
+                <FiClock />
+
+                <div>
+                  <span>Status</span>
+                  <strong>
+                    {selectedBooking.status}
+                  </strong>
+                </div>
+
+              </div>
+
+              <div className="booking-info-card">
+
+                <FiCreditCard />
+
+                <div>
+                  <span>Amount</span>
+                  <strong>
+                    {selectedBooking.amount}
+                  </strong>
+                </div>
+
+              </div>
+
+              <div className="booking-info-card">
+
+                <FiMapPin />
+
+                <div>
+                  <span>Service Location</span>
+                  <strong>
+                    Bengaluru
+                  </strong>
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="booking-details-status">
+
+              <span>
+                Booking Status
+              </span>
+
+              <strong
+                className={`status ${selectedBooking.status.toLowerCase()}`}
+              >
+                {selectedBooking.status}
+              </strong>
+
+            </div>
+
+            <button
+              type="button"
+              className="booking-details-done"
+              onClick={closeDetails}
+            >
+              Close
             </button>
 
           </div>
 
-        ))}
-
-      </div>
-
-    </section>
+        </div>
+      )}
+    </>
   );
 };
 

@@ -11,63 +11,87 @@ import "./TrackBooking.css";
 
 const TrackBooking = () => {
   const { id } = useParams();
-
   const navigate = useNavigate();
 
   // ==========================================
-  // State
+  // STATE
   // ==========================================
 
   const [booking, setBooking] = useState(null);
-
   const [loading, setLoading] = useState(true);
-
   const [accessMessage, setAccessMessage] = useState("");
 
-
   // ==========================================
-  // Logged-In User
+  // LOGGED-IN USER
   // ==========================================
 
   const storedUser = localStorage.getItem("user");
 
-  const user =
-    storedUser && storedUser !== "undefined"
-      ? JSON.parse(storedUser)
-      : null;
+  let user = null;
 
+  try {
+    user =
+      storedUser && storedUser !== "undefined"
+        ? JSON.parse(storedUser)
+        : null;
+  } catch (error) {
+    console.error("User Parse Error:", error);
+    user = null;
+  }
 
   // ==========================================
-  // Fetch Booking
+  // FETCH BOOKING
   // ==========================================
 
   useEffect(() => {
     fetchBooking();
+
+    // Automatically refresh booking status.
+    // This allows the customer page to detect:
+    //
+    // Accepted → In Progress
+    // In Progress → Completed
+    //
+    // without manually refreshing the page.
+
+    const interval = setInterval(() => {
+      fetchBooking(true);
+    }, 5000);
+
+    return () => {
+      clearInterval(interval);
+    };
   }, [id]);
 
+  // ==========================================
+  // FETCH BOOKING FUNCTION
+  // ==========================================
 
-  const fetchBooking = async () => {
+  const fetchBooking = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
 
-      setAccessMessage("");
+      if (!silent) {
+        setAccessMessage("");
+      }
 
-      const token =
-        localStorage.getItem("token");
-
+      const token = localStorage.getItem("token");
 
       // ========================================
-      // No User
+      // NO USER
       // ========================================
 
       if (!user) {
-        setAccessMessage(
-          "Please login to access tracking."
-        );
+        setAccessMessage("Please login to access tracking.");
+
+        if (!silent) {
+          setLoading(false);
+        }
 
         return;
       }
-
 
       // ========================================
       // ADMIN
@@ -78,12 +102,14 @@ const TrackBooking = () => {
           "Live tracking is not available for administrators."
         );
 
+        if (!silent) {
+          setLoading(false);
+        }
+
         return;
       }
 
-
       let response;
-
 
       // ========================================
       // SPECIFIC BOOKING
@@ -91,40 +117,31 @@ const TrackBooking = () => {
       // ========================================
 
       if (id) {
-        response = await api.get(
-          `/bookings/${id}`,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
+        response = await api.get(`/bookings/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
+        setBooking(response.data.booking);
 
-        setBooking(
-          response.data.booking
-        );
+        if (!silent) {
+          setAccessMessage("");
+        }
 
         return;
       }
-
 
       // ========================================
       // ACTIVE BOOKING
       // /track
       // ========================================
 
-      response = await api.get(
-        "/bookings/active",
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
-        }
-      );
-
+      response = await api.get("/bookings/active", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       // ========================================
       // NO ACTIVE BOOKING
@@ -133,58 +150,59 @@ const TrackBooking = () => {
       if (!response.data.active) {
         setAccessMessage(
           response.data.message ||
-            (
-              user.role === "technician"
-                ? "You don't have an active job right now."
-                : "You don't have an active service right now."
-            )
+            (user.role === "technician"
+              ? "You don't have an active job right now."
+              : "You don't have an active service right now.")
         );
+
+        setBooking(null);
 
         return;
       }
-
 
       // ========================================
       // ACTIVE BOOKING FOUND
       // ========================================
 
-      setBooking(
-        response.data.booking
-      );
+      setBooking(response.data.booking);
 
+      if (!silent) {
+        setAccessMessage("");
+      }
     } catch (error) {
-      console.error(
-        "Track Booking Error:",
-        error
-      );
+      console.error("Track Booking Error:", error);
 
-      setAccessMessage(
-        error.response?.data?.message ||
-          "Unable to load tracking information."
-      );
+      // Do not destroy the existing booking
+      // during a silent refresh if the server
+      // temporarily fails.
 
+      if (!silent) {
+        setAccessMessage(
+          error.response?.data?.message ||
+            "Unable to load tracking information."
+        );
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
-
   // ==========================================
-  // Cancel Booking
+  // CANCEL BOOKING
   // ==========================================
 
   const cancelBooking = async () => {
     try {
-      const token =
-        localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
       const response = await api.put(
         `/bookings/${booking._id}/cancel`,
         {},
         {
           headers: {
-            Authorization:
-              `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -192,7 +210,6 @@ const TrackBooking = () => {
       alert(response.data.message);
 
       fetchBooking();
-
     } catch (error) {
       alert(
         error.response?.data?.message ||
@@ -201,29 +218,24 @@ const TrackBooking = () => {
     }
   };
 
-
   // ==========================================
-  // Open Payment
+  // OPEN PAYMENT
   // ==========================================
 
   const openPayment = () => {
-    navigate(
-      `/payment/${booking._id}`
-    );
+    navigate(`/payment/${booking._id}`);
   };
 
-
   // ==========================================
-  // Download Invoice
+  // DOWNLOAD INVOICE
   // ==========================================
 
   const downloadInvoice = () => {
     generateInvoice(booking);
   };
 
-
   // ==========================================
-  // Write Review
+  // WRITE REVIEW
   // ==========================================
 
   const writeReview = () => {
@@ -234,9 +246,8 @@ const TrackBooking = () => {
     });
   };
 
-
   // ==========================================
-  // Loading
+  // LOADING
   // ==========================================
 
   if (loading) {
@@ -245,31 +256,26 @@ const TrackBooking = () => {
         <Navbar />
 
         <div className="track-loading-page">
-
           <div className="track-loading-card">
 
-            <div className="track-loading-spinner">
-            </div>
+            <div className="track-loading-spinner"></div>
 
             <h2>
               Loading Tracking...
             </h2>
 
             <p>
-              Please wait while we
-              load your booking.
+              Please wait while we load your booking.
             </p>
 
           </div>
-
         </div>
       </>
     );
   }
 
-
   // ==========================================
-  // Tracking Access / Empty State
+  // ACCESS MESSAGE
   // ==========================================
 
   if (accessMessage) {
@@ -309,35 +315,20 @@ const TrackBooking = () => {
 
                 if (!user) {
                   navigate("/login");
-
                   return;
                 }
 
-
-                if (
-                  user.role === "admin"
-                ) {
-                  navigate(
-                    "/admin-dashboard"
-                  );
-
+                if (user.role === "admin") {
+                  navigate("/admin-dashboard");
                   return;
                 }
 
-
-                if (
-                  user.role === "technician"
-                ) {
-                  navigate(
-                    "/technician-dashboard"
-                  );
-
+                if (user.role === "technician") {
+                  navigate("/technician-dashboard");
                   return;
                 }
-
 
                 navigate("/my-bookings");
-
               }}
             >
               {!user
@@ -356,9 +347,8 @@ const TrackBooking = () => {
     );
   }
 
-
   // ==========================================
-  // Booking Not Found
+  // BOOKING NOT FOUND
   // ==========================================
 
   if (!booking) {
@@ -403,9 +393,8 @@ const TrackBooking = () => {
     );
   }
 
-
   // ==========================================
-  // Main Page
+  // MAIN PAGE
   // ==========================================
 
   return (
@@ -418,11 +407,10 @@ const TrackBooking = () => {
           Track Booking
         </h1>
 
-
         <div className="track-card">
 
           {/* ==================================
-              Header
+              HEADER
           ================================== */}
 
           <div className="track-header">
@@ -442,7 +430,6 @@ const TrackBooking = () => {
 
             </div>
 
-
             <span
               className={`status-badge ${
                 booking.status
@@ -455,12 +442,10 @@ const TrackBooking = () => {
 
           </div>
 
-
           <hr />
 
-
           {/* ==================================
-              Booking Summary
+              BOOKING SUMMARY
           ================================== */}
 
           <div className="summary">
@@ -477,7 +462,6 @@ const TrackBooking = () => {
 
             </div>
 
-
             <div className="summary-row">
 
               <span>
@@ -489,7 +473,6 @@ const TrackBooking = () => {
               </strong>
 
             </div>
-
 
             <div className="summary-row">
 
@@ -503,7 +486,6 @@ const TrackBooking = () => {
 
             </div>
 
-
             <div className="summary-row">
 
               <span>
@@ -512,8 +494,7 @@ const TrackBooking = () => {
 
               <strong
                 className={
-                  booking.paymentStatus ===
-                  "Paid"
+                  booking.paymentStatus === "Paid"
                     ? "paid"
                     : "pending-payment"
                 }
@@ -522,7 +503,6 @@ const TrackBooking = () => {
               </strong>
 
             </div>
-
 
             <div className="summary-row">
 
@@ -538,7 +518,6 @@ const TrackBooking = () => {
 
             </div>
 
-
             <div className="summary-row">
 
               <span>
@@ -553,9 +532,8 @@ const TrackBooking = () => {
 
           </div>
 
-
           {/* ==================================
-              Booking Progress
+              BOOKING PROGRESS
           ================================== */}
 
           <div className="tracking-section">
@@ -564,15 +542,13 @@ const TrackBooking = () => {
               Booking Progress
             </h3>
 
-
             <div className="timeline">
 
-              {/* Booked */}
+              {/* BOOKED */}
 
               <div
                 className={`timeline-step ${
-                  booking.status !==
-                    "Cancelled"
+                  booking.status !== "Cancelled"
                     ? "active"
                     : ""
                 }`}
@@ -588,8 +564,7 @@ const TrackBooking = () => {
 
               </div>
 
-
-              {/* Accepted */}
+              {/* ACCEPTED */}
 
               <div
                 className={`timeline-step ${
@@ -597,9 +572,7 @@ const TrackBooking = () => {
                     "Accepted",
                     "In Progress",
                     "Completed",
-                  ].includes(
-                    booking.status
-                  )
+                  ].includes(booking.status)
                     ? "active"
                     : ""
                 }`}
@@ -615,17 +588,14 @@ const TrackBooking = () => {
 
               </div>
 
-
-              {/* In Progress */}
+              {/* IN PROGRESS */}
 
               <div
                 className={`timeline-step ${
                   [
                     "In Progress",
                     "Completed",
-                  ].includes(
-                    booking.status
-                  )
+                  ].includes(booking.status)
                     ? "active"
                     : ""
                 }`}
@@ -641,13 +611,11 @@ const TrackBooking = () => {
 
               </div>
 
-
-              {/* Completed */}
+              {/* COMPLETED */}
 
               <div
                 className={`timeline-step ${
-                  booking.status ===
-                    "Completed"
+                  booking.status === "Completed"
                     ? "active"
                     : ""
                 }`}
@@ -667,9 +635,8 @@ const TrackBooking = () => {
 
           </div>
 
-
           {/* ==================================
-              Current Status
+              CURRENT STATUS
           ================================== */}
 
           <div className="status-box">
@@ -683,7 +650,6 @@ const TrackBooking = () => {
             </p>
 
           </div>
-
 
           {/* ==================================
               OTP
@@ -699,7 +665,7 @@ const TrackBooking = () => {
                 </h3>
 
                 <div className="otp-number">
-                  {booking.otp}
+                  {booking.otp || "----"}
                 </div>
 
                 <p>
@@ -711,9 +677,8 @@ const TrackBooking = () => {
 
           )}
 
-
           {/* ==================================
-              Information Grid
+              INFORMATION GRID
           ================================== */}
 
           <div className="info-grid">
@@ -726,30 +691,24 @@ const TrackBooking = () => {
 
               <p>
 
-                {booking.status ===
-                  "Pending" &&
+                {booking.status === "Pending" &&
                   "Waiting for technician"}
 
-                {booking.status ===
-                  "Accepted" &&
+                {booking.status === "Accepted" &&
                   "Technician arriving in 20 minutes"}
 
-                {booking.status ===
-                  "In Progress" &&
+                {booking.status === "In Progress" &&
                   "Technician is working at your location"}
 
-                {booking.status ===
-                  "Completed" &&
+                {booking.status === "Completed" &&
                   "Service completed"}
 
-                {booking.status ===
-                  "Cancelled" &&
+                {booking.status === "Cancelled" &&
                   "Booking cancelled"}
 
               </p>
 
             </div>
-
 
             <div className="info-card">
 
@@ -765,36 +724,37 @@ const TrackBooking = () => {
 
           </div>
 
-
           {/* ==================================
-              Address
+              ADDRESS
           ================================== */}
 
-          <p>
+          <div className="booking-address">
 
-            <strong>
-              Address :
-            </strong>{" "}
+            <p>
 
-            {booking.address}
+              <strong>
+                Address :
+              </strong>{" "}
 
-          </p>
+              {booking.address}
 
+            </p>
+
+          </div>
 
           {/* ==================================
-              Technician
+              ASSIGNED TECHNICIAN
           ================================== */}
 
           {booking.technician && (
 
-            <>
+            <div className="technician-section">
 
               <hr />
 
               <h3>
                 Assigned Professional
               </h3>
-
 
               <p>
 
@@ -806,7 +766,6 @@ const TrackBooking = () => {
 
               </p>
 
-
               <p>
 
                 <strong>
@@ -816,7 +775,6 @@ const TrackBooking = () => {
                 {booking.technician.phone}
 
               </p>
-
 
               <p>
 
@@ -829,54 +787,193 @@ const TrackBooking = () => {
 
               </p>
 
-
-              {/* ==================================
-                  LIVE LOCATION
-              ================================== */}
-
-              {booking.status ===
-                "In Progress" && (
-
-                <div className="live-tracking-wrapper">
-
-                  <div className="live-tracking-heading">
-
-                    <span className="live-dot">
-                    </span>
-
-                    <h3>
-                      Live Technician Tracking
-                    </h3>
-
-                  </div>
-
-                  <p className="live-tracking-subtitle">
-                    The technician is currently
-                    working on your service.
-                  </p>
-
-                  <LiveLocation
-                    bookingId={
-                      booking._id
-                    }
-                  />
-
-                </div>
-
-              )}
-
-            </>
+            </div>
 
           )}
 
+          {/* ==================================
+              LIVE TRACKING
+          ================================== */}
+
+          <div className="live-tracking-wrapper">
+
+            {/* ==================================
+                IN PROGRESS
+            ================================== */}
+
+            {booking.status === "In Progress" && (
+
+              <>
+
+                <div className="live-tracking-heading">
+
+                  <span className="live-dot"></span>
+
+                  <h3>
+                    Live Technician Tracking
+                  </h3>
+
+                  <span className="tracking-live-badge">
+                    LIVE
+                  </span>
+
+                </div>
+
+                <p className="live-tracking-subtitle">
+
+                  Your technician is currently
+                  working on your service. You can
+                  view their live location below.
+
+                </p>
+
+                <LiveLocation
+                  bookingId={booking._id}
+                />
+
+              </>
+
+            )}
+
+            {/* ==================================
+                ACCEPTED
+            ================================== */}
+
+            {booking.status === "Accepted" && (
+
+              <div className="tracking-message accepted-message">
+
+                <div className="tracking-message-icon">
+                  📍
+                </div>
+
+                <div>
+
+                  <h3>
+                    Technician Accepted
+                  </h3>
+
+                  <p>
+
+                    Your technician has accepted
+                    the booking. Live location will
+                    appear here when the technician
+                    starts the job.
+
+                  </p>
+
+                </div>
+
+              </div>
+
+            )}
+
+            {/* ==================================
+                PENDING
+            ================================== */}
+
+            {booking.status === "Pending" && (
+
+              <div className="tracking-message pending-message">
+
+                <div className="tracking-message-icon">
+                  ⏳
+                </div>
+
+                <div>
+
+                  <h3>
+                    Waiting for Technician
+                  </h3>
+
+                  <p>
+
+                    We are finding a technician
+                    for your service. Live tracking
+                    will become available once a
+                    technician accepts your booking.
+
+                  </p>
+
+                </div>
+
+              </div>
+
+            )}
+
+            {/* ==================================
+                COMPLETED
+            ================================== */}
+
+            {booking.status === "Completed" && (
+
+              <div className="tracking-message completed-message">
+
+                <div className="tracking-message-icon">
+                  ✓
+                </div>
+
+                <div>
+
+                  <h3>
+                    Service Completed
+                  </h3>
+
+                  <p>
+
+                    Your service has been completed
+                    successfully. Live technician
+                    tracking has ended.
+
+                  </p>
+
+                </div>
+
+              </div>
+
+            )}
+
+            {/* ==================================
+                CANCELLED
+            ================================== */}
+
+            {booking.status === "Cancelled" && (
+
+              <div className="tracking-message cancelled-message">
+
+                <div className="tracking-message-icon">
+                  ✕
+                </div>
+
+                <div>
+
+                  <h3>
+                    Booking Cancelled
+                  </h3>
+
+                  <p>
+
+                    This booking has been cancelled.
+                    Live technician tracking is no
+                    longer available.
+
+                  </p>
+
+                </div>
+
+              </div>
+
+            )}
+
+          </div>
 
           {/* ==================================
-              Actions
+              ACTIONS
           ================================== */}
 
           <div className="track-actions">
 
-            {/* Contact Technician */}
+            {/* CONTACT TECHNICIAN */}
 
             {booking.technician && (
 
@@ -889,11 +986,9 @@ const TrackBooking = () => {
 
             )}
 
+            {/* CANCEL */}
 
-            {/* Cancel */}
-
-            {booking.status ===
-              "Pending" && (
+            {booking.status === "Pending" && (
 
               <button
                 className="cancel-btn"
@@ -904,28 +999,23 @@ const TrackBooking = () => {
 
             )}
 
+            {/* PAYMENT */}
 
-            {/* Payment */}
+            {booking.status === "Completed" &&
+              booking.paymentStatus === "Pending" && (
 
-            {booking.status ===
-              "Completed" &&
-              booking.paymentStatus ===
-                "Pending" && (
-
-              <button
-                className="payment-btn"
-                onClick={openPayment}
-              >
-                Proceed to Payment
-              </button>
+                <button
+                  className="payment-btn"
+                  onClick={openPayment}
+                >
+                  Proceed to Payment
+                </button>
 
             )}
 
+            {/* PAYMENT COMPLETED */}
 
-            {/* Payment Completed */}
-
-            {booking.paymentStatus ===
-              "Paid" && (
+            {booking.paymentStatus === "Paid" && (
 
               <>
 
@@ -936,12 +1026,9 @@ const TrackBooking = () => {
                   Payment Completed
                 </button>
 
-
                 <button
                   className="invoice-btn"
-                  onClick={
-                    downloadInvoice
-                  }
+                  onClick={downloadInvoice}
                 >
                   Download Invoice
                 </button>
@@ -950,20 +1037,17 @@ const TrackBooking = () => {
 
             )}
 
+            {/* REVIEW */}
 
-            {/* Review */}
+            {booking.status === "Completed" &&
+              booking.paymentStatus === "Paid" && (
 
-            {booking.status ===
-              "Completed" &&
-              booking.paymentStatus ===
-                "Paid" && (
-
-              <button
-                className="review-btn"
-                onClick={writeReview}
-              >
-                Write Review
-              </button>
+                <button
+                  className="review-btn"
+                  onClick={writeReview}
+                >
+                  Write Review
+                </button>
 
             )}
 

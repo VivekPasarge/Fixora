@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
 import socket from "../../socket";
+import api from "../../api/axios";
 
 import {
   MapContainer,
@@ -14,110 +16,405 @@ import L from "leaflet";
 
 import "leaflet/dist/leaflet.css";
 import "./LiveLocation.css";
-// import carMarker from "../../assets/car-marker.png";
 
-// const technicianIcon = new L.Icon({
-//   iconUrl: carMarker,
-//   iconSize: [45, 45],
-//   iconAnchor: [22, 22],
-// });
-// import homeMarker from "../../assets/home-marker.png";
-
-// const customerIcon = new L.Icon({
-//   iconUrl: homeMarker,
-//   iconSize: [40, 40],
-//   iconAnchor: [20, 20],
-// });
+/* =========================================================
+   TECHNICIAN ICON
+========================================================= */
 
 const technicianIcon = new L.Icon({
   iconUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+
   shadowUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
 
+/* =========================================================
+   CUSTOMER ICON
+========================================================= */
+
 const customerIcon = new L.Icon({
   iconUrl:
     "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+
   iconSize: [40, 40],
   iconAnchor: [20, 40],
 });
 
-const RecenterMap = ({ lat, lng }) => {
+/* =========================================================
+   RECENTER MAP
+========================================================= */
 
+const RecenterMap = ({ location }) => {
   const map = useMap();
 
   useEffect(() => {
+    if (!location) return;
 
-    map.setView([lat, lng], map.getZoom());
+    const lat = Number(location.latitude);
+    const lng = Number(location.longitude);
 
-  }, [lat, lng, map]);
+    if (
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lng)
+    ) {
+      return;
+    }
+
+    map.setView(
+      [lat, lng],
+      Math.max(map.getZoom(), 15),
+      {
+        animate: true,
+        duration: 0.8,
+      }
+    );
+  }, [location, map]);
 
   return null;
-
 };
 
-const LiveLocation = ({ bookingId }) => {
+/* =========================================================
+   LIVE LOCATION
+========================================================= */
 
-  const [location, setLocation] = useState(null);
+const LiveLocation = ({ bookingId }) => {
+  const [location, setLocation] =
+    useState(null);
 
   const [customerLocation, setCustomerLocation] =
     useState(null);
 
-  const [distance, setDistance] = useState(0);
-    useEffect(() => {
+  const [distance, setDistance] =
+    useState(0);
 
+  const [socketConnected, setSocketConnected] =
+    useState(false);
+
+  const [loadingLocation, setLoadingLocation] =
+    useState(true);
+
+  /* =========================================================
+     STORE PREVIOUS LOCATION
+     Used for smooth marker movement.
+  ========================================================= */
+
+  const previousLocationRef =
+    useRef(null);
+
+  /* =========================================================
+     FETCH SAVED TECHNICIAN LOCATION
+     This allows the map to appear after refresh.
+  ========================================================= */
+
+  useEffect(() => {
     if (!bookingId) return;
 
-    navigator.geolocation.getCurrentPosition(
+    const fetchSavedLocation = async () => {
+      try {
+        console.log(
+          "🔎 Checking saved technician location..."
+        );
 
-      (position) => {
+        const token =
+          localStorage.getItem("token");
 
-        setCustomerLocation({
+        const response = await api.get(
+          `/bookings/${bookingId}`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
 
-          latitude: position.coords.latitude,
+        const booking =
+          response.data.booking;
 
-          longitude: position.coords.longitude,
+        const savedLocation =
+          booking?.technicianLocation;
 
-        });
+        if (
+          savedLocation &&
+          savedLocation.latitude !== null &&
+          savedLocation.longitude !== null
+        ) {
+          const latitude =
+            Number(savedLocation.latitude);
 
-      },
+          const longitude =
+            Number(savedLocation.longitude);
 
-      (error) => {
+          if (
+            Number.isFinite(latitude) &&
+            Number.isFinite(longitude)
+          ) {
+            console.log(
+              "📍 Saved technician location:",
+              {
+                latitude,
+                longitude,
+              }
+            );
 
-        console.log(error);
+            const saved = {
+              bookingId,
+              latitude,
+              longitude,
+            };
 
+            previousLocationRef.current =
+              saved;
+
+            setLocation(saved);
+          }
+        } else {
+          console.log(
+            "⏳ No saved technician location yet."
+          );
+        }
+      } catch (error) {
+        console.log(
+          "❌ Failed to fetch saved location:",
+          error
+        );
+      } finally {
+        setLoadingLocation(false);
       }
+    };
 
+    fetchSavedLocation();
+  }, [bookingId]);
+
+  /* =========================================================
+     SOCKET + CUSTOMER LOCATION
+  ========================================================= */
+
+  useEffect(() => {
+    if (!bookingId) {
+      console.log(
+        "❌ LiveLocation: Booking ID missing"
+      );
+
+      return;
+    }
+
+    console.log(
+      "🔵 Customer LiveLocation started"
     );
 
-    console.log("Joining Room:", bookingId);
+    console.log(
+      "📦 Booking ID:",
+      bookingId
+    );
 
-    socket.emit("join-booking", bookingId);
+    /* =======================================================
+       LOCATION RECEIVED FROM TECHNICIAN
+    ======================================================= */
 
     const handleLocation = (data) => {
+      console.log(
+        "📍 CUSTOMER RECEIVED LOCATION:",
+        data
+      );
 
-      console.log("📍 Received:", data);
+      if (
+        String(data.bookingId) !==
+        String(bookingId)
+      ) {
+        console.log(
+          "⚠️ Location belongs to another booking"
+        );
 
-      if (data.bookingId === bookingId) {
-
-        setLocation(data);
-
+        return;
       }
 
+      const latitude =
+        Number(data.latitude);
+
+      const longitude =
+        Number(data.longitude);
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+      ) {
+        console.log(
+          "❌ Invalid technician location:",
+          data
+        );
+
+        return;
+      }
+
+      const newLocation = {
+        bookingId:
+          data.bookingId,
+
+        latitude,
+        longitude,
+      };
+
+      /* =====================================================
+         SAVE CURRENT POSITION
+      ===================================================== */
+
+      previousLocationRef.current =
+        newLocation;
+
+      setLocation(newLocation);
+
+      setLoadingLocation(false);
     };
 
-    socket.on("receive-location", handleLocation);
+    /* =======================================================
+       SOCKET CONNECT
+    ======================================================= */
+
+    const handleConnect = () => {
+      console.log(
+        "🟢 Customer socket connected:",
+        socket.id
+      );
+
+      setSocketConnected(true);
+
+      socket.emit(
+        "join-booking",
+        bookingId
+      );
+
+      console.log(
+        "🚪 Customer joined booking room:",
+        bookingId
+      );
+    };
+
+    /* =======================================================
+       SOCKET DISCONNECT
+    ======================================================= */
+
+    const handleDisconnect = () => {
+      console.log(
+        "🔴 Customer socket disconnected"
+      );
+
+      setSocketConnected(false);
+    };
+
+    /* =======================================================
+       LISTENERS
+    ======================================================= */
+
+    socket.on(
+      "receive-location",
+      handleLocation
+    );
+
+    socket.on(
+      "connect",
+      handleConnect
+    );
+
+    socket.on(
+      "disconnect",
+      handleDisconnect
+    );
+
+    /* =======================================================
+       ALREADY CONNECTED
+    ======================================================= */
+
+    if (socket.connected) {
+      console.log(
+        "🟢 Socket already connected:",
+        socket.id
+      );
+
+      setSocketConnected(true);
+
+      socket.emit(
+        "join-booking",
+        bookingId
+      );
+
+      console.log(
+        "🚪 Customer joined booking room:",
+        bookingId
+      );
+    }
+
+    /* =======================================================
+       CUSTOMER LOCATION
+    ======================================================= */
+
+    if (!navigator.geolocation) {
+      console.log(
+        "❌ Browser geolocation not supported"
+      );
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const customer = {
+            latitude:
+              position.coords.latitude,
+
+            longitude:
+              position.coords.longitude,
+          };
+
+          console.log(
+            "🏠 Customer location:",
+            customer
+          );
+
+          setCustomerLocation(customer);
+        },
+
+        (error) => {
+          console.log(
+            "❌ Customer location error:",
+            error
+          );
+        },
+
+        {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 10000,
+        }
+      );
+    }
+
+    /* =======================================================
+       CLEANUP
+    ======================================================= */
 
     return () => {
+      socket.off(
+        "receive-location",
+        handleLocation
+      );
 
-      socket.off("receive-location", handleLocation);
+      socket.off(
+        "connect",
+        handleConnect
+      );
 
+      socket.off(
+        "disconnect",
+        handleDisconnect
+      );
     };
-
   }, [bookingId]);
+
+  /* =========================================================
+     DISTANCE CALCULATION
+  ========================================================= */
 
   const calculateDistance = (
     lat1,
@@ -125,21 +422,29 @@ const LiveLocation = ({ bookingId }) => {
     lat2,
     lon2
   ) => {
-
     const R = 6371;
 
     const dLat =
-      (lat2 - lat1) * (Math.PI / 180);
+      (lat2 - lat1) *
+      (Math.PI / 180);
 
     const dLon =
-      (lon2 - lon1) * (Math.PI / 180);
+      (lon2 - lon1) *
+      (Math.PI / 180);
 
     const a =
       Math.sin(dLat / 2) *
         Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) *
-        Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) *
+
+      Math.cos(
+        lat1 * (Math.PI / 180)
+      ) *
+
+      Math.cos(
+        lat2 * (Math.PI / 180)
+      ) *
+
+      Math.sin(dLon / 2) *
         Math.sin(dLon / 2);
 
     const c =
@@ -150,251 +455,299 @@ const LiveLocation = ({ bookingId }) => {
       );
 
     return R * c;
-
   };
 
+  /* =========================================================
+     UPDATE DISTANCE
+  ========================================================= */
+
   useEffect(() => {
+    if (
+      !customerLocation ||
+      !location
+    ) {
+      return;
+    }
 
-    if (!customerLocation || !location) return;
-
-    const km = calculateDistance(
-
-      customerLocation.latitude,
-
-      customerLocation.longitude,
-
-      location.latitude,
-
-      location.longitude
-
-    );
-
-    setDistance(km);
-
-  }, [customerLocation, location]);
-
-    return (
-    <div className="live-map-card">
-
-     <div className="tracking-header">
-
-  <div>
-
-    <h2>Live Technician Tracking</h2>
-
-    <p>
-      Your technician is on the way.
-    </p>
-
-  </div>
-
-  <div className="live-badge">
-
-    <span className="live-dot"></span>
-
-    LIVE
-
-  </div>
-
-</div>
-
-      {location ? (
-
-        <>
-
-          <div className="location-status">
-
-            <span className="live-dot"></span>
-
-            Technician is Live
-
-          </div>
-<div className="status-card">
-
-  <h3>Current Status</h3>
-
-  <div className="status-grid">
-
-    <div>
-
-      <span>Distance</span>
-
-      <strong>
-        {distance.toFixed(2)} km
-      </strong>
-
-    </div>
-
-    <div>
-
-      <span>ETA</span>
-
-      <strong>
-        {Math.max(
-          1,
-          Math.ceil(distance * 3)
-        )} mins
-      </strong>
-
-    </div>
-
-    <div>
-
-      <span>Status</span>
-
-      <strong className="green">
-
-        Technician On The Way
-
-      </strong>
-
-    </div>
-
-  </div>
-
-</div>
-          <MapContainer
-            center={[
-              location.latitude,
-              location.longitude,
-            ]}
-            zoom={15}
-            className="live-map"
-            style={{
-              height: "350px",
-              width: "100%",
-              borderRadius: "18px",
-            }}
-          >
-
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution="&copy; OpenStreetMap contributors"
-            />
-
-            <RecenterMap
-              lat={location.latitude}
-              lng={location.longitude}
-            />
-
-            {/* Technician */}
-
-            <Marker
-              position={[
-                location.latitude,
-                location.longitude,
-              ]}
-              icon={technicianIcon}
-            >
-              <Popup>
-                🚗 Technician Current Location
-              </Popup>
-            </Marker>
-
-            {/* Customer */}
-
-            {customerLocation && (
-
-              <Marker
-                position={[
-                  customerLocation.latitude,
-                  customerLocation.longitude,
-                ]}
-                icon={customerIcon}
-              >
-                <Popup>
-                  🏠 Your Location
-                </Popup>
-              </Marker>
-
-            )}
-
-            {/* Line Between Customer & Technician */}
-
-           {customerLocation && location && (
-  <Polyline
-    positions={[
-      [
+    const km =
+      calculateDistance(
         customerLocation.latitude,
         customerLocation.longitude,
-      ],
-      [
         location.latitude,
-        location.longitude,
-      ],
-    ]}
-    pathOptions={{
-      color: "#2563eb",
-      weight: 6,
-      opacity: 0.9,
-      dashArray: "10 8",
-      lineCap: "round",
-      lineJoin: "round",
-    }}
-  />
-            )}
+        location.longitude
+      );
 
-          </MapContainer>
+    setDistance(km);
+  }, [
+    customerLocation,
+    location,
+  ]);
 
-         <div className="tracking-stats">
+  /* =========================================================
+     WAITING STATE
+  ========================================================= */
 
-  <div className="tracking-stat">
-
-    <div className="stat-icon">
-      📍
-    </div>
-
-    <div>
-
-      <span>Distance</span>
-
-      <h3>{distance.toFixed(2)} km</h3>
-
-    </div>
-
-  </div>
-
-  <div className="divider"></div>
-
-  <div className="tracking-stat">
-
-    <div className="stat-icon">
-      ⏱️
-    </div>
-
-    <div>
-
-      <span>Estimated Arrival</span>
-
-      <h3>{Math.max(1, Math.ceil(distance * 3))} mins</h3>
-
-    </div>
-
-  </div>
-
-</div>
-
-          
-
-        </>
-
-      ) : (
+  if (
+    loadingLocation &&
+    !location
+  ) {
+    return (
+      <section className="live-location-card">
 
         <div className="waiting-card">
 
           <div className="pulse"></div>
 
+          <h3>
+            Checking technician location...
+          </h3>
+
           <p>
-            Waiting for technician location...
+            Please wait while we connect
+            to the technician.
           </p>
 
         </div>
 
-      )}
+      </section>
+    );
+  }
 
-    </div>
+  /* =========================================================
+     NO TECHNICIAN LOCATION
+  ========================================================= */
+
+  if (!location) {
+    return (
+      <section className="live-location-card">
+
+        <div className="waiting-card">
+
+          <div className="pulse"></div>
+
+          <h3>
+            Waiting for technician
+          </h3>
+
+          <p>
+            The live map will appear when
+            your technician starts the journey.
+          </p>
+
+          <small>
+            Booking ID: {bookingId}
+          </small>
+
+        </div>
+
+      </section>
+    );
+  }
+
+  /* =========================================================
+     MAP
+  ========================================================= */
+
+  return (
+    <section className="live-location-card">
+
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
+      <div className="tracking-header">
+
+        <div>
+
+          <h2>
+            Live Technician Tracking
+          </h2>
+
+          <p>
+            Follow your technician's
+            journey in real time.
+          </p>
+
+        </div>
+
+        <div className="live-status">
+
+          <span className="live-dot"></span>
+
+          {socketConnected
+            ? "LIVE"
+            : "RECONNECTING"}
+
+        </div>
+
+      </div>
+
+
+      {/* =====================================================
+          MAP
+      ===================================================== */}
+
+      <div className="live-map-container">
+
+        <MapContainer
+          center={[
+            location.latitude,
+            location.longitude,
+          ]}
+          zoom={15}
+          scrollWheelZoom={true}
+          className="live-leaflet-map"
+        >
+
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution="&copy; OpenStreetMap contributors"
+          />
+
+
+          {/* ================================================
+              FOLLOW TECHNICIAN
+          ================================================ */}
+
+          <RecenterMap
+            location={location}
+          />
+
+
+          {/* ================================================
+              TECHNICIAN
+          ================================================ */}
+
+          <Marker
+            position={[
+              location.latitude,
+              location.longitude,
+            ]}
+            icon={technicianIcon}
+          >
+
+            <Popup>
+              <strong>
+                Technician
+              </strong>
+
+              <br />
+
+              Live Location
+            </Popup>
+
+          </Marker>
+
+
+          {/* ================================================
+              CUSTOMER
+          ================================================ */}
+
+          {customerLocation && (
+            <Marker
+              position={[
+                customerLocation.latitude,
+                customerLocation.longitude,
+              ]}
+              icon={customerIcon}
+            >
+
+              <Popup>
+                <strong>
+                  Your Location
+                </strong>
+              </Popup>
+
+            </Marker>
+          )}
+
+
+          {/* ================================================
+              ROUTE / CONNECTION LINE
+          ================================================ */}
+
+          {customerLocation && (
+            <Polyline
+              positions={[
+                [
+                  customerLocation.latitude,
+                  customerLocation.longitude,
+                ],
+
+                [
+                  location.latitude,
+                  location.longitude,
+                ],
+              ]}
+              pathOptions={{
+                color: "#2563eb",
+                weight: 5,
+                opacity: 0.75,
+                dashArray: "10 8",
+                lineCap: "round",
+              }}
+            />
+          )}
+
+        </MapContainer>
+
+      </div>
+
+
+      {/* =====================================================
+          TRACKING STATUS
+      ===================================================== */}
+
+      <div className="tracking-info">
+
+        <div className="info-box">
+
+          <h3>
+            Technician Status
+          </h3>
+
+          <p>
+            {socketConnected
+              ? "Moving"
+              : "Reconnecting"}
+          </p>
+
+        </div>
+
+
+        <div className="info-box">
+
+          <h3>
+            Distance
+          </h3>
+
+          <p>
+            {distance.toFixed(2)} km
+          </p>
+
+        </div>
+
+
+        <div className="info-box">
+
+          <h3>
+            Estimated Arrival
+          </h3>
+
+          <p>
+            {Math.max(
+              1,
+              Math.ceil(distance * 3)
+            )}{" "}
+            min
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
   );
-
 };
 
 export default LiveLocation;

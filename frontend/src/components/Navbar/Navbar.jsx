@@ -214,35 +214,75 @@ const Navbar = () => {
                   </p>
                 </div>
 
-                {/* DASHBOARD */}
+              {/* DASHBOARD */}
 
-                <Link
-                  to={getDashboardPath()}
-                  className="dropdown-item"
-                >
-                  Dashboard
-                </Link>
+<Link
+  to={getDashboardPath()}
+  className="dropdown-item"
+>
+  Dashboard
+</Link>
 
-                {/* MY BOOKINGS */}
 
-                {user.role === "customer" && (
-                  <Link
-                    to="/my-bookings"
-                    className="dropdown-item"
-                  >
-                    My Bookings
-                  </Link>
-                )}
+{/* =========================
+    TECHNICIAN LINKS
+    ========================= */}
 
-                {/* PROFILE */}
+{user.role === "technician" && (
+  <>
+    <Link
+      to="/technician-dashboard#available-jobs"
+      className="dropdown-item"
+    >
+      Available Jobs
+    </Link>
 
-                <Link
-                  to="/profile"
-                  className="dropdown-item"
-                >
-                  Profile
-                </Link>
+    <Link
+      to="/technician-dashboard#assigned-jobs"
+      className="dropdown-item"
+    >
+      Assigned Jobs
+    </Link>
 
+    <Link
+      to="/technician-dashboard#active-job"
+      className="dropdown-item"
+    >
+      Active Job
+    </Link>
+
+    <Link
+      to="/technician-dashboard#earnings"
+      className="dropdown-item"
+    >
+      Earnings
+    </Link>
+  </>
+)}
+
+
+{/* =========================
+    CUSTOMER LINKS
+    ========================= */}
+
+{user.role === "customer" && (
+  <Link
+    to="/my-bookings"
+    className="dropdown-item"
+  >
+    My Bookings
+  </Link>
+)}
+
+
+{/* PROFILE */}
+
+<Link
+  to="/profile"
+  className="dropdown-item"
+>
+  Profile
+</Link>
                 {/* LOGOUT */}
 
                 <button

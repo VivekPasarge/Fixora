@@ -1,14 +1,21 @@
 const express = require("express");
+
 const router = express.Router();
+
+
+// ==========================================
+// Middleware
+// ==========================================
 
 const {
   protect,
   authorizeRoles,
 } = require("../middleware/authMiddleware");
 
-const {
-  getActiveBooking,
-} = require("../controllers/bookingController");
+
+// ==========================================
+// Controllers
+// ==========================================
 
 const {
   createBooking,
@@ -26,14 +33,23 @@ const {
   getPaymentHistory,
   getTechnicianStats,
   getTechnicianEarnings,
-  
+  getActiveBooking,
+  getTechnicianAvailability,
+updateTechnicianAvailability,
+
+  // NEW
+  removeCompletedJob,
+
 } = require("../controllers/bookingController");
+
 
 // ==========================================
 // Customer Routes
 // ==========================================
 
+
 // Create Booking
+
 router.post(
   "/",
   protect,
@@ -41,7 +57,9 @@ router.post(
   createBooking
 );
 
+
 // My Bookings
+
 router.get(
   "/my-bookings",
   protect,
@@ -49,13 +67,19 @@ router.get(
   getMyBookings
 );
 
+
 // Cancel Booking
+
 router.put(
   "/:id/cancel",
   protect,
   authorizeRoles("customer"),
   cancelBooking
 );
+
+
+// Pay For Booking
+
 router.put(
   "/:id/pay",
   protect,
@@ -63,11 +87,14 @@ router.put(
   payForBooking
 );
 
+
 // ==========================================
 // Technician Routes
 // ==========================================
 
+
 // Available Jobs
+
 router.get(
   "/available",
   protect,
@@ -75,7 +102,9 @@ router.get(
   getAvailableJobs
 );
 
+
 // Assigned Jobs
+
 router.get(
   "/technician/assigned",
   protect,
@@ -83,7 +112,9 @@ router.get(
   getAssignedBookings
 );
 
+
 // Pending Jobs
+
 router.get(
   "/pending",
   protect,
@@ -91,7 +122,9 @@ router.get(
   getPendingBookings
 );
 
+
 // Accept Booking
+
 router.put(
   "/:id/accept",
   protect,
@@ -99,7 +132,9 @@ router.put(
   acceptBooking
 );
 
+
 // Update Booking Status
+
 router.put(
   "/:id/status",
   protect,
@@ -107,7 +142,9 @@ router.put(
   updateBookingStatus
 );
 
-// Verify OTP
+
+// Verify Customer OTP
+
 router.put(
   "/:id/verify-otp",
   protect,
@@ -115,26 +152,83 @@ router.put(
   verifyBookingOTP
 );
 
+
+// ==========================================
+// REMOVE COMPLETED JOB
+// ==========================================
+//
+// This does NOT permanently delete the booking.
+// It only removes it from the technician's
+// assigned-jobs view.
+//
+// Customer history, admin records and earnings
+// remain safe.
+//
+
+router.put(
+  "/:id/remove-completed",
+  protect,
+  authorizeRoles("technician"),
+  removeCompletedJob
+);
+
+
 // ==========================================
 // Common Routes
 // ==========================================
+
+
+// Active Booking
+
 router.get(
   "/active",
   protect,
   getActiveBooking
 );
-// Get Single Booking
+
+
+// ==========================================
+// Technician Availability
+// ==========================================
+
+// Get Online / Offline status
+router.get(
+  "/technician/availability",
+  protect,
+  authorizeRoles("technician"),
+  getTechnicianAvailability
+);
+
+
+// Change Online / Offline status
+router.put(
+  "/technician/availability",
+  protect,
+  authorizeRoles("technician"),
+  updateTechnicianAvailability
+);
+// Single Booking
+
 router.get(
   "/:id",
   protect,
   getBookingById
 );
 
-// Get All Bookings (Admin / Testing)
+
+// ==========================================
+// Admin / Testing
+// ==========================================
+
 router.get(
   "/",
   getAllBookings
 );
+
+
+// ==========================================
+// Customer Payment History
+// ==========================================
 
 router.get(
   "/payment-history",
@@ -142,6 +236,11 @@ router.get(
   authorizeRoles("customer"),
   getPaymentHistory
 );
+
+
+// ==========================================
+// Technician Stats
+// ==========================================
 
 router.get(
   "/technician/stats",
@@ -151,11 +250,16 @@ router.get(
 );
 
 
+// ==========================================
+// Technician Earnings
+// ==========================================
+
 router.get(
   "/technician/earnings",
   protect,
   authorizeRoles("technician"),
   getTechnicianEarnings
 );
+
 
 module.exports = router;

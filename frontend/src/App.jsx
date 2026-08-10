@@ -33,9 +33,9 @@ import TechnicianManagement from "./pages/TechnicianManagement";
 import CustomerManagement from "./pages/CustomerManagement";
 import BookingManagement from "./pages/BookingManagement";
 import ServiceManagement from "./pages/ServiceManagement";
-
+import TechnicianWallet from "./pages/TechnicianWallet";
 import socket from "./socket";
-
+import TechnicianReviews from "./pages/TechnicianReviews";
 
 function App() {
 
@@ -305,6 +305,16 @@ function App() {
         element={<NotFound />}
       />
 
+
+<Route
+  path="/technician/wallet"
+  element={<TechnicianWallet />}
+/>
+
+<Route
+  path="/technician/reviews"
+  element={<TechnicianReviews />}
+/>
     </Routes>
 
   );

@@ -1,207 +1,289 @@
-/* ===========================
-   Technician Dashboard
-=========================== */
+/* =========================================================
+   TECHNICIAN DASHBOARD
+========================================================= */
 
-body{
-margin:0;
-padding:0;
-background:#f4f7fc;
-font-family:"Inter",sans-serif;
-color:#0f172a;
+.technician-dashboard {
+  width: 100%;
+  max-width: 1420px;
+
+  margin: 0 auto;
+
+  padding: 30px 28px 70px;
+
+  box-sizing: border-box;
 }
 
-.min-h-screen{
-min-height:100vh;
-background:
-linear-gradient(180deg,#f8fbff 0%,#eef4ff 100%);
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.tech-hero {
+  width: 100%;
+
+  margin-bottom: 24px;
 }
 
-/* ===========================
-   Main Container
-=========================== */
 
-.max-w-7xl{
-max-width:1450px;
-margin:auto;
-padding:110px 24px 60px;
+/* =========================================================
+   STATS
+========================================================= */
+
+.tech-stats {
+  width: 100%;
+
+  margin-bottom: 24px;
 }
 
-/* Space Between Sections */
 
-.max-w-7xl>*{
-margin-bottom:32px;
+/* =========================================================
+   MAIN DASHBOARD GRID
+========================================================= */
+
+.tech-main-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.7fr)
+    minmax(320px, 1fr);
+
+  gap: 24px;
+
+  align-items: stretch;
+
+  margin-bottom: 35px;
 }
 
-/* ===========================
-   Grid Layout
-=========================== */
 
-.grid{
-display:grid;
-grid-template-columns:2fr 1fr;
-gap:30px;
-align-items:start;
+/* =========================================================
+   CARD AREA
+========================================================= */
+
+.tech-card-area {
+  min-width: 0;
+
+  width: 100%;
 }
 
-/* ===========================
-   Dashboard Cards
-=========================== */
 
-.dashboard-card,
-.card{
-background:#ffffff;
-border-radius:24px;
-padding:30px;
-border:1px solid #e8edf7;
-box-shadow:
-0 10px 30px rgba(15,23,42,.05),
-0 2px 8px rgba(15,23,42,.03);
-transition:.35s ease;
-position:relative;
-overflow:hidden;
+/* =========================================================
+   ACTIVE JOB
+========================================================= */
+
+.tech-active-job {
+  min-height: 100%;
 }
 
-.dashboard-card::before,
-.card::before{
-content:"";
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:4px;
-background:linear-gradient(
-90deg,
-#2563eb,
-#38bdf8
-);
+
+/* =========================================================
+   AVAILABILITY
+========================================================= */
+
+.tech-availability {
+  min-height: 100%;
 }
 
-.dashboard-card:hover,
-.card:hover{
-transform:translateY(-8px);
-box-shadow:
-0 22px 45px rgba(37,99,235,.15);
+
+/* =========================================================
+   SECTION HEADING
+========================================================= */
+
+.tech-section-heading {
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  margin: 5px 0 20px;
 }
 
-/* ===========================
-   Dashboard Titles
-=========================== */
+.tech-section-heading span {
+  display: block;
 
-.dashboard-title{
-font-size:22px;
-font-weight:700;
-color:#0f172a;
-margin-bottom:18px;
+  margin-bottom: 6px;
+
+  color: #2563eb;
+
+  font-size: 36px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.2px;
 }
 
-/* ===========================
-   Buttons
-=========================== */
+.tech-section-heading h2 {
+  margin: 0;
 
-button{
-transition:.3s ease;
-cursor:pointer;
+  color: #0f172a;
+
+  font-size: 26px;
+
+  line-height: 1.2;
+
+  font-weight: 800;
 }
 
-button:hover{
-transform:translateY(-3px);
+.tech-section-heading p {
+  margin: 7px 0 0;
+
+  color: #64748b;
+
+  font-size: 13px;
 }
 
-/* ===========================
-   Inputs
-=========================== */
 
-input,
-select,
-textarea{
-border:1px solid #dbe4f0;
-border-radius:12px;
-padding:12px 16px;
-transition:.3s;
-font-size:15px;
+/* =========================================================
+   JOBS GRID
+========================================================= */
+
+.tech-jobs-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.7fr)
+    minmax(320px, 1fr);
+
+  gap: 24px;
+
+  align-items: start;
+
+  margin-bottom: 28px;
 }
 
-input:focus,
-select:focus,
-textarea:focus{
-outline:none;
-border-color:#2563eb;
-box-shadow:0 0 0 4px rgba(37,99,235,.12);
+
+/* =========================================================
+   FULL WIDTH SECTION
+========================================================= */
+
+.tech-full-section {
+  width: 100%;
+
+  margin-bottom: 28px;
+
+  min-width: 0;
 }
 
-/* ===========================
-   Tables
-=========================== */
 
-table{
-width:100%;
-border-collapse:collapse;
+/* =========================================================
+   REMOVE UNNECESSARY OUTER SPACING
+========================================================= */
+
+.tech-card-area > section,
+.tech-card-area > div {
+  width: 100%;
 }
 
-table th{
-text-align:left;
-padding:16px;
-font-weight:700;
-color:#475569;
-background:#f8fafc;
-}
 
-table td{
-padding:16px;
-border-top:1px solid #edf2f7;
-}
+/* =========================================================
+   TABLET
+========================================================= */
 
-/* ===========================
-   Scrollbar
-=========================== */
+@media (max-width: 1100px) {
 
-::-webkit-scrollbar{
-width:8px;
-}
+  .technician-dashboard {
+    padding:
+      25px
+      20px
+      60px;
+  }
 
-::-webkit-scrollbar-track{
-background:#f1f5f9;
-}
+  .tech-main-grid,
+  .tech-jobs-grid {
+    grid-template-columns:
+      minmax(0, 1.4fr)
+      minmax(280px, 1fr);
 
-::-webkit-scrollbar-thumb{
-background:#cbd5e1;
-border-radius:20px;
-}
-
-::-webkit-scrollbar-thumb:hover{
-background:#94a3b8;
-}
-
-/* ===========================
-   Responsive
-=========================== */
-
-@media(max-width:1200px){
-
-.grid{
-grid-template-columns:1fr;
-}
+    gap: 20px;
+  }
 
 }
 
-@media(max-width:768px){
 
-.max-w-7xl{
-padding:95px 18px 40px;
+/* =========================================================
+   SMALL TABLET
+========================================================= */
+
+@media (max-width: 850px) {
+
+  .tech-main-grid,
+  .tech-jobs-grid {
+    grid-template-columns: 1fr;
+
+    gap: 22px;
+  }
+
+  .tech-section-heading {
+    margin-top: 10px;
+  }
+
 }
 
-.max-w-7xl>*{
-margin-bottom:24px;
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .technician-dashboard {
+    padding:
+      20px
+      14px
+      45px;
+  }
+
+  .tech-hero {
+    margin-bottom: 18px;
+  }
+
+  .tech-stats {
+    margin-bottom: 18px;
+  }
+
+  .tech-main-grid {
+    gap: 18px;
+
+    margin-bottom: 28px;
+  }
+
+  .tech-jobs-grid {
+    gap: 18px;
+
+    margin-bottom: 22px;
+  }
+
+  .tech-full-section {
+    margin-bottom: 22px;
+  }
+
+  .tech-section-heading h2 {
+    font-size: 23px;
+  }
+
+  .tech-section-heading p {
+    font-size: 12px;
+  }
+
 }
 
-.dashboard-card,
-.card{
-padding:22px;
-border-radius:20px;
-}
 
-.dashboard-title{
-font-size:20px;
-}
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 420px) {
+
+  .technician-dashboard {
+    padding:
+      16px
+      11px
+      35px;
+  }
+
+  .tech-main-grid,
+  .tech-jobs-grid {
+    gap: 15px;
+  }
 
 }

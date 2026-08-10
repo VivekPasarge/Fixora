@@ -1393,3 +1393,218 @@ transform:translateY(-2px);
   }
 
 }
+
+/* =========================================
+   LIVE TRACKING WRAPPER
+========================================= */
+
+.live-tracking-wrapper {
+  margin-top: 30px;
+  padding: 28px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+}
+
+
+/* =========================================
+   TRACKING HEADER
+========================================= */
+
+.live-tracking-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.live-tracking-heading h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.live-tracking-subtitle {
+  margin: 0 0 22px;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+
+/* =========================================
+   LIVE DOT
+========================================= */
+
+.live-dot {
+  width: 11px;
+  height: 11px;
+  background: #16a34a;
+  border-radius: 50%;
+  display: inline-block;
+  animation: trackingPulse 1.5s infinite;
+}
+
+.tracking-live-badge {
+  margin-left: auto;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+@keyframes trackingPulse {
+
+  0% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 9px rgba(22, 163, 74, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+  }
+
+}
+
+
+/* =========================================
+   STATUS MESSAGE
+========================================= */
+
+.tracking-message {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid;
+}
+
+.tracking-message-icon {
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.tracking-message h3 {
+  margin: 0 0 7px;
+  font-size: 19px;
+  color: #0f172a;
+}
+
+.tracking-message p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+
+/* =========================================
+   ACCEPTED
+========================================= */
+
+.accepted-message {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.accepted-message .tracking-message-icon {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+
+/* =========================================
+   PENDING
+========================================= */
+
+.pending-message {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.pending-message .tracking-message-icon {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+
+/* =========================================
+   COMPLETED
+========================================= */
+
+.completed-message {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.completed-message .tracking-message-icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+
+/* =========================================
+   CANCELLED
+========================================= */
+
+.cancelled-message {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.cancelled-message .tracking-message-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .live-tracking-wrapper {
+    padding: 20px;
+    border-radius: 18px;
+  }
+
+  .live-tracking-heading h3 {
+    font-size: 18px;
+  }
+
+  .tracking-live-badge {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+
+  .tracking-message {
+    align-items: flex-start;
+    padding: 18px;
+  }
+
+  .tracking-message-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+}

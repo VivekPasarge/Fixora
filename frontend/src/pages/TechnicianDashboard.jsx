@@ -1,10 +1,10 @@
+import "./TechnicianDashboard.css";
+
 import DashboardHero from "../components/TechnicianDashboard/DashboardHero";
-import StatsCards from "../components/CustomerDashboard/StatsCards";
 import ActiveJob from "../components/TechnicianDashboard/ActiveJob";
 import TodaySchedule from "../components/TechnicianDashboard/TodaySchedule";
 import EarningsCard from "../components/TechnicianDashboard/EarningsCard";
 import AvailabilityCard from "../components/TechnicianDashboard/AvailabilityCard";
-//import ReviewsCard from "../components/TechnicianDashboard/ReviewsCard";
 import ReviewsCard from "../components/TechnicianDashboard/ReviewsCard";
 import WalletCard from "../components/TechnicianDashboard/WalletCard";
 import AvailableJobs from "../components/TechnicianDashboard/AvailableJobs";
@@ -13,30 +13,166 @@ import TechnicianStats from "../components/TechnicianDashboard/TechnicianStats";
 
 const TechnicianDashboard = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-slate-100">
+    <main className="technician-dashboard">
 
-      <div className="max-w-7xl mx-auto px-5 md:px-8 pt-28 pb-16">
+      {/* =====================================================
+          HERO
+      ===================================================== */}
 
+      <section className="tech-hero">
         <DashboardHero />
+      </section>
+
+
+      {/* =====================================================
+          STATS
+      ===================================================== */}
+
+      <section className="tech-stats">
         <TechnicianStats />
-        <ActiveJob/>
-        <div className="grid lg:grid-cols-2 gap-8">
+      </section>
+
+
+      {/* =====================================================
+          MAIN WORK AREA
+      ===================================================== */}
+
+      <section className="tech-main-grid">
+
+        {/* ================================================
+            ACTIVE JOB
+        ================================================ */}
+
+        <div
+          id="active-job"
+          className="tech-card-area tech-active-job"
+        >
+          <ActiveJob />
+        </div>
+
+
+        {/* ================================================
+            AVAILABILITY
+        ================================================ */}
+
+        <div className="tech-card-area tech-availability">
+
+          <AvailabilityCard />
+
+        </div>
+
+
+        {/* ================================================
+            TODAY'S SCHEDULE
+        ================================================ */}
+
+        <div className="tech-card-area">
 
           <TodaySchedule />
+
+        </div>
+
+
+        {/* ================================================
+            EARNINGS
+        ================================================ */}
+
+        <div
+          id="earnings"
+          className="tech-card-area"
+        >
 
           <EarningsCard />
 
         </div>
-        <AvailabilityCard/>
-        <ReviewsCard/>
-        <WalletCard/>
-        <AvailableJobs />
-        <AssignedJobs />
-        
 
-      </div>
+      </section>
 
-    </div>
+
+      {/* =====================================================
+          JOB MANAGEMENT
+      ===================================================== */}
+
+      <section className="tech-section-heading">
+
+        <div>
+
+          <span>
+            WORK MANAGEMENT
+          </span>
+
+          <h2>
+            Your Jobs
+          </h2>
+
+          <p>
+            Find new service requests and manage your assigned work.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <section className="tech-jobs-grid">
+
+        {/* ================================================
+            AVAILABLE JOBS
+        ================================================ */}
+
+        <div
+          id="available-jobs"
+          className="tech-card-area"
+        >
+
+          <AvailableJobs />
+
+        </div>
+
+
+        {/* ================================================
+            WALLET
+        ================================================ */}
+
+        <div className="tech-card-area">
+
+          <WalletCard />
+
+        </div>
+
+      </section>
+
+
+      {/* =====================================================
+          ASSIGNED JOBS
+      ===================================================== */}
+
+      <section
+        id="assigned-jobs"
+        className="tech-full-section"
+      >
+<AvailableJobs />
+       <section
+  id="assigned-jobs"
+  className="tech-full-section"
+>
+  <AssignedJobs />
+</section>
+
+      </section>
+
+
+      {/* =====================================================
+          REVIEWS
+      ===================================================== */}
+
+      <section className="tech-full-section">
+
+        <ReviewsCard />
+
+      </section>
+
+    </main>
   );
 };
 

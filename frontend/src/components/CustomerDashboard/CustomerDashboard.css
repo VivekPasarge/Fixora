@@ -1,89 +1,207 @@
+/* =========================================================
+   CUSTOMER DASHBOARD
+========================================================= */
+
 .customer-dashboard {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1380px;
   margin: 0 auto;
-  padding: 30px 20px 60px;
+  padding: 32px 28px 70px;
   min-height: 100vh;
-  background: transparent;
   box-sizing: border-box;
 }
 
-.customer-dashboard > * {
-  margin-bottom: 35px;
+
+/* =========================================================
+   COMMON SECTION SPACING
+========================================================= */
+
+.dashboard-hero-section,
+.dashboard-stats-section,
+.dashboard-section {
+  width: 100%;
+  margin-bottom: 32px;
 }
 
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.dashboard-hero-section {
+  margin-bottom: 34px;
+}
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+.dashboard-stats-section {
+  margin-bottom: 34px;
+}
+
+
+/* =========================================================
+   BOTTOM AREA
+========================================================= */
+
 .dashboard-bottom {
+  width: 100%;
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 35px;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+  gap: 32px;
   align-items: start;
 }
 
+
+/* =========================================================
+   LEFT COLUMN
+========================================================= */
+
 .dashboard-left {
+  min-width: 0;
+
   display: flex;
   flex-direction: column;
-  gap: 35px;
+  gap: 32px;
 }
 
+
+/* =========================================================
+   RIGHT COLUMN
+========================================================= */
+
 .dashboard-right {
+  min-width: 0;
+
   position: sticky;
-  top: 25px;
+  top: 24px;
+
   align-self: start;
 }
 
-/* Large Screens */
+
+/* =========================================================
+   PREVENT OVERFLOW
+========================================================= */
+
+.customer-dashboard,
+.customer-dashboard * {
+  box-sizing: border-box;
+}
+
+.dashboard-hero-section,
+.dashboard-stats-section,
+.dashboard-section,
+.dashboard-bottom,
+.dashboard-left,
+.dashboard-right {
+  min-width: 0;
+}
+
+
+/* =========================================================
+   LARGE LAPTOP
+========================================================= */
+
 @media (max-width: 1200px) {
+  .customer-dashboard {
+    max-width: 1180px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
   .dashboard-bottom {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
   }
 
   .dashboard-right {
     position: static;
     width: 100%;
   }
+
+  .dashboard-left {
+    gap: 28px;
+  }
 }
 
-/* Tablets */
+
+/* =========================================================
+   TABLET
+========================================================= */
+
 @media (max-width: 992px) {
   .customer-dashboard {
-    padding: 25px 18px 50px;
+    padding: 24px 20px 55px;
+  }
+
+  .dashboard-hero-section,
+  .dashboard-stats-section,
+  .dashboard-section {
+    margin-bottom: 28px;
   }
 
   .dashboard-bottom {
-    gap: 25px;
+    gap: 24px;
   }
 
   .dashboard-left {
-    gap: 25px;
+    gap: 24px;
   }
 }
 
-/* Mobile */
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
 @media (max-width: 768px) {
   .customer-dashboard {
-    padding: 20px 15px 40px;
+    padding: 20px 15px 45px;
   }
 
-  .customer-dashboard > * {
-    margin-bottom: 25px;
+  .dashboard-hero-section,
+  .dashboard-stats-section,
+  .dashboard-section {
+    margin-bottom: 22px;
   }
 
   .dashboard-bottom {
-    gap: 20px;
+    gap: 22px;
   }
 
   .dashboard-left {
-    gap: 20px;
+    gap: 22px;
+  }
+
+  .dashboard-right {
+    width: 100%;
   }
 }
 
-/* Small Mobile */
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
 @media (max-width: 480px) {
   .customer-dashboard {
-    padding: 15px 12px 30px;
+    padding: 16px 12px 35px;
+  }
+
+  .dashboard-hero-section,
+  .dashboard-stats-section,
+  .dashboard-section {
+    margin-bottom: 18px;
   }
 
   .dashboard-bottom {
-    gap: 15px;
+    gap: 18px;
+  }
+
+  .dashboard-left {
+    gap: 18px;
   }
 }

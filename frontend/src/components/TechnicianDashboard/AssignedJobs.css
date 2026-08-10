@@ -1,12 +1,26 @@
-.assigned-jobs{
-  margin-top:40px;
-}
+.assigned-jobs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
 
-.assigned-jobs h2{
-  font-size:28px;
-  font-weight:700;
-  color:#1e293b;
-  margin-bottom:25px;
+  padding: 22px 26px;
+
+  border: 1px solid #dbe3ef;
+  border-radius: 20px;
+
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f8fafc 100%
+  );
+
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.06);
+
+  box-sizing: border-box;
+
+  margin-bottom: 20px;
 }
 
 .jobs-grid{
@@ -83,4 +97,730 @@
 .completed-btn{
   background:#64748b;
   cursor:not-allowed;
+}
+
+.tracking-active-message {
+  margin-top: 12px;
+  margin-bottom: 12px;
+
+  padding: 10px 14px;
+
+  border-radius: 10px;
+
+  background: #ecfdf5;
+
+  border: 1px solid #a7f3d0;
+
+  color: #047857;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+/* =========================================================
+   ASSIGNED JOBS SECTION
+========================================================= */
+
+.assigned-jobs-section {
+  width: 100%;
+  margin-top: 35px;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.assigned-jobs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 24px;
+}
+
+.assigned-jobs-label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #2563eb;
+
+  font-size: 32px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.assigned-jobs-header h2 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 28px;
+
+  font-weight: 800;
+}
+
+.assigned-jobs-header p {
+  margin: 7px 0 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   JOB COUNT
+========================================================= */
+
+.assigned-jobs-count {
+  min-width: 70px;
+
+  padding: 12px 16px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 15px;
+
+  background: #eff6ff;
+
+  border: 1px solid #dbeafe;
+}
+
+.assigned-jobs-count strong {
+  color: #2563eb;
+
+  font-size: 22px;
+
+  line-height: 1;
+}
+
+.assigned-jobs-count span {
+  margin-top: 4px;
+
+  color: #64748b;
+
+  font-size: 11px;
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   JOB GRID
+========================================================= */
+
+.jobs-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 20px;
+}
+
+
+/* =========================================================
+   JOB CARD
+========================================================= */
+
+.job-card {
+  padding: 22px;
+
+  border-radius: 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+
+  box-shadow:
+    0 10px 28px rgba(15, 23, 42, 0.06);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.job-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 16px 35px rgba(15, 23, 42, 0.09);
+}
+
+
+/* =========================================================
+   JOB HEADER
+========================================================= */
+
+.job-card-header {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding-bottom: 16px;
+
+  margin-bottom: 4px;
+
+  border-bottom: 1px solid #eef2f7;
+}
+
+.job-service-label {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #94a3b8;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.8px;
+}
+
+.job-card-header h3 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 19px;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   STATUS BADGE
+========================================================= */
+
+.job-status-badge {
+  flex-shrink: 0;
+
+  padding: 6px 10px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+.status-accepted {
+  color: #1d4ed8;
+
+  background: #dbeafe;
+}
+
+.status-on-the-way {
+  color: #b45309;
+
+  background: #fef3c7;
+}
+
+.status-in-progress {
+  color: #7c3aed;
+
+  background: #ede9fe;
+}
+
+.status-completed {
+  color: #15803d;
+
+  background: #dcfce7;
+}
+
+
+/* =========================================================
+   JOB DETAILS
+========================================================= */
+
+.job-detail {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 11px 0;
+
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.job-detail span {
+  color: #64748b;
+
+  font-size: 12px;
+}
+
+.job-detail strong {
+  max-width: 65%;
+
+  color: #0f172a;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  text-align: right;
+
+  overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   PRICE
+========================================================= */
+
+.job-price-row {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-top: 15px;
+
+  padding: 13px;
+
+  border-radius: 12px;
+
+  background: #f8fafc;
+}
+
+.job-price-row span {
+  color: #64748b;
+
+  font-size: 12px;
+}
+
+.job-price-row strong {
+  color: #2563eb;
+
+  font-size: 18px;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.start-btn,
+.complete-btn,
+.remove-job-btn {
+  width: 100%;
+
+  min-height: 46px;
+
+  margin-top: 16px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.start-btn:hover,
+.complete-btn:hover,
+.remove-job-btn:hover {
+  transform: translateY(-2px);
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+.start-btn {
+  background: #2563eb;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 18px rgba(37, 99, 235, 0.20);
+}
+
+.start-btn:hover {
+  background: #1d4ed8;
+}
+
+
+/* =========================================================
+   COMPLETE
+========================================================= */
+
+.complete-btn {
+  background: #16a34a;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 18px rgba(22, 163, 74, 0.18);
+}
+
+.complete-btn:hover {
+  background: #15803d;
+}
+
+
+/* =========================================================
+   LIVE TRACKING
+========================================================= */
+
+.tracking-active-message {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin-top: 16px;
+
+  padding: 12px 14px;
+
+  border-radius: 12px;
+
+  background: #ecfdf5;
+
+  border: 1px solid #bbf7d0;
+
+  color: #15803d;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.tracking-dot {
+  width: 8px;
+  height: 8px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  box-shadow:
+    0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+
+/* =========================================================
+   SERVICE ACTIVE
+========================================================= */
+
+.service-active-message {
+  margin-top: 16px;
+
+  padding: 12px 14px;
+
+  border-radius: 12px;
+
+  background: #eff6ff;
+
+  border: 1px solid #dbeafe;
+
+  color: #1d4ed8;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.service-active-message span {
+  margin-right: 7px;
+
+  color: #2563eb;
+}
+
+
+/* =========================================================
+   COMPLETED JOB
+========================================================= */
+
+.completed-job-area {
+  margin-top: 16px;
+
+  padding: 15px;
+
+  border-radius: 14px;
+
+  background: #f0fdf4;
+
+  border: 1px solid #bbf7d0;
+}
+
+.completed-message {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+}
+
+.completed-message > span {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #dcfce7;
+
+  color: #16a34a;
+
+  font-size: 16px;
+
+  font-weight: 800;
+}
+
+.completed-message strong {
+  display: block;
+
+  color: #166534;
+
+  font-size: 13px;
+}
+
+.completed-message small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #64748b;
+
+  font-size: 11px;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   REMOVE BUTTON
+========================================================= */
+
+.remove-job-btn {
+  margin-top: 13px;
+
+  background: #ffffff;
+
+  color: #dc2626;
+
+  border: 1px solid #fecaca;
+
+  box-shadow: none;
+}
+
+.remove-job-btn:hover {
+  background: #fef2f2;
+
+  border-color: #fca5a5;
+}
+
+.remove-job-btn:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* =========================================================
+   COMPLETED CARD
+========================================================= */
+
+.job-card.job-completed {
+  border-color: #dcfce7;
+}
+
+
+/* =========================================================
+   NO JOBS
+========================================================= */
+
+.no-assigned-jobs {
+  padding: 45px 25px;
+
+  text-align: center;
+
+  border: 1px dashed #cbd5e1;
+
+  border-radius: 20px;
+
+  background: #ffffff;
+}
+
+.no-jobs-icon {
+  width: 50px;
+  height: 50px;
+
+  margin: 0 auto 14px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  font-size: 22px;
+
+  font-weight: 800;
+}
+
+.no-assigned-jobs h3 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 18px;
+}
+
+.no-assigned-jobs p {
+  margin: 7px 0 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.assigned-loading {
+  padding: 35px;
+
+  text-align: center;
+
+  color: #64748b;
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .jobs-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .assigned-jobs-header {
+    align-items: flex-start;
+  }
+
+  .assigned-jobs-header h2 {
+    font-size: 24px;
+  }
+
+  .assigned-jobs-header p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .assigned-jobs-count {
+    min-width: 55px;
+    padding: 10px 12px;
+  }
+
+  .job-card {
+    padding: 18px;
+  }
+
+}
+
+
+@media (max-width: 450px) {
+
+  .assigned-jobs-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+
+  .assigned-jobs-count {
+    align-self: flex-start;
+  }
+
+  .job-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .job-status-badge {
+    align-self: flex-start;
+  }
+
+  .job-detail {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .job-detail strong {
+    max-width: 100%;
+    text-align: left;
+  }
+
 }

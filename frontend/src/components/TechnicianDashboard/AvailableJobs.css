@@ -203,3 +203,532 @@ font-size:30px;
 }
 
 }
+
+/* =========================================================
+   AVAILABLE JOBS SECTION
+========================================================= */
+
+.available-jobs-section {
+  width: 100%;
+  margin-top: 35px;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.available-jobs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 24px;
+}
+
+.available-jobs-label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #2563eb;
+
+  font-size: 36px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.available-jobs-header h2 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 28px;
+
+  font-weight: 800;
+}
+
+.available-jobs-header p {
+  margin: 7px 0 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   ONLINE INDICATOR
+========================================================= */
+
+.online-indicator {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 8px 13px;
+
+  border-radius: 999px;
+
+  background: #ecfdf5;
+
+  border: 1px solid #bbf7d0;
+
+  color: #15803d;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.online-indicator-dot {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  box-shadow:
+    0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+
+/* =========================================================
+   JOB GRID
+========================================================= */
+
+.available-jobs-section .jobs-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 20px;
+}
+
+
+/* =========================================================
+   JOB CARD
+========================================================= */
+
+.available-jobs-section .job-card {
+  padding: 22px;
+
+  border-radius: 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+
+  box-shadow:
+    0 10px 28px rgba(15, 23, 42, 0.06);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.available-jobs-section .job-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 16px 35px rgba(15, 23, 42, 0.10);
+}
+
+
+/* =========================================================
+   CARD HEADER
+========================================================= */
+
+.available-jobs-section .job-card-header {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding-bottom: 16px;
+
+  margin-bottom: 4px;
+
+  border-bottom: 1px solid #eef2f7;
+}
+
+.job-service-label {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #94a3b8;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.8px;
+}
+
+.available-jobs-section .job-service {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 19px;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   NEW BADGE
+========================================================= */
+
+.new-job-badge {
+  flex-shrink: 0;
+
+  padding: 6px 10px;
+
+  border-radius: 999px;
+
+  background: #dbeafe;
+
+  color: #1d4ed8;
+
+  font-size: 10px;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   JOB INFO
+========================================================= */
+
+.available-jobs-section .job-info {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 11px 0;
+
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.available-jobs-section .job-info span:last-child {
+  max-width: 65%;
+
+  color: #0f172a;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  text-align: right;
+
+  overflow-wrap: anywhere;
+}
+
+.available-jobs-section .job-label {
+  color: #64748b;
+
+  font-size: 12px;
+
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   PRICE
+========================================================= */
+
+.available-jobs-section .job-price {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-top: 15px;
+
+  padding: 13px;
+
+  border-radius: 12px;
+
+  background: #f8fafc;
+}
+
+.available-jobs-section .job-price span {
+  color: #64748b;
+
+  font-size: 12px;
+}
+
+.available-jobs-section .job-price strong {
+  color: #2563eb;
+
+  font-size: 18px;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   ACCEPT BUTTON
+========================================================= */
+
+.available-jobs-section .accept-btn {
+  width: 100%;
+
+  min-height: 46px;
+
+  margin-top: 16px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background: #2563eb;
+
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 18px rgba(37, 99, 235, 0.20);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.available-jobs-section .accept-btn:hover {
+  transform: translateY(-2px);
+
+  background: #1d4ed8;
+}
+
+.available-jobs-section .accept-btn:disabled {
+  opacity: 0.65;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* =========================================================
+   OFFLINE CARD
+========================================================= */
+
+.offline-jobs-card {
+  max-width: 620px;
+
+  margin: 0 auto;
+
+  padding: 45px 30px;
+
+  text-align: center;
+
+  border-radius: 22px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.offline-jobs-icon {
+  width: 58px;
+  height: 58px;
+
+  margin: 0 auto 15px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #f1f5f9;
+
+  color: #64748b;
+
+  font-size: 22px;
+}
+
+.offline-jobs-card h3 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 19px;
+}
+
+.offline-jobs-card p {
+  max-width: 430px;
+
+  margin: 8px auto 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   NO JOBS
+========================================================= */
+
+.available-jobs-section .no-jobs {
+  padding: 45px 25px;
+
+  text-align: center;
+
+  border: 1px dashed #cbd5e1;
+
+  border-radius: 20px;
+
+  background: #ffffff;
+}
+
+.no-jobs-icon {
+  width: 50px;
+  height: 50px;
+
+  margin: 0 auto 14px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  font-size: 20px;
+
+  font-weight: 800;
+}
+
+.available-jobs-section .no-jobs h3 {
+  margin: 0;
+
+  color: #0f172a;
+
+  font-size: 18px;
+}
+
+.available-jobs-section .no-jobs p {
+  margin: 7px 0 0;
+
+  color: #64748b;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.available-loading {
+  padding: 35px;
+
+  text-align: center;
+
+  color: #64748b;
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .available-jobs-section .jobs-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .available-jobs-header {
+    align-items: flex-start;
+  }
+
+  .available-jobs-header h2 {
+    font-size: 24px;
+  }
+
+  .available-jobs-section .job-card {
+    padding: 18px;
+  }
+
+}
+
+
+@media (max-width: 450px) {
+
+  .available-jobs-header {
+    flex-direction: column;
+  }
+
+  .available-jobs-section .job-card-header {
+    flex-direction: column;
+  }
+
+  .new-job-badge {
+    align-self: flex-start;
+  }
+
+  .available-jobs-section .job-info {
+    flex-direction: column;
+
+    gap: 4px;
+  }
+
+  .available-jobs-section .job-info span:last-child {
+    max-width: 100%;
+
+    text-align: left;
+  }
+
+}

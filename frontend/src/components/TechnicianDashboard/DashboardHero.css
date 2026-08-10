@@ -1,207 +1,695 @@
-/* ===========================
-   Dashboard Hero
-=========================== */
+/* =========================================================
+   TECHNICIAN DASHBOARD HERO
+========================================================= */
 
-.dashboard-hero{
-margin-bottom:35px;
+.dashboard-hero {
+  width: 100%;
+  margin-bottom: 32px;
 }
 
-.dashboard-hero-card{
-background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 45%,#3b82f6 100%);
-border-radius:30px;
-padding:55px 60px;
-overflow:hidden;
-position:relative;
-box-shadow:0 30px 70px rgba(15,23,42,.18);
+
+/* =========================================================
+   MAIN HERO CARD
+========================================================= */
+
+.dashboard-hero-card {
+  position: relative;
+  width: 100%;
+  min-height: 340px;
+
+  padding: 42px 48px;
+
+  border-radius: 28px;
+
+  overflow: hidden;
+  isolation: isolate;
+
+  background:
+    radial-gradient(
+      circle at 85% 15%,
+      rgba(255, 255, 255, 0.16),
+      transparent 26%
+    ),
+    linear-gradient(
+      135deg,
+      #2563eb 0%,
+      #3478ed 48%,
+      #5b93f5 100%
+    );
+
+  box-shadow:
+    0 20px 45px rgba(37, 99, 235, 0.20);
+
+  box-sizing: border-box;
 }
 
-.dashboard-hero-card::before{
-content:"";
-position:absolute;
-top:-120px;
-right:-120px;
-width:320px;
-height:320px;
-border-radius:50%;
-background:rgba(255,255,255,.08);
+
+/* =========================================================
+   DECORATIVE SHAPES
+========================================================= */
+
+.dashboard-hero-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 300px;
+  height: 300px;
+
+  top: -170px;
+  right: -100px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  pointer-events: none;
+
+  z-index: -1;
 }
 
-.dashboard-hero-card::after{
-content:"";
-position:absolute;
-left:-100px;
-bottom:-100px;
-width:220px;
-height:220px;
-border-radius:50%;
-background:rgba(255,255,255,.05);
+
+.dashboard-hero-card::after {
+  content: "";
+
+  position: absolute;
+
+  width: 210px;
+  height: 210px;
+
+  left: -115px;
+  bottom: -145px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.07);
+
+  pointer-events: none;
+
+  z-index: -1;
 }
 
-.dashboard-content{
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:60px;
-position:relative;
-z-index:2;
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.dashboard-content {
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 45px;
 }
 
-.dashboard-left{
-flex:1;
+
+/* =========================================================
+   LEFT SIDE
+========================================================= */
+
+.hero-dashboard-left {
+  flex: 1;
+
+  min-width: 0;
+
+  max-width: 760px;
 }
 
-.dashboard-right{
-display:flex;
-flex-direction:column;
-align-items:center;
-gap:25px;
+
+/* =========================================================
+   WELCOME
+========================================================= */
+
+.dashboard-welcome {
+  display: inline-flex;
+
+  align-items: center;
+
+  margin: 0 0 14px;
+
+  padding: 7px 13px;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.13);
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  backdrop-filter: blur(10px);
+
+  color: #ffffff;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  letter-spacing: 0.1px;
 }
 
-.dashboard-welcome{
-font-size:18px;
-color:#dbeafe;
-margin-bottom:14px;
-font-weight:500;
+
+/* =========================================================
+   NAME
+========================================================= */
+
+.dashboard-name {
+  margin: 0 0 13px;
+
+  color: #ffffff;
+
+  font-size: clamp(38px, 4vw, 52px);
+
+  line-height: 1.08;
+
+  font-weight: 800;
+
+  letter-spacing: -1.5px;
 }
 
-.dashboard-name{
-font-size:58px;
-font-weight:800;
-color:#ffffff;
-margin-bottom:22px;
-line-height:1.1;
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.dashboard-description {
+  max-width: 650px;
+
+  margin: 0 0 25px;
+
+  color: rgba(255, 255, 255, 0.90);
+
+  font-size: 15px;
+
+  line-height: 1.65;
+
+  font-weight: 400;
 }
 
-.dashboard-description{
-font-size:19px;
-line-height:1.8;
-color:#dbeafe;
-max-width:700px;
-margin-bottom:35px;
+
+/* =========================================================
+   BUTTON AREA
+========================================================= */
+
+.dashboard-buttons {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  flex-wrap: wrap;
 }
 
-.dashboard-buttons{
-display:flex;
-gap:18px;
-flex-wrap:wrap;
-}
+
+/* =========================================================
+   COMMON BUTTON
+========================================================= */
 
 .dashboard-primary-btn,
-.dashboard-secondary-btn{
-height:56px;
-padding:0 30px;
-border:none;
-border-radius:16px;
-font-size:16px;
-font-weight:700;
-display:flex;
-align-items:center;
-justify-content:center;
-gap:10px;
-cursor:pointer;
-transition:.3s;
+.dashboard-secondary-btn {
+  height: 50px;
+
+  padding: 0 22px;
+
+  border-radius: 13px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease;
+
+  box-sizing: border-box;
 }
 
-.dashboard-primary-btn{
-background:#ffffff;
-color:#2563eb;
+
+/* =========================================================
+   PRIMARY BUTTON
+========================================================= */
+
+.dashboard-primary-btn {
+  border: 1px solid #ffffff;
+
+  background: #ffffff;
+
+  color: #2563eb;
+
+  box-shadow:
+    0 8px 20px rgba(15, 23, 42, 0.12);
 }
 
-.dashboard-primary-btn:hover{
-transform:translateY(-4px);
-box-shadow:0 20px 35px rgba(255,255,255,.2);
+
+.dashboard-primary-btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 25px rgba(15, 23, 42, 0.18);
 }
 
-.dashboard-secondary-btn{
-background:rgba(255,255,255,.08);
-border:1px solid rgba(255,255,255,.2);
-color:#ffffff;
-backdrop-filter:blur(14px);
+
+.dashboard-primary-btn:active {
+  transform: translateY(0);
 }
 
-.dashboard-secondary-btn:hover{
-background:rgba(255,255,255,.15);
-transform:translateY(-4px);
+
+/* =========================================================
+   SECONDARY BUTTON
+========================================================= */
+
+.dashboard-secondary-btn {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+
+  background: rgba(255, 255, 255, 0.09);
+
+  color: #ffffff;
+
+  backdrop-filter: blur(12px);
 }
 
-.dashboard-avatar{
-width:170px;
-height:170px;
-border-radius:50%;
-padding:7px;
-background:#ffffff;
-box-shadow:0 20px 45px rgba(0,0,0,.2);
+
+.dashboard-secondary-btn:hover {
+  transform: translateY(-2px);
+
+  background: rgba(255, 255, 255, 0.17);
+
+  border-color: rgba(255, 255, 255, 0.40);
+
+  box-shadow:
+    0 10px 25px rgba(15, 23, 42, 0.12);
 }
 
-.dashboard-avatar-image{
-width:100%;
-height:100%;
-border-radius:50%;
-object-fit:cover;
-display:block;
+
+.dashboard-secondary-btn:active {
+  transform: translateY(0);
 }
 
-.dashboard-status{
-display:flex;
-align-items:center;
-gap:10px;
-background:#22c55e;
-color:#ffffff;
-padding:12px 24px;
-border-radius:999px;
-font-weight:700;
-font-size:16px;
-box-shadow:0 12px 25px rgba(34,197,94,.35);
+
+.dashboard-secondary-btn svg {
+  font-size: 17px;
 }
 
-/* ===========================
-   Responsive
-=========================== */
 
-@media(max-width:992px){
+/* =========================================================
+   RIGHT SIDE
+========================================================= */
 
-.dashboard-content{
-flex-direction:column;
-text-align:center;
+.hero-dashboard-right {
+  width: 190px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 15px;
 }
 
-.dashboard-description{
-margin-left:auto;
-margin-right:auto;
+
+/* =========================================================
+   AVATAR OUTER RING
+========================================================= */
+
+.dashboard-avatar {
+  position: relative;
+
+  width: 142px;
+
+  height: 142px;
+
+  padding: 5px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.18);
+
+  border: 2px solid rgba(255, 255, 255, 0.70);
+
+  box-shadow:
+    0 15px 35px rgba(15, 23, 42, 0.22),
+    0 0 0 7px rgba(255, 255, 255, 0.07);
+
+  box-sizing: border-box;
+
+  flex-shrink: 0;
 }
 
-.dashboard-buttons{
-justify-content:center;
+
+/* =========================================================
+   PROFILE IMAGE
+========================================================= */
+
+.dashboard-avatar-image {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+
+  object-position: center;
+
+  border: 3px solid rgba(255, 255, 255, 0.35);
+
+  box-sizing: border-box;
 }
+
+
+/* =========================================================
+   ONLINE STATUS BUTTON
+========================================================= */
+
+.dashboard-status {
+  min-width: 110px;
+
+  height: 42px;
+
+  padding: 0 17px;
+
+  border-radius: 999px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  border: none;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   ONLINE
+========================================================= */
+
+.dashboard-status.status-online {
+  background: #22c55e;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 20px rgba(34, 197, 94, 0.30);
+}
+
+
+.dashboard-status.status-online:hover {
+  transform: translateY(-2px);
+
+  background: #16a34a;
+
+  box-shadow:
+    0 12px 24px rgba(34, 197, 94, 0.35);
+}
+
+
+/* =========================================================
+   OFFLINE
+========================================================= */
+
+.dashboard-status.status-offline {
+  background: rgba(15, 23, 42, 0.72);
+
+  color: #ffffff;
+
+  border: 1px solid rgba(255, 255, 255, 0.20);
+
+  backdrop-filter: blur(10px);
+}
+
+
+.dashboard-status.status-offline:hover {
+  transform: translateY(-2px);
+
+  background: rgba(15, 23, 42, 0.88);
+}
+
+
+/* =========================================================
+   DISABLED
+========================================================= */
+
+.dashboard-status:disabled {
+  opacity: 0.65;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* =========================================================
+   STATUS ICON
+========================================================= */
+
+.dashboard-status svg {
+  width: 16px;
+  height: 16px;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .dashboard-hero-card {
+    padding: 38px 40px;
+  }
+
+  .dashboard-content {
+    gap: 30px;
+  }
+
+  .hero-dashboard-right {
+    width: 165px;
+  }
+
+  .dashboard-avatar {
+    width: 125px;
+    height: 125px;
+  }
+
+  .dashboard-name {
+    font-size: 44px;
+  }
 
 }
 
-@media(max-width:768px){
 
-.dashboard-hero-card{
-padding:40px 25px;
+/* =========================================================
+   SMALL TABLET
+========================================================= */
+
+@media (max-width: 850px) {
+
+  .dashboard-hero-card {
+    padding: 35px 32px;
+  }
+
+  .dashboard-content {
+    gap: 25px;
+  }
+
+  .hero-dashboard-right {
+    width: 145px;
+  }
+
+  .dashboard-avatar {
+    width: 110px;
+    height: 110px;
+  }
+
+  .dashboard-name {
+    font-size: 40px;
+  }
+
+  .dashboard-description {
+    font-size: 14px;
+  }
+
 }
 
-.dashboard-name{
-font-size:40px;
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .dashboard-hero {
+    margin-bottom: 25px;
+  }
+
+  .dashboard-hero-card {
+    min-height: auto;
+
+    padding: 30px 24px;
+
+    border-radius: 22px;
+  }
+
+  .dashboard-content {
+    flex-direction: column;
+
+    align-items: stretch;
+
+    text-align: left;
+
+    gap: 28px;
+  }
+
+  .hero-dashboard-left {
+    width: 100%;
+
+    max-width: none;
+  }
+
+  .dashboard-name {
+    font-size: 36px;
+
+    letter-spacing: -1px;
+  }
+
+  .dashboard-description {
+    max-width: 100%;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+
+    margin-bottom: 22px;
+  }
+
+  .dashboard-buttons {
+    width: 100%;
+
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .dashboard-primary-btn,
+  .dashboard-secondary-btn {
+    width: 100%;
+
+    height: 50px;
+  }
+
+  .hero-dashboard-right {
+    width: 100%;
+
+    flex-direction: row;
+
+    justify-content: flex-start;
+
+    align-items: center;
+
+    gap: 15px;
+  }
+
+  .dashboard-avatar {
+    width: 85px;
+    height: 85px;
+  }
+
+  .dashboard-status {
+    min-width: 105px;
+  }
+
 }
 
-.dashboard-description{
-font-size:16px;
-}
 
-.dashboard-avatar{
-width:130px;
-height:130px;
-}
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
 
-.dashboard-primary-btn,
-.dashboard-secondary-btn{
-width:100%;
-}
+@media (max-width: 450px) {
 
-.dashboard-buttons{
-flex-direction:column;
-}
+  .dashboard-hero-card {
+    padding: 26px 18px;
+
+    border-radius: 19px;
+  }
+
+  .dashboard-welcome {
+    font-size: 12px;
+
+    padding: 6px 11px;
+  }
+
+  .dashboard-name {
+    font-size: 31px;
+  }
+
+  .dashboard-description {
+    font-size: 13px;
+  }
+
+  .hero-dashboard-right {
+    gap: 12px;
+  }
+
+  .dashboard-avatar {
+    width: 75px;
+    height: 75px;
+  }
+
+  .dashboard-status {
+    height: 39px;
+
+    min-width: 100px;
+
+    font-size: 12px;
+
+    padding: 0 14px;
+  }
 
 }

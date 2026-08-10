@@ -1,185 +1,774 @@
-.live-location-card{
-    background:#ffffff;
-    border-radius:22px;
-    padding:30px;
-    margin-top:30px;
-    box-shadow:0 15px 40px rgba(15,23,42,.08);
-    border:1px solid #e2e8f0;
-}
+/* =========================================================
+   LIVE TECHNICIAN TRACKING
+   PREMIUM CLEAN LAYOUT
+========================================================= */
 
-.live-location-card h2{
-    color:#0f172a;
-    font-size:24px;
-    margin-bottom:25px;
-}
-
-.location-status{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    color:#16a34a;
-    font-weight:600;
-    margin-bottom:25px;
-}
-
-.live-dot{
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    background:#16a34a;
-    animation:pulse 1.5s infinite;
-}
-
-.location-grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:20px;
-}
-
-.location-item{
-    background:#f8fafc;
-    border-radius:16px;
-    padding:20px;
-    border:1px solid #e2e8f0;
-}
-
-.location-item span{
-    display:block;
-    color:#64748b;
-    margin-bottom:10px;
-}
-
-.location-item strong{
-    color:#2563eb;
-    font-size:20px;
-}
-
-.waiting-card{
-    text-align:center;
-    padding:30px;
-    color:#64748b;
-}
-
-.pulse{
-    width:18px;
-    height:18px;
-    background:#2563eb;
-    border-radius:50%;
-    margin:0 auto 15px;
-    animation:pulse 1.2s infinite;
-}
-
-@keyframes pulse{
-
-    0%{
-        transform:scale(1);
-        opacity:1;
-    }
-
-    50%{
-        transform:scale(1.6);
-        opacity:.5;
-    }
-
-    100%{
-        transform:scale(1);
-        opacity:1;
-    }
-
-}
-
-.tracking-info {
-  display: flex;
-  gap: 18px;
-  margin-top: 20px;
-}
-
-.info-box {
-  flex: 1;
+.live-tracking-section {
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 45px 55px 70px;
+  position: relative;
+  overflow: hidden;
   background: #ffffff;
-  border-radius: 16px;
-  padding: 18px;
-  text-align: center;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
 }
 
-.info-box h3 {
+/* =========================================================
+   HEADER
+========================================================= */
+
+.tracking-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 38px;
+}
+
+.tracking-header-content h1 {
   margin: 0;
-  font-size: 16px;
-  color: #64748b;
+  color: #111827;
+  font-size: 38px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -1px;
 }
 
-.info-box p {
-  margin-top: 10px;
+.tracking-header-content p {
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+/* =========================================================
+   LIVE BADGE
+========================================================= */
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 13px 22px;
+
+  border-radius: 999px;
+
+  background: #dcfce7;
+  color: #15803d;
+
+  font-size: 16px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+.live-badge .live-dot {
+  width: 12px;
+  height: 12px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  box-shadow: 0 0 0 7px rgba(34, 197, 94, 0.12);
+
+  animation: livePulse 1.7s infinite;
+}
+
+@keyframes livePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.35);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+/* =========================================================
+   MAIN TRACKING LAYOUT
+========================================================= */
+
+.tracking-layout {
+  display: grid;
+
+  /*
+    LEFT  = MAP
+    RIGHT = INFORMATION
+  */
+
+  grid-template-columns:
+    minmax(520px, 1.15fr)
+    minmax(520px, 0.85fr);
+
+  gap: 30px;
+
+  align-items: stretch;
+}
+
+/* =========================================================
+   MAP CARD
+========================================================= */
+
+.tracking-map-card {
+  position: relative;
+
+  min-height: 690px;
+
+  border-radius: 28px;
+
+  overflow: hidden;
+
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+
+  box-shadow:
+    0 20px 50px rgba(15, 23, 42, 0.08);
+}
+
+.tracking-map-card .live-leaflet-map,
+.tracking-map-card .leaflet-container {
+  width: 100%;
+  height: 100%;
+  min-height: 690px;
+}
+
+/* =========================================================
+   MAP OVERLAY
+========================================================= */
+
+.map-arrival-card {
+  position: absolute;
+
+  left: 28px;
+  bottom: 28px;
+
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 20px 26px;
+
+  min-width: 250px;
+
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.96);
+
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.15);
+
+  backdrop-filter: blur(10px);
+}
+
+.map-arrival-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 15px;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
   font-size: 24px;
+}
+
+.map-arrival-card span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+.map-arrival-card strong {
+  display: block;
+
+  color: #111827;
+
+  font-size: 24px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   RIGHT INFORMATION AREA
+========================================================= */
+
+.tracking-info-panel {
+  display: flex;
+  flex-direction: column;
+
+  gap: 20px;
+
+  min-width: 0;
+}
+
+/* =========================================================
+   COMMON CARD
+========================================================= */
+
+.tracking-card {
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 24px;
+
+  padding: 26px;
+
+  box-shadow:
+    0 15px 40px rgba(15, 23, 42, 0.07);
+}
+
+/* =========================================================
+   TECHNICIAN CARD
+========================================================= */
+
+.technician-card {
+  display: flex;
+  align-items: center;
+
+  gap: 22px;
+
+  min-height: 155px;
+}
+
+.technician-avatar {
+  width: 105px;
+  height: 105px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #3b82f6
+    );
+
+  color: #ffffff;
+
+  font-size: 40px;
+  font-weight: 500;
+
+  box-shadow:
+    0 12px 30px rgba(37, 99, 235, 0.25);
+}
+
+.technician-details {
+  min-width: 0;
+}
+
+.technician-details h2 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 30px;
+
+  font-weight: 800;
+
+  line-height: 1.2;
+}
+
+.technician-details p {
+  margin: 7px 0 15px;
+
+  color: #64748b;
+
+  font-size: 16px;
+}
+
+.technician-badges {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 9px;
+}
+
+.technician-badge {
+  padding: 8px 13px;
+
+  border-radius: 999px;
+
+  font-size: 13px;
+
   font-weight: 700;
+}
+
+.verified-badge {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.rating-badge {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.jobs-badge {
+  background: #dbeafe;
   color: #2563eb;
 }
 
-.tracking-stats{
-display:flex;
-align-items:center;
-justify-content:space-between;
-margin-top:22px;
-padding:28px 35px;
-background:#ffffff;
-border-radius:20px;
-box-shadow:0 15px 40px rgba(15,23,42,.08);
-border:1px solid #eef2f7;
+/* =========================================================
+   JOURNEY PROGRESS
+========================================================= */
+
+.journey-card {
+  padding: 26px 28px;
 }
 
-.tracking-stat{
-display:flex;
-align-items:center;
-gap:18px;
-flex:1;
+.journey-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 18px;
 }
 
-.stat-icon{
-width:60px;
-height:60px;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:28px;
-border-radius:18px;
-background:linear-gradient(135deg,#2563eb,#3b82f6);
-color:#fff;
-box-shadow:0 10px 25px rgba(37,99,235,.25);
+.journey-top h3 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 18px;
+
+  font-weight: 800;
 }
 
-.tracking-stat span{
-display:block;
-font-size:14px;
-color:#64748b;
-margin-bottom:6px;
+.journey-percentage {
+  color: #2563eb;
+
+  font-size: 22px;
+
+  font-weight: 800;
 }
 
-.tracking-stat h3{
-margin:0;
-font-size:30px;
-font-weight:700;
-color:#0f172a;
+.progress-track {
+  width: 100%;
+  height: 12px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: #e5e7eb;
 }
 
-.divider{
-width:1px;
-height:70px;
-background:#e5e7eb;
-margin:0 25px;
+.progress-fill {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #60a5fa
+    );
+
+  transition: width 0.5s ease;
 }
 
-@media(max-width:768px){
+.journey-card p {
+  margin: 15px 0 0;
 
-.tracking-stats{
-flex-direction:column;
-gap:25px;
+  color: #64748b;
+
+  font-size: 15px;
+
+  line-height: 1.5;
 }
 
-.divider{
-width:100%;
-height:1px;
-margin:0;
+/* =========================================================
+   LOCATION CARDS
+========================================================= */
+
+.location-card {
+  display: flex;
+  align-items: center;
+
+  gap: 18px;
+
+  min-height: 110px;
+
+  padding: 22px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 20px;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
+.location-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.07);
+}
+
+.location-icon {
+  width: 58px;
+  height: 58px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 17px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #60a5fa
+    );
+
+  color: #ffffff;
+
+  font-size: 25px;
+}
+
+.location-details {
+  min-width: 0;
+}
+
+.location-details span {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #64748b;
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+.location-details strong {
+  display: block;
+
+  color: #111827;
+
+  font-size: 18px;
+
+  line-height: 1.4;
+}
+
+/* =========================================================
+   BOOKING DETAILS
+========================================================= */
+
+.booking-card {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 18px;
+
+  padding: 24px;
+}
+
+.booking-item {
+  padding: 20px;
+
+  text-align: center;
+
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 18px;
+}
+
+.booking-item span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+.booking-item strong {
+  color: #2563eb;
+
+  font-size: 22px;
+
+  font-weight: 800;
+}
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
+.tracking-actions {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr 1.5fr;
+
+  gap: 12px;
+}
+
+.tracking-action-btn {
+  min-height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 0 18px;
+
+  border-radius: 16px;
+
+  border: 1px solid #e2e8f0;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.tracking-action-btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 25px rgba(15, 23, 42, 0.1);
+}
+
+.tracking-action-btn.chat {
+  background: #111827;
+
+  border-color: #111827;
+
+  color: #ffffff;
+}
+
+.tracking-action-btn.primary {
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #3b82f6
+    );
+
+  border-color: #2563eb;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 10px 25px rgba(37, 99, 235, 0.22);
+}
+
+/* =========================================================
+   WAITING STATE
+========================================================= */
+
+.tracking-waiting {
+  min-height: 500px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px;
+
+  text-align: center;
+
+  border: 2px dashed #cbd5e1;
+
+  border-radius: 22px;
+
+  background: #f8fafc;
+}
+
+.tracking-waiting-content {
+  max-width: 450px;
+}
+
+.tracking-waiting-dot {
+  width: 22px;
+  height: 22px;
+
+  margin: 0 auto 20px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  box-shadow:
+    0 0 0 10px rgba(34, 197, 94, 0.12);
+
+  animation: waitingPulse 1.5s infinite;
+}
+
+@keyframes waitingPulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.tracking-waiting h3 {
+  margin: 0 0 10px;
+
+  color: #111827;
+
+  font-size: 23px;
+}
+
+.tracking-waiting p {
+  margin: 0;
+
+  color: #64748b;
+
+  line-height: 1.6;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+
+  .tracking-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-map-card {
+    min-height: 550px;
+  }
+
+  .tracking-map-card .live-leaflet-map,
+  .tracking-map-card .leaflet-container {
+    min-height: 550px;
+  }
+
+  .tracking-info-panel {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .technician-card,
+  .tracking-actions {
+    grid-column: 1 / -1;
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .live-tracking-section {
+    padding: 30px 18px 50px;
+  }
+
+  .tracking-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tracking-header-content h1 {
+    font-size: 30px;
+  }
+
+  .tracking-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-info-panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tracking-map-card {
+    min-height: 450px;
+    border-radius: 20px;
+  }
+
+  .tracking-map-card .live-leaflet-map,
+  .tracking-map-card .leaflet-container {
+    min-height: 450px;
+  }
+
+  .technician-card {
+    align-items: flex-start;
+  }
+
+  .technician-avatar {
+    width: 80px;
+    height: 80px;
+
+    font-size: 30px;
+  }
+
+  .technician-details h2 {
+    font-size: 24px;
+  }
+
+  .booking-card {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .map-arrival-card {
+    left: 15px;
+    right: 15px;
+    bottom: 15px;
+    min-width: unset;
+  }
 }

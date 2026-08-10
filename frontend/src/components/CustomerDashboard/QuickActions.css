@@ -145,3 +145,310 @@ font-size:24px;
 }
 
 }
+/* =========================================
+   PAYMENT COMING SOON MODAL
+========================================= */
+
+.payment-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(8px);
+
+  animation: paymentOverlayIn 0.25s ease;
+}
+
+.payment-modal {
+  position: relative;
+
+  width: min(480px, 100%);
+
+  padding: 42px 38px 36px;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(255, 255, 255, 0.8);
+
+  border-radius: 26px;
+
+  box-shadow:
+    0 30px 80px rgba(15, 23, 42, 0.25),
+    0 10px 30px rgba(37, 99, 235, 0.08);
+
+  text-align: center;
+
+  animation: paymentModalIn 0.3s ease;
+}
+
+.payment-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #f1f5f9;
+  color: #64748b;
+
+  font-size: 19px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.payment-modal-close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  transform: rotate(90deg);
+}
+
+.payment-modal-icon {
+  width: 76px;
+  height: 76px;
+
+  margin: 0 auto 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 22px;
+
+  background: linear-gradient(
+    135deg,
+    #f97316,
+    #fb923c
+  );
+
+  color: #ffffff;
+
+  font-size: 34px;
+
+  box-shadow:
+    0 12px 28px rgba(249, 115, 22, 0.25);
+}
+
+.payment-coming-badge {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 7px 14px;
+
+  margin-bottom: 14px;
+
+  border-radius: 999px;
+
+  background: #fff7ed;
+  color: #ea580c;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  letter-spacing: 0.3px;
+}
+
+.payment-modal h2 {
+  margin: 0 0 12px;
+
+  color: #0f172a;
+
+  font-size: 27px;
+  font-weight: 800;
+
+  line-height: 1.2;
+}
+
+.payment-modal > p {
+  max-width: 390px;
+
+  margin: 0 auto 26px;
+
+  color: #64748b;
+
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.payment-features {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+
+  margin-bottom: 26px;
+
+  text-align: left;
+}
+
+.payment-feature {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 14px;
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 15px;
+
+  background: #f8fafc;
+}
+
+.payment-feature-icon {
+  flex: 0 0 42px;
+
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: #eff6ff;
+  color: #2563eb;
+
+  font-size: 19px;
+}
+
+.payment-feature strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #0f172a;
+
+  font-size: 14px;
+}
+
+.payment-feature span {
+  display: block;
+
+  color: #64748b;
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.payment-modal-button {
+  width: 100%;
+
+  padding: 14px 20px;
+
+  border: none;
+  border-radius: 13px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 20px rgba(37, 99, 235, 0.22);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.payment-modal-button:hover {
+  background: #1d4ed8;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 25px rgba(37, 99, 235, 0.3);
+}
+
+
+/* =========================================
+   ANIMATIONS
+========================================= */
+
+@keyframes paymentOverlayIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes paymentModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+
+  .payment-modal-overlay {
+    padding: 18px;
+  }
+
+  .payment-modal {
+    padding: 36px 22px 24px;
+
+    border-radius: 22px;
+  }
+
+  .payment-modal-icon {
+    width: 68px;
+    height: 68px;
+
+    font-size: 30px;
+  }
+
+  .payment-modal h2 {
+    font-size: 23px;
+  }
+
+  .payment-modal > p {
+    font-size: 14px;
+  }
+
+  .payment-feature {
+    padding: 12px;
+  }
+
+}

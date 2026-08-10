@@ -1,5 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
+
 import { motion } from "framer-motion";
+
 import {
   FiMapPin,
   FiPhone,
@@ -7,42 +9,42 @@ import {
   FiShield,
   FiClock,
   FiUser,
+  FiMap,
 } from "react-icons/fi";
 
 import api from "../../api/axios";
-import socket from "../../socket";
 
 import "./ActiveJob.css";
 
 const ActiveJob = () => {
-
   const [booking, setBooking] = useState(null);
 
   const [loading, setLoading] = useState(true);
 
-  const watchId = useRef(null);
+  const [actionLoading, setActionLoading] =
+    useState(false);
+
+  /* =========================================================
+     FETCH ACTIVE BOOKING
+  ========================================================= */
 
   useEffect(() => {
-
     fetchActiveBooking();
 
+    const interval = setInterval(() => {
+      fetchActiveBooking(true);
+    }, 5000);
+
     return () => {
-
-      if (watchId.current) {
-
-        navigator.geolocation.clearWatch(
-          watchId.current
-        );
-
-      }
-
+      clearInterval(interval);
     };
-
   }, []);
 
-  const fetchActiveBooking = async () => {
-
+  const fetchActiveBooking = async (silent = false) => {
     try {
+      if (!silent) {
+        setLoading(true);
+      }
 
       const token =
         localStorage.getItem("token");
@@ -60,149 +62,205 @@ const ActiveJob = () => {
         response.data.bookings.find(
           (item) =>
             item.status === "Accepted" ||
+            item.status === "On The Way" ||
             item.status === "In Progress"
         );
 
-      setBooking(activeBooking || null);
-
+      setBooking(
+        activeBooking || null
+      );
     } catch (error) {
-
-      console.log(error);
-
+      console.log(
+        "Fetch Active Booking Error:",
+        error
+      );
     } finally {
-
-      setLoading(false);
-
+      if (!silent) {
+        setLoading(false);
+      }
     }
-
   };
 
-  const startLiveTracking = () => {
+  /* =========================================================
+     START JOURNEY
+  ========================================================= */
 
+  const startJourney = async () => {
     if (!booking) return;
 
-    if (!navigator.geolocation) {
-
-      alert(
-        "Geolocation is not supported."
-      );
-
-      return;
-
-    }
-
-    watchId.current =
-      navigator.geolocation.watchPosition(
-
-        (position) => {
-
-          socket.emit("send-location", {
-
-            bookingId: booking._id,
-
-            latitude:
-              position.coords.latitude,
-
-            longitude:
-              position.coords.longitude,
-
-          });
-
-          console.log(
-            "📍 Sending Location:",
-            position.coords.latitude,
-            position.coords.longitude
-          );
-
-        },
-
-        (error) => {
-
-          console.log(error);
-
-        },
-
-        {
-          enableHighAccuracy: true,
-          maximumAge: 0,
-          timeout: 5000,
-        }
-
-      );
-
-    alert(
-      "Live location sharing started."
-    );
-
-  };
-
-  const completeJob = async () => {
-
     try {
+      setActionLoading(true);
 
       const token =
         localStorage.getItem("token");
 
       const response = await api.put(
-
         `/bookings/${booking._id}/status`,
-
         {
-          status: "Completed",
+          status: "On The Way",
         },
-
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
-
       );
 
-      alert(response.data.message);
+      alert(
+        response.data.message ||
+          "Journey started successfully."
+      );
 
-      fetchActiveBooking();
-
+      await fetchActiveBooking();
     } catch (error) {
-
-      console.log(error);
+      console.log(
+        "Start Journey Error:",
+        error
+      );
 
       alert(
         error.response?.data?.message ||
-        "Failed to complete job."
+          "Failed to start journey."
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  /* =========================================================
+     COMPLETE JOB
+  ========================================================= */
+
+  const completeJob = async () => {
+    if (!booking) return;
+
+    try {
+      setActionLoading(true);
+
+      const token =
+        localStorage.getItem("token");
+
+      const response = await api.put(
+        `/bookings/${booking._id}/status`,
+        {
+          status: "Completed",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
+      alert(
+        response.data.message ||
+          "Job completed successfully."
+      );
+
+      await fetchActiveBooking();
+    } catch (error) {
+      console.log(
+        "Complete Job Error:",
+        error
+      );
+
+      alert(
+        error.response?.data?.message ||
+          "Failed to complete job."
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  /* =========================================================
+     NAVIGATE TO CUSTOMER
+  ========================================================= */
+
+  const navigateToCustomer = () => {
+    if (!booking?.address) {
+      alert(
+        "Customer address not available."
+      );
+
+      return;
     }
 
+    window.open(
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        booking.address
+      )}`,
+      "_blank"
+    );
   };
+
+  /* =========================================================
+     LOADING
+  ========================================================= */
 
   if (loading) {
-
-    return <h2>Loading...</h2>;
-
+    return (
+      <section className="active-job-section">
+        <div className="active-job-loading">
+          Loading active job...
+        </div>
+      </section>
+    );
   }
 
+  /* =========================================================
+     NO ACTIVE JOB
+  ========================================================= */
+
   if (!booking) {
-
     return (
+      <section className="active-job-section">
 
-      <div className="active-job-section">
+        <div className="no-active-job">
 
-        <h2>No Active Job</h2>
+          <div className="no-active-job-icon">
+            <FiMap />
+          </div>
 
-      </div>
+          <h2>
+            No Active Job
+          </h2>
 
+          <p>
+            You currently don't have an
+            active service assignment.
+          </p>
+
+        </div>
+
+      </section>
     );
+  }
 
-  };
+  /* =========================================================
+     MAIN PAGE
+  ========================================================= */
 
-    return (
+  return (
     <motion.section
-      initial={{ opacity: 0, y: 25 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      initial={{
+        opacity: 0,
+        y: 25,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+      }}
+      transition={{
+        duration: 0.5,
+      }}
       className="active-job-section"
     >
+
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
       <div className="active-job-header">
 
         <div>
@@ -212,7 +270,8 @@ const ActiveJob = () => {
           </span>
 
           <h2 className="active-job-title">
-            {booking.service?.name}
+            {booking.service?.name ||
+              "Home Service"}
           </h2>
 
           <p className="active-job-subtitle">
@@ -222,26 +281,80 @@ const ActiveJob = () => {
         </div>
 
         <div className="job-id">
-
           <span>
             {booking.bookingId}
           </span>
-
         </div>
 
       </div>
 
+
+      {/* =====================================================
+          STATUS BANNER
+      ===================================================== */}
+
+      <div
+        className={`job-status-banner ${
+          booking.status
+            ?.toLowerCase()
+            .replaceAll(" ", "-")
+        }`}
+      >
+
+        <div className="status-banner-left">
+
+          <span className="status-pulse"></span>
+
+          <div>
+
+            <span>
+              Current Status
+            </span>
+
+            <strong>
+              {booking.status}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        {booking.status ===
+          "On The Way" && (
+
+          <span className="live-status-label">
+            LIVE JOURNEY
+          </span>
+
+        )}
+
+      </div>
+
+
+      {/* =====================================================
+          GRID
+      ===================================================== */}
+
       <div className="active-job-grid">
 
-        {/* Left Side */}
+
+        {/* ===================================================
+            LEFT SIDE
+        =================================================== */}
 
         <div className="job-info">
+
+
+          {/* CUSTOMER */}
 
           <div className="info-card">
 
             <div className="info-row">
 
-              <FiUser className="info-icon" />
+              <FiUser
+                className="info-icon"
+              />
 
               <div>
 
@@ -250,7 +363,8 @@ const ActiveJob = () => {
                 </p>
 
                 <h3 className="info-value">
-                  {booking.customer?.name}
+                  {booking.customer?.name ||
+                    "N/A"}
                 </h3>
 
               </div>
@@ -259,11 +373,16 @@ const ActiveJob = () => {
 
           </div>
 
+
+          {/* SERVICE TIME */}
+
           <div className="info-card">
 
             <div className="info-row">
 
-              <FiClock className="info-icon" />
+              <FiClock
+                className="info-icon"
+              />
 
               <div>
 
@@ -272,11 +391,18 @@ const ActiveJob = () => {
                 </p>
 
                 <h3 className="info-value">
-                  {new Date(
-                    booking.bookingDate
-                  ).toLocaleDateString()}
+
+                  {booking.bookingDate
+                    ? new Date(
+                        booking.bookingDate
+                      ).toLocaleDateString()
+                    : "N/A"}
+
                   {" • "}
-                  {booking.bookingTime}
+
+                  {booking.bookingTime ||
+                    "N/A"}
+
                 </h3>
 
               </div>
@@ -285,20 +411,26 @@ const ActiveJob = () => {
 
           </div>
 
+
+          {/* ADDRESS */}
+
           <div className="info-card">
 
             <div className="info-row">
 
-              <FiMapPin className="info-icon" />
+              <FiMapPin
+                className="info-icon"
+              />
 
               <div>
 
                 <p className="info-label">
-                  Address
+                  Customer Address
                 </p>
 
                 <h3 className="info-value">
-                  {booking.address}
+                  {booking.address ||
+                    "N/A"}
                 </h3>
 
               </div>
@@ -309,80 +441,251 @@ const ActiveJob = () => {
 
         </div>
 
-        {/* Right Side */}
 
-        <div>
+        {/* ===================================================
+            RIGHT SIDE
+        =================================================== */}
 
-          <div className="otp-card">
+        <div className="active-job-actions">
 
-            <div className="info-row">
 
-              <FiShield className="otp-icon" />
+          {/* =================================================
+              ACCEPTED
+          ================================================= */}
+
+          {booking.status ===
+            "Accepted" && (
+
+            <div className="journey-start-card">
+
+              <div className="journey-icon">
+                <FiNavigation />
+              </div>
 
               <div>
 
-                <p className="info-label">
-                  Customer OTP
-                </p>
+                <h3>
+                  Ready to Travel?
+                </h3>
 
-                <h2 className="otp-code">
-                  {booking.otp || "----"}
-                </h2>
+                <p>
+                  Start your journey to
+                  the customer's location.
+                </p>
 
               </div>
 
             </div>
 
-          </div>
+          )}
+
+
+          {/* =================================================
+              ON THE WAY
+          ================================================= */}
+
+          {booking.status ===
+            "On The Way" && (
+
+            <div className="journey-live-card">
+
+              <div className="journey-live-icon">
+                <FiNavigation />
+              </div>
+
+              <div>
+
+                <h3>
+                  Journey in Progress
+                </h3>
+
+                <p>
+                  Your live location is
+                  being shared with the
+                  customer.
+                </p>
+
+              </div>
+
+            </div>
+
+          )}
+
+
+          {/* =================================================
+              IN PROGRESS
+          ================================================= */}
+
+          {booking.status ===
+            "In Progress" && (
+
+            <div className="service-progress-card">
+
+              <div className="service-progress-icon">
+                ✓
+              </div>
+
+              <div>
+
+                <h3>
+                  Service in Progress
+                </h3>
+
+                <p>
+                  Customer OTP has been
+                  verified. You can now
+                  perform the service.
+                </p>
+
+              </div>
+
+            </div>
+
+          )}
+
+
+          {/* =================================================
+              OTP
+          ================================================= */}
+
+          {booking.status ===
+            "In Progress" && (
+
+            <div className="otp-card">
+
+              <div className="info-row">
+
+                <FiShield
+                  className="otp-icon"
+                />
+
+                <div>
+
+                  <p className="info-label">
+                    Customer OTP
+                  </p>
+
+                  <h2 className="otp-code">
+                    {booking.otp ||
+                      "----"}
+                  </h2>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          )}
+
+
+          {/* =================================================
+              ACTIONS
+          ================================================= */}
 
           <div className="job-actions">
 
-            <button
-              className="start-btn"
-              onClick={startLiveTracking}
-            >
-              Start Job
-            </button>
 
-            <button
-              className="complete-btn"
-              onClick={completeJob}
-            >
-              Complete Job
-            </button>
+            {/* START JOURNEY */}
+
+            {booking.status ===
+              "Accepted" && (
+
+              <button
+                type="button"
+                className="start-btn"
+                onClick={
+                  startJourney
+                }
+                disabled={
+                  actionLoading
+                }
+              >
+
+                <FiNavigation />
+
+                {actionLoading
+                  ? "Starting..."
+                  : "Start Journey"}
+
+              </button>
+
+            )}
+
+
+            {/* ON THE WAY */}
+
+            {booking.status ===
+              "On The Way" && (
+
+              <div className="tracking-active-message">
+
+                <span className="tracking-dot"></span>
+
+                Live location sharing is active.
+
+              </div>
+
+            )}
+
+
+            {/* COMPLETE */}
+
+            {booking.status ===
+              "In Progress" && (
+
+              <button
+                type="button"
+                className="complete-btn"
+                onClick={
+                  completeJob
+                }
+                disabled={
+                  actionLoading
+                }
+              >
+
+                {actionLoading
+                  ? "Completing..."
+                  : "Complete Job"}
+
+              </button>
+
+            )}
+
+
+            {/* CALL CUSTOMER */}
 
             <a
-              href={`tel:${booking.customer?.phone}`}
+              href={`tel:${
+                booking.customer?.phone ||
+                ""
+              }`}
               className="outline-btn"
             >
+
               <FiPhone />
+
               Call Customer
+
             </a>
 
+
+            {/* NAVIGATE */}
+
             <button
-  className="outline-btn"
-  onClick={() => {
+              type="button"
+              className="outline-btn"
+              onClick={
+                navigateToCustomer
+              }
+            >
 
-    if (!job.address) {
+              <FiNavigation />
 
-      alert("Customer address not available.");
+              Navigate
 
-      return;
-
-    }
-
-    window.open(
-      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-        job.address
-      )}`,
-      "_blank"
-    );
-
-  }}
->
-  <FiNavigation />
-  Open Navigation
-</button>
+            </button>
 
           </div>
 
@@ -392,7 +695,6 @@ const ActiveJob = () => {
 
     </motion.section>
   );
-
 };
 
 export default ActiveJob;

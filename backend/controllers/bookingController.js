@@ -1,6 +1,7 @@
 const Booking = require("../models/Booking");
 const Service = require("../models/Service");
 const Review = require("../models/reviewModel");
+const User = require("../models/User");
 
 // ==========================================
 // Create Booking
@@ -30,7 +31,8 @@ const createBooking = async (req, res) => {
       });
     }
 
-    const serviceData = await Service.findById(service);
+    const serviceData =
+      await Service.findById(service);
 
     if (!serviceData) {
       return res.status(404).json({
@@ -39,53 +41,65 @@ const createBooking = async (req, res) => {
       });
     }
 
-    //const totalBookings = await Booking.countDocuments();
+    // ==========================================
+    // Generate Booking ID
+    // ==========================================
 
-const lastBooking = await Booking
-  .findOne()
-  .sort({ createdAt: -1 });
+    const lastBooking =
+      await Booking.findOne().sort({
+        createdAt: -1,
+      });
 
-let bookingNumber = 1;
+    let bookingNumber = 1;
 
-if (lastBooking && lastBooking.bookingId) {
+    if (
+      lastBooking &&
+      lastBooking.bookingId
+    ) {
+      bookingNumber =
+        Number(
+          lastBooking.bookingId.split("-")[2]
+        ) + 1;
+    }
 
-  bookingNumber =
-    Number(
-      lastBooking.bookingId.split("-")[2]
-    ) + 1;
+    // ==========================================
+    // Generate OTP
+    // ==========================================
 
-}
+    const otp = Math.floor(
+      1000 + Math.random() * 9000
+    ).toString();
 
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    // ==========================================
+    // Create Booking
+    // ==========================================
 
-    const booking = await Booking.create({
-      // bookingId: `FXR-${new Date().getFullYear()}-${String(
-      //   totalBookings + 1
-      // ).padStart(6, "0")}`,
+    const booking =
+      await Booking.create({
+        bookingId: `FXR-${new Date().getFullYear()}-${String(
+          bookingNumber
+        ).padStart(6, "0")}`,
 
-      bookingId: `FXR-${new Date().getFullYear()}-${String(
-  bookingNumber
-).padStart(6, "0")}`,
+        customer,
+        service,
+        address,
+        bookingDate,
+        bookingTime,
+        price: serviceData.price,
+        paymentMethod,
 
-      customer,
-      service,
-      address,
-      bookingDate,
-      bookingTime,
-      price: serviceData.price,
-      paymentMethod,
+        paymentStatus:
+          paymentMethod === "Cash on Service"
+            ? "Pending"
+            : "Paid",
 
-      paymentStatus:
-        paymentMethod === "Cash on Service"
-          ? "Pending"
-          : "Paid",
-
-      otp,
-    });
+        otp,
+      });
 
     res.status(201).json({
       success: true,
-      message: "Booking Created Successfully",
+      message:
+        "Booking Created Successfully",
       booking,
       otp,
     });
@@ -104,10 +118,20 @@ if (lastBooking && lastBooking.bookingId) {
 // ==========================================
 const getAllBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find()
-      .populate("customer", "name email phone")
-      .populate("service", "name category price")
-      .populate("technician", "name email");
+    const bookings =
+      await Booking.find()
+        .populate(
+          "customer",
+          "name email phone"
+        )
+        .populate(
+          "service",
+          "name category price"
+        )
+        .populate(
+          "technician",
+          "name email"
+        );
 
     res.status(200).json({
       success: true,
@@ -129,12 +153,13 @@ const getAllBookings = async (req, res) => {
 // ==========================================
 const getMyBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({
-      customer: req.user.id,
-    })
-      .populate("service")
-      .populate("technician")
-      .sort({ createdAt: -1 });
+    const bookings =
+      await Booking.find({
+        customer: req.user.id,
+      })
+        .populate("service")
+        .populate("technician")
+        .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -154,43 +179,55 @@ const getMyBookings = async (req, res) => {
 // ==========================================
 // Technician Dashboard Statistics
 // ==========================================
-const getTechnicianStats = async (req, res) => {
+const getTechnicianStats = async (
+  req,
+  res
+) => {
   try {
     const technicianId = req.user.id;
 
-    const assignedJobs = await Booking.countDocuments({
-      technician: technicianId,
-    });
+    const assignedJobs =
+      await Booking.countDocuments({
+        technician: technicianId,
+      });
 
-    const completedJobs = await Booking.countDocuments({
-      technician: technicianId,
-      status: "Completed",
-    });
+    const completedJobs =
+      await Booking.countDocuments({
+        technician: technicianId,
+        status: "Completed",
+      });
 
-    const completedBookings = await Booking.find({
-      technician: technicianId,
-      status: "Completed",
-      paymentStatus: "Paid",
-    });
+    const completedBookings =
+      await Booking.find({
+        technician: technicianId,
+        status: "Completed",
+        paymentStatus: "Paid",
+      });
 
-    const totalEarnings = completedBookings.reduce(
-      (sum, booking) => sum + booking.price,
-      0
-    );
+    const totalEarnings =
+      completedBookings.reduce(
+        (sum, booking) =>
+          sum + booking.price,
+        0
+      );
 
-    const reviews = await Review.find({
-      technician: technicianId,
-    });
+    const reviews =
+      await Review.find({
+        technician: technicianId,
+      });
 
     let averageRating = 0;
 
     if (reviews.length > 0) {
-      const totalRating = reviews.reduce(
-        (sum, review) => sum + review.rating,
-        0
-      );
+      const totalRating =
+        reviews.reduce(
+          (sum, review) =>
+            sum + review.rating,
+          0
+        );
 
-      averageRating = totalRating / reviews.length;
+      averageRating =
+        totalRating / reviews.length;
     }
 
     res.status(200).json({
@@ -198,7 +235,9 @@ const getTechnicianStats = async (req, res) => {
       assignedJobs,
       completedJobs,
       totalEarnings,
-      averageRating: Number(averageRating.toFixed(1)),
+      averageRating: Number(
+        averageRating.toFixed(1)
+      ),
     });
   } catch (error) {
     console.error(error);
@@ -210,15 +249,14 @@ const getTechnicianStats = async (req, res) => {
   }
 };
 
-
 // ==========================================
 // Technician Earnings
 // ==========================================
-
-const getTechnicianEarnings = async (req, res) => {
-
+const getTechnicianEarnings = async (
+  req,
+  res
+) => {
   try {
-
     const technicianId = req.user.id;
 
     const completedBookings =
@@ -227,8 +265,8 @@ const getTechnicianEarnings = async (req, res) => {
         status: "Completed",
         paymentStatus: "Paid",
       })
-      .populate("service", "name")
-      .sort({ updatedAt: -1 });
+        .populate("service", "name")
+        .sort({ updatedAt: -1 });
 
     const totalEarnings =
       completedBookings.reduce(
@@ -242,9 +280,10 @@ const getTechnicianEarnings = async (req, res) => {
     const todayEarnings =
       completedBookings
         .filter((booking) => {
-
           const date =
-            new Date(booking.updatedAt);
+            new Date(
+              booking.updatedAt
+            );
 
           return (
             date.getDate() ===
@@ -254,7 +293,6 @@ const getTechnicianEarnings = async (req, res) => {
             date.getFullYear() ===
               today.getFullYear()
           );
-
         })
         .reduce(
           (sum, booking) =>
@@ -263,49 +301,43 @@ const getTechnicianEarnings = async (req, res) => {
         );
 
     res.status(200).json({
-
       success: true,
-
       totalEarnings,
-
       todayEarnings,
-
       completedJobs:
         completedBookings.length,
-
-      bookings:
-        completedBookings,
-
+      bookings: completedBookings,
     });
-
   } catch (error) {
-
     res.status(500).json({
-
       success: false,
-
       message: error.message,
-
     });
-
   }
-
 };
+
 // ==========================================
 // Get Single Booking
 // ==========================================
-const getBookingById = async (req, res) => {
+const getBookingById = async (
+  req,
+  res
+) => {
   try {
-    const booking = await Booking.findById(req.params.id)
-      .populate("customer", "name phone email")
-      .populate(
-        "technician",
-        "name phone profession profilePhoto"
-      )
-      .populate(
-        "service",
-        "name category price image"
-      );
+    const booking =
+      await Booking.findById(req.params.id)
+        .populate(
+          "customer",
+          "name phone email"
+        )
+        .populate(
+          "technician",
+          "name phone profession profilePhoto"
+        )
+        .populate(
+          "service",
+          "name category price image"
+        );
 
     if (!booking) {
       return res.status(404).json({
@@ -331,9 +363,52 @@ const getBookingById = async (req, res) => {
 // ==========================================
 // Accept Booking
 // ==========================================
-const acceptBooking = async (req, res) => {
+// ==========================================
+// Accept Booking
+// ==========================================
+const acceptBooking = async (
+  req,
+  res
+) => {
   try {
-    const booking = await Booking.findById(req.params.id);
+
+    // ==========================================
+    // Find Technician
+    // ==========================================
+
+    const technician =
+      await User.findById(req.user.id);
+
+    if (!technician) {
+      return res.status(404).json({
+        success: false,
+        message: "Technician not found",
+      });
+    }
+
+    // ==========================================
+    // Check Technician Availability
+    // ==========================================
+
+    if (
+      technician.availability !==
+      "Available"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "You are offline. Please go Online before accepting a job.",
+      });
+    }
+
+    // ==========================================
+    // Find Booking
+    // ==========================================
+
+    const booking =
+      await Booking.findById(
+        req.params.id
+      );
 
     if (!booking) {
       return res.status(404).json({
@@ -342,40 +417,86 @@ const acceptBooking = async (req, res) => {
       });
     }
 
-    if (booking.status !== "Pending") {
+    // ==========================================
+    // Check Booking Status
+    // ==========================================
+
+    if (
+      booking.status !== "Pending"
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Booking is already accepted",
+        message:
+          "Booking is already accepted",
       });
     }
 
-    booking.technician = req.user.id;
-    booking.status = "Accepted";
+    // ==========================================
+    // Assign Technician
+    // ==========================================
+
+    booking.technician =
+      req.user.id;
+
+    booking.status =
+      "Accepted";
 
     await booking.save();
 
+    // ==========================================
+    // Success
+    // ==========================================
+
     res.status(200).json({
       success: true,
-      message: "Booking accepted successfully",
+      message:
+        "Booking accepted successfully",
       booking,
     });
+
   } catch (error) {
-    console.error(error);
+
+    console.error(
+      "Accept Booking Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
-      message: error.message,
+      message:
+        "Failed to accept booking",
     });
   }
 };
+
 // ==========================================
 // Update Booking Status
+//
+// Flow:
+//
+// Pending
+//    ↓
+// Accepted
+//    ↓
+// On The Way
+//    ↓
+// OTP Verification
+//    ↓
+// In Progress
+//    ↓
+// Completed
 // ==========================================
-const updateBookingStatus = async (req, res) => {
+const updateBookingStatus = async (
+  req,
+  res
+) => {
   try {
     const { status } = req.body;
 
-    const booking = await Booking.findById(req.params.id);
+    const booking =
+      await Booking.findById(
+        req.params.id
+      );
 
     if (!booking) {
       return res.status(404).json({
@@ -383,52 +504,151 @@ const updateBookingStatus = async (req, res) => {
         message: "Booking not found",
       });
     }
+
+    // ==========================================
+    // Check Technician
+    // ==========================================
 
     if (!booking.technician) {
       return res.status(400).json({
         success: false,
-        message: "No technician assigned",
+        message:
+          "No technician assigned to this booking",
       });
     }
-
-    if (booking.technician.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: "You are not assigned to this booking",
-      });
-    }
-
-    const allowedStatus = ["In Progress", "Completed"];
-
-    if (!allowedStatus.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid status",
-      });
-    }
-
-    booking.status = status;
 
     if (
-      status === "Completed" &&
-      booking.paymentMethod !== "Cash on Service"
+      booking.technician.toString() !==
+      req.user.id.toString()
     ) {
-      booking.paymentStatus = "Paid";
+      return res.status(403).json({
+        success: false,
+        message:
+          "You are not assigned to this booking",
+      });
+    }
+
+    // ==========================================
+    // Start Journey
+    // Accepted → On The Way
+    // ==========================================
+
+    if (status === "On The Way") {
+      if (booking.status !== "Accepted") {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Only accepted bookings can start the journey",
+        });
+      }
+
+      booking.status = "On The Way";
+
+      booking.trackingActive = true;
+    }
+
+    // ==========================================
+    // Start Service
+    // OTP Verified → In Progress
+    // ==========================================
+
+    else if (
+      status === "In Progress"
+    ) {
+      if (
+        booking.status !==
+        "On The Way"
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Technician must start the journey first",
+        });
+      }
+
+      if (!booking.otpVerified) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Customer OTP must be verified before starting the service",
+        });
+      }
+
+      booking.status =
+        "In Progress";
+
+      booking.trackingActive = true;
+    }
+
+    // ==========================================
+    // Complete Job
+    // ==========================================
+
+    else if (
+      status === "Completed"
+    ) {
+      if (
+        booking.status !==
+        "In Progress"
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Only an in-progress booking can be completed",
+        });
+      }
+
+      booking.status =
+        "Completed";
+
+      booking.trackingActive =
+        false;
+    }
+
+    // ==========================================
+    // Cancel
+    // ==========================================
+
+    else if (
+      status === "Cancelled"
+    ) {
+      booking.status =
+        "Cancelled";
+
+      booking.trackingActive =
+        false;
+    }
+
+    // ==========================================
+    // Invalid Status
+    // ==========================================
+
+    else {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid booking status",
+      });
     }
 
     await booking.save();
 
     res.status(200).json({
       success: true,
-      message: "Booking status updated",
+      message:
+        `Booking status updated to ${booking.status}`,
       booking,
     });
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Update Booking Status Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
-      message: error.message,
+      message:
+        "Failed to update booking status",
     });
   }
 };
@@ -436,11 +656,17 @@ const updateBookingStatus = async (req, res) => {
 // ==========================================
 // Verify Booking OTP
 // ==========================================
-const verifyBookingOTP = async (req, res) => {
+const verifyBookingOTP = async (
+  req,
+  res
+) => {
   try {
     const { otp } = req.body;
 
-    const booking = await Booking.findById(req.params.id);
+    const booking =
+      await Booking.findById(
+        req.params.id
+      );
 
     if (!booking) {
       return res.status(404).json({
@@ -452,16 +678,40 @@ const verifyBookingOTP = async (req, res) => {
     if (!booking.technician) {
       return res.status(400).json({
         success: false,
-        message: "No technician assigned",
+        message:
+          "No technician assigned",
       });
     }
 
-    if (booking.technician.toString() !== req.user.id) {
+    if (
+      booking.technician.toString() !==
+      req.user.id.toString()
+    ) {
       return res.status(403).json({
         success: false,
-        message: "You are not assigned to this booking",
+        message:
+          "You are not assigned to this booking",
       });
     }
+
+    // ==========================================
+    // OTP ONLY AFTER TECHNICIAN IS ON THE WAY
+    // ==========================================
+
+    if (
+      booking.status !==
+      "On The Way"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Technician must be on the way before OTP verification",
+      });
+    }
+
+    // ==========================================
+    // VERIFY OTP
+    // ==========================================
 
     if (booking.otp !== otp) {
       return res.status(400).json({
@@ -471,13 +721,22 @@ const verifyBookingOTP = async (req, res) => {
     }
 
     booking.otpVerified = true;
-    booking.status = "In Progress";
+
+    // ==========================================
+    // ON THE WAY → IN PROGRESS
+    // ==========================================
+
+    booking.status =
+      "In Progress";
+
+    booking.trackingActive = true;
 
     await booking.save();
 
     res.status(200).json({
       success: true,
-      message: "OTP Verified Successfully",
+      message:
+        "OTP Verified Successfully. Service started.",
       booking,
     });
   } catch (error) {
@@ -493,9 +752,15 @@ const verifyBookingOTP = async (req, res) => {
 // ==========================================
 // Pay For Booking
 // ==========================================
-const payForBooking = async (req, res) => {
+const payForBooking = async (
+  req,
+  res
+) => {
   try {
-    const booking = await Booking.findById(req.params.id);
+    const booking =
+      await Booking.findById(
+        req.params.id
+      );
 
     if (!booking) {
       return res.status(404).json({
@@ -504,7 +769,10 @@ const payForBooking = async (req, res) => {
       });
     }
 
-    if (booking.customer.toString() !== req.user.id) {
+    if (
+      booking.customer.toString() !==
+      req.user.id.toString()
+    ) {
       return res.status(403).json({
         success: false,
         message: "Access denied",
@@ -514,14 +782,18 @@ const payForBooking = async (req, res) => {
     if (booking.status !== "Completed") {
       return res.status(400).json({
         success: false,
-        message: "Service is not completed yet",
+        message:
+          "Service is not completed yet",
       });
     }
 
-    if (booking.paymentStatus === "Paid") {
+    if (
+      booking.paymentStatus === "Paid"
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Payment has already been completed",
+        message:
+          "Payment has already been completed",
       });
     }
 
@@ -547,13 +819,17 @@ const payForBooking = async (req, res) => {
 // ==========================================
 // Payment History
 // ==========================================
-const getPaymentHistory = async (req, res) => {
+const getPaymentHistory = async (
+  req,
+  res
+) => {
   try {
-    const bookings = await Booking.find({
-      customer: req.user.id,
-    })
-      .populate("service", "name")
-      .sort({ createdAt: -1 });
+    const bookings =
+      await Booking.find({
+        customer: req.user.id,
+      })
+        .populate("service", "name")
+        .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -571,15 +847,25 @@ const getPaymentHistory = async (req, res) => {
 };
 
 // ==========================================
-// Pending Bookings (Admin)
+// Pending Bookings
 // ==========================================
-const getPendingBookings = async (req, res) => {
+const getPendingBookings = async (
+  req,
+  res
+) => {
   try {
-    const bookings = await Booking.find({
-      status: "Pending",
-    })
-      .populate("customer", "name phone")
-      .populate("service", "name category price image");
+    const bookings =
+      await Booking.find({
+        status: "Pending",
+      })
+        .populate(
+          "customer",
+          "name phone"
+        )
+        .populate(
+          "service",
+          "name category price image"
+        );
 
     res.status(200).json({
       success: true,
@@ -597,16 +883,26 @@ const getPendingBookings = async (req, res) => {
 };
 
 // ==========================================
-// Assigned Bookings (Technician)
+// Assigned Bookings
 // ==========================================
-const getAssignedBookings = async (req, res) => {
+const getAssignedBookings = async (
+  req,
+  res
+) => {
   try {
-    const bookings = await Booking.find({
-      technician: req.user.id,
-    })
-      .populate("customer", "name phone address")
-      .populate("service", "name category price image")
-      .sort({ createdAt: -1 });
+    const bookings =
+      await Booking.find({
+        technician: req.user.id,
+      })
+        .populate(
+          "customer",
+          "name phone address"
+        )
+        .populate(
+          "service",
+          "name category price image"
+        )
+        .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -626,9 +922,15 @@ const getAssignedBookings = async (req, res) => {
 // ==========================================
 // Cancel Booking
 // ==========================================
-const cancelBooking = async (req, res) => {
+const cancelBooking = async (
+  req,
+  res
+) => {
   try {
-    const booking = await Booking.findById(req.params.id);
+    const booking =
+      await Booking.findById(
+        req.params.id
+      );
 
     if (!booking) {
       return res.status(404).json({
@@ -637,34 +939,45 @@ const cancelBooking = async (req, res) => {
       });
     }
 
-    if (booking.customer.toString() !== req.user.id) {
+    if (
+      booking.customer.toString() !==
+      req.user.id.toString()
+    ) {
       return res.status(403).json({
         success: false,
-        message: "You are not authorized to cancel this booking",
+        message:
+          "You are not authorized to cancel this booking",
       });
     }
 
     if (booking.status === "Completed") {
       return res.status(400).json({
         success: false,
-        message: "Completed booking cannot be cancelled",
+        message:
+          "Completed booking cannot be cancelled",
       });
     }
 
     if (booking.status === "Cancelled") {
       return res.status(400).json({
         success: false,
-        message: "Booking is already cancelled",
+        message:
+          "Booking is already cancelled",
       });
     }
 
-    booking.status = "Cancelled";
+    booking.status =
+      "Cancelled";
+
+    booking.trackingActive =
+      false;
 
     await booking.save();
 
     res.status(200).json({
       success: true,
-      message: "Booking cancelled successfully",
+      message:
+        "Booking cancelled successfully",
       booking,
     });
   } catch (error) {
@@ -678,16 +991,29 @@ const cancelBooking = async (req, res) => {
 };
 
 // ==========================================
-// Available Jobs (Technician)
+// Available Jobs
 // ==========================================
-const getAvailableJobs = async (req, res) => {
+const getAvailableJobs = async (
+  req,
+  res
+) => {
   try {
-    const bookings = await Booking.find({
-      status: "Pending",
-    })
-      .populate("customer", "name phone")
-      .populate("service", "name category price image")
-      .sort({ bookingDate: 1, bookingTime: 1 });
+    const bookings =
+      await Booking.find({
+        status: "Pending",
+      })
+        .populate(
+          "customer",
+          "name phone"
+        )
+        .populate(
+          "service",
+          "name category price image"
+        )
+        .sort({
+          bookingDate: 1,
+          bookingTime: 1,
+        });
 
     res.status(200).json({
       success: true,
@@ -704,12 +1030,14 @@ const getAvailableJobs = async (req, res) => {
   }
 };
 
-// =========================================================
-// Get Active Booking For Logged-In User
+// ==========================================
+// Get Active Booking
 // GET /api/bookings/active
-// =========================================================
-
-const getActiveBooking = async (req, res) => {
+// ==========================================
+const getActiveBooking = async (
+  req,
+  res
+) => {
   try {
     const userId = req.user._id;
     const userRole = req.user.role;
@@ -721,34 +1049,47 @@ const getActiveBooking = async (req, res) => {
     // ==========================================
 
     if (userRole === "customer") {
-      booking = await Booking.findOne({
-        customer: userId,
-        status: {
-          $in: ["Pending", "Accepted", "In Progress"],
-        },
-      })
-        .populate("service")
-        .populate("technician")
-        .sort({ createdAt: -1 });
-    }
+      booking =
+        await Booking.findOne({
+          customer: userId,
 
+          status: {
+            $in: [
+              "Pending",
+              "Accepted",
+              "On The Way",
+              "In Progress",
+            ],
+          },
+        })
+          .populate("service")
+          .populate("technician")
+          .sort({ createdAt: -1 });
+    }
 
     // ==========================================
     // TECHNICIAN
     // ==========================================
 
-    else if (userRole === "technician") {
-      booking = await Booking.findOne({
-        technician: userId,
-        status: {
-          $in: ["Accepted", "In Progress"],
-        },
-      })
-        .populate("service")
-        .populate("customer")
-        .sort({ createdAt: -1 });
-    }
+    else if (
+      userRole === "technician"
+    ) {
+      booking =
+        await Booking.findOne({
+          technician: userId,
 
+          status: {
+            $in: [
+              "Accepted",
+              "On The Way",
+              "In Progress",
+            ],
+          },
+        })
+          .populate("service")
+          .populate("customer")
+          .sort({ createdAt: -1 });
+    }
 
     // ==========================================
     // ADMIN
@@ -762,7 +1103,6 @@ const getActiveBooking = async (req, res) => {
       });
     }
 
-
     // ==========================================
     // UNKNOWN ROLE
     // ==========================================
@@ -770,10 +1110,10 @@ const getActiveBooking = async (req, res) => {
     else {
       return res.status(403).json({
         success: false,
-        message: "Unauthorized role",
+        message:
+          "Unauthorized role",
       });
     }
-
 
     // ==========================================
     // NO ACTIVE BOOKING
@@ -791,7 +1131,6 @@ const getActiveBooking = async (req, res) => {
       });
     }
 
-
     // ==========================================
     // ACTIVE BOOKING FOUND
     // ==========================================
@@ -801,7 +1140,6 @@ const getActiveBooking = async (req, res) => {
       active: true,
       booking,
     });
-
   } catch (error) {
     console.error(
       "Get Active Booking Error:",
@@ -812,6 +1150,260 @@ const getActiveBooking = async (req, res) => {
       success: false,
       message:
         "Failed to fetch active booking",
+    });
+  }
+};
+
+// ==========================================
+// Get Technician Availability
+// GET /api/bookings/technician/availability
+// ==========================================
+const getTechnicianAvailability = async (
+  req,
+  res
+) => {
+  try {
+
+    const technician =
+      await User.findById(
+        req.user.id
+      ).select("availability");
+
+    if (!technician) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Technician not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+
+      availability:
+        technician.availability,
+
+      isOnline:
+        technician.availability ===
+        "Available",
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Get Availability Error:",
+      error
+    );
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Failed to get availability",
+    });
+  }
+};
+
+
+// ==========================================
+// Update Technician Availability
+// PUT /api/bookings/technician/availability
+// ==========================================
+const updateTechnicianAvailability = async (
+  req,
+  res
+) => {
+  try {
+
+    const { isOnline } =
+      req.body;
+
+    // ==========================================
+    // Validate
+    // ==========================================
+
+    if (
+      typeof isOnline !==
+      "boolean"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "isOnline must be true or false",
+      });
+    }
+
+    // ==========================================
+    // Find Technician
+    // ==========================================
+
+    const technician =
+      await User.findById(
+        req.user.id
+      );
+
+    if (!technician) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Technician not found",
+      });
+    }
+
+    // ==========================================
+    // Update Availability
+    // ==========================================
+
+    technician.availability =
+      isOnline
+        ? "Available"
+        : "Unavailable";
+
+    await technician.save();
+
+    // ==========================================
+    // Response
+    // ==========================================
+
+    res.status(200).json({
+      success: true,
+
+      message: isOnline
+        ? "You are now Online"
+        : "You are now Offline",
+
+      availability:
+        technician.availability,
+
+      isOnline:
+        technician.availability ===
+        "Available",
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Update Availability Error:",
+      error
+    );
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Failed to update availability",
+    });
+  }
+};
+
+// ==========================================
+// Remove Completed Job
+// ==========================================
+//
+// This removes the completed job from the
+// technician's Assigned Jobs list.
+//
+// It does NOT delete the booking permanently.
+// Customer history, admin history and earnings
+// remain available.
+//
+
+const removeCompletedJob = async (
+  req,
+  res
+) => {
+  try {
+    const booking =
+      await Booking.findById(
+        req.params.id
+      );
+
+    // ==========================================
+    // Booking Not Found
+    // ==========================================
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // ==========================================
+    // Check Technician Assignment
+    // ==========================================
+
+    if (!booking.technician) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "No technician is assigned to this booking",
+      });
+    }
+
+    if (
+      booking.technician.toString() !==
+      req.user.id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "You are not authorized to remove this job",
+      });
+    }
+
+    // ==========================================
+    // Only Completed Jobs Can Be Removed
+    // ==========================================
+
+    if (
+      booking.status !== "Completed"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Only completed jobs can be removed",
+      });
+    }
+
+    // ==========================================
+    // Remove From Technician
+    // ==========================================
+
+    booking.technician = null;
+
+    // ==========================================
+    // Stop Live Tracking
+    // ==========================================
+
+    booking.trackingActive = false;
+
+    booking.technicianLocation = {
+      latitude: null,
+      longitude: null,
+      updatedAt: null,
+    };
+
+    await booking.save();
+
+    // ==========================================
+    // Success
+    // ==========================================
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Completed job removed successfully",
+    });
+
+  } catch (error) {
+    console.error(
+      "Remove Completed Job Error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Failed to remove completed job",
     });
   }
 };
@@ -836,4 +1428,9 @@ module.exports = {
   getAvailableJobs,
   getTechnicianEarnings,
   getActiveBooking,
+
+  getTechnicianAvailability,
+  updateTechnicianAvailability,
+
+  removeCompletedJob,
 };

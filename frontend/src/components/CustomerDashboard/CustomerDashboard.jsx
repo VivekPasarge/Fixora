@@ -1,4 +1,5 @@
 import "./CustomerDashboard.css";
+
 import DashboardHero from "../components/CustomerDashboard/DashboardHero";
 import StatsCards from "../components/CustomerDashboard/StatsCards";
 import UpcomingBooking from "../components/CustomerDashboard/UpcomingBooking";
@@ -10,37 +11,79 @@ import ProfileSummary from "../components/CustomerDashboard/ProfileSummary";
 
 const CustomerDashboard = () => {
   return (
-    <div className="customer-dashboard">
+    <main className="customer-dashboard">
 
-      <DashboardHero />
+      {/* ================================
+          HERO
+      ================================= */}
 
-      <StatsCards />
+      <section className="dashboard-hero-section">
+        <DashboardHero />
+      </section>
 
-      <UpcomingBooking />
 
-      <LiveTrackingCard />
+      {/* ================================
+          STATS
+      ================================= */}
 
-      <QuickActions />
+      <section className="dashboard-stats-section">
+        <StatsCards />
+      </section>
 
-      <div className="dashboard-bottom">
+
+      {/* ================================
+          UPCOMING BOOKING
+      ================================= */}
+
+      <section className="dashboard-section">
+        <UpcomingBooking />
+      </section>
+
+
+      {/* ================================
+          LIVE TRACKING
+      ================================= */}
+
+      <section className="dashboard-section">
+        <LiveTrackingCard />
+      </section>
+
+
+      {/* ================================
+          QUICK ACTIONS
+      ================================= */}
+
+      <section className="dashboard-section">
+        <QuickActions />
+      </section>
+
+
+      {/* ================================
+          BOTTOM CONTENT
+      ================================= */}
+
+      <section className="dashboard-bottom">
 
         <div className="dashboard-left">
 
-          <BookingHistory />
+          <div className="dashboard-section">
+            <BookingHistory />
+          </div>
 
-          <RecentActivity />
+          <div className="dashboard-section">
+            <RecentActivity />
+          </div>
 
         </div>
 
-        <div className="dashboard-right">
 
+        <aside className="dashboard-right">
           <ProfileSummary />
+        </aside>
 
-        </div>
+      </section>
 
-      </div>
-
-    </div>
+    </main>
   );
 };
 

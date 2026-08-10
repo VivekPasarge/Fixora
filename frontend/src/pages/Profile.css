@@ -1,11 +1,18 @@
 /* =========================================================
    CUSTOMER PROFILE PAGE
-   ========================================================= */
+========================================================= */
 
 .customer-profile-page {
   min-height: 100vh;
 
+  width: 100%;
+  box-sizing: border-box;
+
   padding: 120px 20px 70px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 
   background:
     linear-gradient(
@@ -13,29 +20,23 @@
       #f8fafc 0%,
       #eef4ff 100%
     );
-
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-
-  width: 100%;
-
-  box-sizing: border-box;
 }
 
 
 /* =========================================================
    PROFILE CARD
-   ========================================================= */
+========================================================= */
 
 .customer-profile-card {
-  width: 100%;
+  position: relative;
 
+  width: 100%;
   max-width: 760px;
 
   margin: 0 auto;
-
   padding: 40px;
+
+  box-sizing: border-box;
 
   background: #ffffff;
 
@@ -45,14 +46,12 @@
 
   box-shadow:
     0 20px 50px rgba(15, 23, 42, 0.08);
-
-  box-sizing: border-box;
 }
 
 
 /* =========================================================
-   PROFILE TOP
-   ========================================================= */
+   PROFILE HEADER
+========================================================= */
 
 .customer-profile-top {
   display: flex;
@@ -62,7 +61,6 @@
   gap: 24px;
 
   margin-bottom: 34px;
-
   padding-bottom: 28px;
 
   border-bottom: 1px solid #e2e8f0;
@@ -71,19 +69,16 @@
 
 /* =========================================================
    AVATAR
-   ========================================================= */
+========================================================= */
 
 .customer-profile-avatar {
   width: 88px;
-
   height: 88px;
 
   flex-shrink: 0;
 
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
   border-radius: 50%;
@@ -98,7 +93,6 @@
   color: #ffffff;
 
   font-size: 34px;
-
   font-weight: 800;
 
   box-shadow:
@@ -108,7 +102,7 @@
 
 /* =========================================================
    PROFILE HEADING
-   ========================================================= */
+========================================================= */
 
 .customer-profile-heading {
   min-width: 0;
@@ -120,7 +114,6 @@
   color: #0f172a;
 
   font-size: 30px;
-
   font-weight: 800;
 
   line-height: 1.2;
@@ -132,7 +125,6 @@
   color: #64748b;
 
   font-size: 14px;
-
   font-weight: 600;
 
   text-transform: capitalize;
@@ -141,13 +133,12 @@
 
 /* =========================================================
    PROFILE BODY
-   ========================================================= */
+========================================================= */
 
 .customer-profile-body {
   width: 100%;
 
   display: flex;
-
   flex-direction: column;
 
   gap: 20px;
@@ -155,14 +146,15 @@
 
 
 /* =========================================================
-   FIELD
-   ========================================================= */
+   PROFILE FIELD
+========================================================= */
 
 .customer-profile-field {
+  position: relative;
+
   width: 100%;
 
   display: flex;
-
   flex-direction: column;
 
   gap: 8px;
@@ -171,7 +163,7 @@
 
 /* =========================================================
    LABEL
-   ========================================================= */
+========================================================= */
 
 .customer-profile-field label {
   display: block;
@@ -179,7 +171,6 @@
   color: #334155;
 
   font-size: 14px;
-
   font-weight: 700;
 
   line-height: 1.4;
@@ -187,14 +178,15 @@
 
 
 /* =========================================================
-   INPUT
-   ========================================================= */
+   INPUT + TEXTAREA
+========================================================= */
 
 .customer-profile-field input,
 .customer-profile-field textarea {
   display: block;
 
   width: 100%;
+  box-sizing: border-box;
 
   min-height: 52px;
 
@@ -213,12 +205,9 @@
   font-family: inherit;
 
   font-size: 15px;
-
   font-weight: 500;
 
   line-height: 1.5;
-
-  box-sizing: border-box;
 
   transition:
     border-color 0.2s ease,
@@ -229,7 +218,7 @@
 
 /* =========================================================
    TEXTAREA
-   ========================================================= */
+========================================================= */
 
 .customer-profile-field textarea {
   min-height: 120px;
@@ -239,8 +228,20 @@
 
 
 /* =========================================================
+   ENABLED INPUT
+========================================================= */
+
+.customer-profile-field input:not(:disabled),
+.customer-profile-field textarea:not(:disabled) {
+  background: #ffffff;
+
+  cursor: text;
+}
+
+
+/* =========================================================
    INPUT FOCUS
-   ========================================================= */
+========================================================= */
 
 .customer-profile-field input:focus,
 .customer-profile-field textarea:focus {
@@ -255,7 +256,7 @@
 
 /* =========================================================
    DISABLED INPUT
-   ========================================================= */
+========================================================= */
 
 .customer-profile-field input:disabled,
 .customer-profile-field textarea:disabled {
@@ -270,30 +271,87 @@
 
 
 /* =========================================================
-   ACTIONS
-   ========================================================= */
+   EMAIL HELP TEXT
+========================================================= */
+
+.customer-profile-field small {
+  display: block;
+
+  margin-top: 0;
+
+  color: #94a3b8;
+
+  font-size: 12px;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   ACTION AREA
+========================================================= */
 
 .customer-profile-actions {
   width: 100%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 12px;
 
   margin-top: 30px;
 }
 
 
 /* =========================================================
-   PROFILE BUTTON
-   ========================================================= */
+   ALL PROFILE BUTTONS
+========================================================= */
 
-.customer-profile-btn {
-  width: 100%;
+.customer-profile-btn,
+.customer-profile-cancel-btn {
+  min-height: 50px;
 
-  min-height: 52px;
+  padding: 0 22px;
 
-  padding: 0 20px;
+  display: inline-flex;
 
-  border: none;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  box-sizing: border-box;
 
   border-radius: 13px;
+
+  font-family: inherit;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  user-select: none;
+
+  pointer-events: auto;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+
+/* =========================================================
+   EDIT / SAVE BUTTON
+========================================================= */
+
+.customer-profile-btn {
+  border: none;
 
   background:
     linear-gradient(
@@ -305,29 +363,16 @@
 
   color: #ffffff;
 
-  font-family: inherit;
-
-  font-size: 15px;
-
-  font-weight: 700;
-
-  cursor: pointer;
-
   box-shadow:
     0 8px 20px rgba(37, 99, 235, 0.22);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
 }
 
 
 /* =========================================================
-   BUTTON HOVER
-   ========================================================= */
+   EDIT / SAVE HOVER
+========================================================= */
 
-.customer-profile-btn:hover {
+.customer-profile-btn:hover:not(:disabled) {
   background:
     linear-gradient(
       135deg,
@@ -344,10 +389,10 @@
 
 
 /* =========================================================
-   BUTTON ACTIVE
-   ========================================================= */
+   EDIT / SAVE ACTIVE
+========================================================= */
 
-.customer-profile-btn:active {
+.customer-profile-btn:active:not(:disabled) {
   transform: translateY(0);
 
   box-shadow:
@@ -356,8 +401,144 @@
 
 
 /* =========================================================
+   CANCEL BUTTON
+========================================================= */
+
+.customer-profile-cancel-btn {
+  border: 1px solid #e2e8f0;
+
+  background: #ffffff;
+
+  color: #64748b;
+
+  box-shadow:
+    0 4px 10px rgba(15, 23, 42, 0.04);
+}
+
+
+/* =========================================================
+   CANCEL HOVER
+========================================================= */
+
+.customer-profile-cancel-btn:hover:not(:disabled) {
+  background: #f8fafc;
+
+  border-color: #cbd5e1;
+
+  color: #0f172a;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+
+/* =========================================================
+   DISABLED BUTTON
+========================================================= */
+
+.customer-profile-btn:disabled,
+.customer-profile-cancel-btn:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+
+  pointer-events: none;
+
+  transform: none;
+
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   BUTTON FOCUS
+========================================================= */
+
+.customer-profile-btn:focus-visible,
+.customer-profile-cancel-btn:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.25);
+
+  outline-offset: 3px;
+}
+
+
+/* =========================================================
+   SUCCESS MESSAGE
+========================================================= */
+
+.profile-success-message {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 24px;
+
+  padding: 14px 16px;
+
+  border: 1px solid #a7f3d0;
+
+  border-radius: 14px;
+
+  background: #ecfdf5;
+
+  color: #047857;
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+.profile-success-message svg {
+  flex-shrink: 0;
+
+  width: 18px;
+  height: 18px;
+}
+
+
+/* =========================================================
+   ERROR MESSAGE
+========================================================= */
+
+.profile-error-message {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 24px;
+
+  padding: 14px 16px;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 14px;
+
+  background: #fef2f2;
+
+  color: #dc2626;
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+.profile-error-message svg {
+  flex-shrink: 0;
+
+  width: 18px;
+  height: 18px;
+}
+
+
+/* =========================================================
    LOADING
-   ========================================================= */
+========================================================= */
 
 .customer-profile-loading {
   min-height: 100vh;
@@ -365,10 +546,11 @@
   display: flex;
 
   align-items: center;
-
   justify-content: center;
 
   padding-top: 80px;
+
+  box-sizing: border-box;
 
   background:
     linear-gradient(
@@ -387,7 +569,7 @@
 
 /* =========================================================
    TABLET
-   ========================================================= */
+========================================================= */
 
 @media (max-width: 768px) {
 
@@ -414,7 +596,6 @@
 
   .customer-profile-avatar {
     width: 76px;
-
     height: 76px;
 
     font-size: 29px;
@@ -423,13 +604,31 @@
   .customer-profile-heading h1 {
     font-size: 25px;
   }
+}
 
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .customer-profile-actions {
+    flex-direction: column-reverse;
+
+    align-items: stretch;
+  }
+
+  .customer-profile-btn,
+  .customer-profile-cancel-btn {
+    width: 100%;
+  }
 }
 
 
 /* =========================================================
    SMALL MOBILE
-   ========================================================= */
+========================================================= */
 
 @media (max-width: 480px) {
 
@@ -456,7 +655,6 @@
 
   .customer-profile-avatar {
     width: 74px;
-
     height: 74px;
 
     font-size: 28px;
@@ -470,5 +668,4 @@
   .customer-profile-field textarea {
     font-size: 14px;
   }
-
 }
