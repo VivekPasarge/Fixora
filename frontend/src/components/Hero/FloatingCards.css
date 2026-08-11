@@ -2,10 +2,11 @@
    FLOATING CARD
 ========================================================= */
 
-/* .floating-card {
-
+.floating-card {
   display: flex;
+
   align-items: center;
+
   gap: 16px;
 
   width: 240px;
@@ -14,32 +15,33 @@
 
   border-radius: 22px;
 
-  background: rgba(255,255,255,.92);
+  background: rgba(255, 255, 255, 0.92);
 
   backdrop-filter: blur(24px);
 
   -webkit-backdrop-filter: blur(24px);
 
-  border: 1px solid rgba(255,255,255,.45);
+  border: 1px solid rgba(255, 255, 255, 0.45);
 
   box-shadow:
-    0 20px 40px rgba(15,23,42,.18);
+    0 20px 40px rgba(15, 23, 42, 0.18);
 
   transition:
-    transform .3s ease,
-    box-shadow .3s ease;
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 
   user-select: none;
-
 }
 
-.floating-card:hover {
+/* =========================================================
+   HOVER
+========================================================= */
 
+.floating-card:hover {
   transform: translateY(-8px);
 
   box-shadow:
-    0 28px 60px rgba(37,99,235,.22);
-
+    0 28px 60px rgba(37, 99, 235, 0.22);
 }
 
 /* =========================================================
@@ -47,12 +49,14 @@
 ========================================================= */
 
 .floating-icon {
-
   display: flex;
+
   justify-content: center;
+
   align-items: center;
 
   width: 56px;
+
   height: 56px;
 
   border-radius: 16px;
@@ -60,31 +64,28 @@
   font-size: 24px;
 
   flex-shrink: 0;
-
 }
 
-.icon-primary {
+/* =========================================================
+   ICON COLORS
+========================================================= */
 
+.icon-primary {
   color: #2563eb;
 
-  background: rgba(37,99,235,.12);
-
+  background: rgba(37, 99, 235, 0.12);
 }
 
 .icon-success {
-
   color: #16a34a;
 
-  background: rgba(22,163,74,.12);
-
+  background: rgba(22, 163, 74, 0.12);
 }
 
 .icon-warning {
-
   color: #f59e0b;
 
-  background: rgba(245,158,11,.14);
-
+  background: rgba(245, 158, 11, 0.14);
 }
 
 /* =========================================================
@@ -92,14 +93,12 @@
 ========================================================= */
 
 .floating-content {
-
   display: flex;
-  flex-direction: column;
 
+  flex-direction: column;
 }
 
 .floating-content h4 {
-
   margin: 0;
 
   color: #0f172a;
@@ -107,11 +106,9 @@
   font-size: 18px;
 
   font-weight: 700;
-
 }
 
 .floating-content p {
-
   margin-top: 4px;
 
   color: #64748b;
@@ -119,7 +116,6 @@
   font-size: 14px;
 
   line-height: 1.5;
-
 }
 
 /* =========================================================
@@ -127,139 +123,104 @@
 ========================================================= */
 
 .float-1 {
-
   animation: floatOne 5s ease-in-out infinite;
-
 }
 
 .float-2 {
-
   animation: floatTwo 6s ease-in-out infinite;
-
 }
 
 .float-3 {
-
   animation: floatThree 7s ease-in-out infinite;
-
 }
 
 @keyframes floatOne {
-
-  0%,100%{
-
-    transform:translateY(0);
-
+  0%,
+  100% {
+    transform: translateY(0);
   }
 
-  50%{
-
-    transform:translateY(-10px);
-
+  50% {
+    transform: translateY(-10px);
   }
-
 }
 
 @keyframes floatTwo {
-
-  0%,100%{
-
-    transform:translateY(0);
-
+  0%,
+  100% {
+    transform: translateY(0);
   }
 
-  50%{
-
-    transform:translateY(10px);
-
+  50% {
+    transform: translateY(10px);
   }
-
 }
 
 @keyframes floatThree {
-
-  0%,100%{
-
-    transform:translateY(0);
-
+  0%,
+  100% {
+    transform: translateY(0);
   }
 
-  50%{
-
-    transform:translateY(-8px);
-
+  50% {
+    transform: translateY(-8px);
   }
-
-} */
+}
 
 /* =========================================================
    RESPONSIVE
 ========================================================= */
 
-/* @media (max-width:768px){
+@media (max-width: 768px) {
+  .floating-card {
+    width: 210px;
 
-  .floating-card{
-
-    width:210px;
-
-    padding:16px;
-
+    padding: 16px;
   }
 
-  .floating-icon{
+  .floating-icon {
+    width: 48px;
 
-    width:48px;
-    height:48px;
+    height: 48px;
 
-    font-size:20px;
-
+    font-size: 20px;
   }
 
-  .floating-content h4{
-
-    font-size:16px;
-
+  .floating-content h4 {
+    font-size: 16px;
   }
 
-  .floating-content p{
-
-    font-size:13px;
-
+  .floating-content p {
+    font-size: 13px;
   }
-
 }
 
-@media (max-width:480px){
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
 
-  .floating-card{
+@media (max-width: 480px) {
+  .floating-card {
+    width: 180px;
 
-    width:180px;
+    padding: 14px;
 
-    padding:14px;
-
-    border-radius:18px;
-
+    border-radius: 18px;
   }
 
-  .floating-icon{
+  .floating-icon {
+    width: 42px;
 
-    width:42px;
-    height:42px;
+    height: 42px;
 
-    font-size:18px;
-
+    font-size: 18px;
   }
 
-  .floating-content h4{
-
-    font-size:15px;
-
+  .floating-content h4 {
+    font-size: 15px;
   }
 
-  .floating-content p{
-
-    font-size:12px;
-
+  .floating-content p {
+    font-size: 12px;
   }
-
-} */
+}
