@@ -1,129 +1,27 @@
-// import { useEffect } from "react";
-// import socket from "../../socket";
-
-// const LocationTracker = ({ bookingId }) => {
-//   useEffect(() => {
-
-//     if (!bookingId) return;
-
-//     if (!navigator.geolocation) {
-//       console.log("Geolocation not supported");
-//       return;
-//     }
-
-//     const watchId = navigator.geolocation.watchPosition(
-
-//       (position) => {
-
-//         const location = {
-//           bookingId,
-//           latitude: position.coords.latitude,
-//           longitude: position.coords.longitude,
-//         };
-
-//         console.log("📍 Sending:", location);
-
-//         socket.emit("send-location", location);
-
-//       },
-
-//       (error) => {
-//         console.log(error);
-//       },
-
-//       {
-//         enableHighAccuracy: true,
-//         maximumAge: 0,
-//         timeout: 5000,
-//       }
-
-//     );
-
-//     return () => {
-//       navigator.geolocation.clearWatch(watchId);
-//     };
-
-//   }, [bookingId]);
-
-//   return null;
-// };
-
-// export default LocationTracker;
-
-
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import socket from "../../socket";
 
 const LocationTracker = ({ bookingId }) => {
+  const watchIdRef = useRef(null);
+  const activeBookingRef = useRef(null);
+
   useEffect(() => {
-    if (!bookingId) {
-      console.log("❌ LocationTracker: No booking ID");
-      return;
-    }
+    console.log(
+      "🚀 LocationTracker effect started"
+    );
 
     console.log(
-      "📍 LocationTracker started for booking:",
+      "📦 Booking ID:",
       bookingId
     );
 
-    // ==========================================
-    // JOIN BOOKING ROOM
-    // ==========================================
-
-    if (socket.connected) {
+    if (!bookingId) {
       console.log(
-        "🟢 Socket already connected:",
-        socket.id
+        "❌ No booking ID. Location tracking cancelled."
       );
 
-      socket.emit(
-        "join-booking",
-        bookingId
-      );
-
-      console.log(
-        "📦 Technician joined booking room:",
-        bookingId
-      );
-    } else {
-      console.log(
-        "🟡 Socket not connected yet. Waiting..."
-      );
-
-      const handleConnect = () => {
-        console.log(
-          "🟢 Technician socket connected:",
-          socket.id
-        );
-
-        socket.emit(
-          "join-booking",
-          bookingId
-        );
-
-        console.log(
-          "📦 Technician joined booking room:",
-          bookingId
-        );
-      };
-
-      socket.once(
-        "connect",
-        handleConnect
-      );
-
-      // Cleanup connect listener
-      return () => {
-        socket.off(
-          "connect",
-          handleConnect
-        );
-      };
+      return;
     }
-
-    // ==========================================
-    // CHECK GEOLOCATION SUPPORT
-    // ==========================================
 
     if (!navigator.geolocation) {
       console.log(
@@ -133,72 +31,299 @@ const LocationTracker = ({ bookingId }) => {
       return;
     }
 
-    // ==========================================
-    // START WATCHING TECHNICIAN LOCATION
-    // ==========================================
+    /*
+     * Prevent duplicate watchers for
+     * the same booking.
+     */
 
-    const watchId =
-      navigator.geolocation.watchPosition(
-        (position) => {
-          const location = {
-            bookingId: bookingId,
-
-            latitude:
-              position.coords.latitude,
-
-            longitude:
-              position.coords.longitude,
-          };
-
-          console.log(
-            "📍 Sending:",
-            location
-          );
-
-          // ====================================
-          // SEND LOCATION TO BACKEND
-          // ====================================
-
-          if (socket.connected) {
-            socket.emit(
-              "send-location",
-              location
-            );
-          } else {
-            console.log(
-              "❌ Cannot send location. Socket disconnected."
-            );
-          }
-        },
-
-        (error) => {
-          console.log(
-            "❌ Geolocation Error:",
-            error
-          );
-        },
-
-        {
-          enableHighAccuracy: true,
-
-          maximumAge: 0,
-
-          timeout: 10000,
-        }
-      );
-
-    // ==========================================
-    // CLEANUP
-    // ==========================================
-
-    return () => {
+    if (
+      activeBookingRef.current ===
+      bookingId
+    ) {
       console.log(
-        "🛑 Stopping location tracking:",
+        "⚠️ Location tracker already active for:",
         bookingId
       );
 
+      return;
+    }
+
+    /*
+     * If another watcher exists,
+     * remove it first.
+     */
+
+    if (
+      watchIdRef.current !== null
+    ) {
+      console.log(
+        "🧹 Clearing previous location watcher"
+      );
+
       navigator.geolocation.clearWatch(
+        watchIdRef.current
+      );
+
+      watchIdRef.current = null;
+    }
+
+    activeBookingRef.current =
+      bookingId;
+
+    /*
+     * Make sure Socket.IO is connected.
+     */
+
+    if (!socket.connected) {
+      console.log(
+        "🔌 Socket not connected. Connecting..."
+      );
+
+      socket.connect();
+    } else {
+      console.log(
+        "🟢 Socket already connected:",
+        socket.id
+      );
+    }
+
+    /*
+     * Join booking room.
+     */
+
+    console.log(
+      "📦 Technician joining booking room:",
+      bookingId
+    );
+
+    socket.emit(
+      "join-booking",
+      bookingId
+    );
+
+    console.log(
+      "🌍 Starting technician location tracking..."
+    );
+
+    /*
+     * Send technician location.
+     */
+
+    const sendLocation = (
+      position
+    ) => {
+      const location = {
+        bookingId,
+        latitude:
+          position.coords.latitude,
+        longitude:
+          position.coords.longitude,
+      };
+
+      console.log(
+        "📍 TECHNICIAN GPS:",
+        location
+      );
+
+      if (!socket.connected) {
+        console.log(
+          "⚠️ Socket disconnected. Reconnecting..."
+        );
+
+        socket.connect();
+      }
+
+      console.log(
+        "📤 Sending technician location..."
+      );
+
+      socket.emit(
+        "send-location",
+        location
+      );
+    };
+
+    /*
+     * Location error handler.
+     */
+
+    const handleLocationError = (
+      error
+    ) => {
+      console.log(
+        "❌ Geolocation Error"
+      );
+
+      console.log(
+        "Error Code:",
+        error.code
+      );
+
+      console.log(
+        "Error Message:",
+        error.message
+      );
+
+      if (error.code === 1) {
+        console.log(
+          "⚠️ Location permission denied."
+        );
+      }
+
+      if (error.code === 2) {
+        console.log(
+          "⚠️ Location unavailable."
+        );
+      }
+
+      if (error.code === 3) {
+        console.log(
+          "⚠️ Location request timed out."
+        );
+      }
+    };
+
+    /*
+     * Start watching GPS.
+     */
+
+    try {
+      const watchId =
+        navigator.geolocation.watchPosition(
+          sendLocation,
+          handleLocationError,
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 15000,
+          }
+        );
+
+      watchIdRef.current =
+        watchId;
+
+      console.log(
+        "👀 GPS watcher started."
+      );
+
+      console.log(
+        "👀 Watch ID:",
         watchId
+      );
+    } catch (error) {
+      console.log(
+        "❌ Failed to start GPS watcher:",
+        error
+      );
+    }
+
+    /*
+     * Cleanup.
+     */
+
+    return () => {
+      console.log(
+        "🧹 LocationTracker cleanup for booking:",
+        bookingId
+      );
+
+      /*
+       * Clear GPS watcher.
+       */
+
+      if (
+        watchIdRef.current !== null
+      ) {
+        console.log(
+          "🛑 Stopping GPS watcher:",
+          watchIdRef.current
+        );
+
+        navigator.geolocation.clearWatch(
+          watchIdRef.current
+        );
+
+        watchIdRef.current =
+          null;
+      }
+
+      /*
+       * Only clear the active booking
+       * if this effect belongs to it.
+       */
+
+      if (
+        activeBookingRef.current ===
+        bookingId
+      ) {
+        activeBookingRef.current =
+          null;
+      }
+
+      console.log(
+        "📍 Location tracking cleanup completed."
+      );
+    };
+  }, [bookingId]);
+
+  /*
+   * Listen for socket reconnects.
+
+   * If the internet temporarily disappears,
+   * Socket.IO reconnects and we rejoin
+   * the booking room.
+   */
+
+  useEffect(() => {
+    if (!bookingId) {
+      return;
+    }
+
+    const handleConnect = () => {
+      console.log(
+        "🟢 Socket connected:",
+        socket.id
+      );
+
+      console.log(
+        "📦 Rejoining booking room:",
+        bookingId
+      );
+
+      socket.emit(
+        "join-booking",
+        bookingId
+      );
+    };
+
+    const handleDisconnect = (
+      reason
+    ) => {
+      console.log(
+        "🔴 Socket disconnected:",
+        reason
+      );
+    };
+
+    socket.on(
+      "connect",
+      handleConnect
+    );
+
+    socket.on(
+      "disconnect",
+      handleDisconnect
+    );
+
+    return () => {
+      socket.off(
+        "connect",
+        handleConnect
+      );
+
+      socket.off(
+        "disconnect",
+        handleDisconnect
       );
     };
   }, [bookingId]);

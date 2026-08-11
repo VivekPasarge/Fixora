@@ -21,8 +21,16 @@ const AssignedJobs = () => {
   ========================================================= */
 
   useEffect(() => {
-    fetchAssignedJobs();
-  }, []);
+  fetchAssignedJobs();
+
+  const interval = setInterval(() => {
+    fetchAssignedJobs(true);
+  }, 5000);
+
+  return () => {
+    clearInterval(interval);
+  };
+}, []);
 
 
   const fetchAssignedJobs = async () => {
