@@ -49,7 +49,8 @@ const TrackBooking = () => {
     // Automatically refresh booking status.
     // This allows the customer page to detect:
     //
-    // Accepted → In Progress
+    // Accepted → On The Way
+    // On The Way → In Progress
     // In Progress → Completed
     //
     // without manually refreshing the page.
@@ -570,6 +571,7 @@ const TrackBooking = () => {
                 className={`timeline-step ${
                   [
                     "Accepted",
+                    "On The Way",
                     "In Progress",
                     "Completed",
                   ].includes(booking.status)
@@ -588,6 +590,30 @@ const TrackBooking = () => {
 
               </div>
 
+              {/* ON THE WAY */}
+
+              <div
+                className={`timeline-step ${
+                  [
+                    "On The Way",
+                    "In Progress",
+                    "Completed",
+                  ].includes(booking.status)
+                    ? "active"
+                    : ""
+                }`}
+              >
+
+                <div className="circle">
+                  3
+                </div>
+
+                <span>
+                  On The Way
+                </span>
+
+              </div>
+
               {/* IN PROGRESS */}
 
               <div
@@ -602,7 +628,7 @@ const TrackBooking = () => {
               >
 
                 <div className="circle">
-                  3
+                  4
                 </div>
 
                 <span>
@@ -622,7 +648,7 @@ const TrackBooking = () => {
               >
 
                 <div className="circle">
-                  4
+                  5
                 </div>
 
                 <span>
@@ -695,7 +721,10 @@ const TrackBooking = () => {
                   "Waiting for technician"}
 
                 {booking.status === "Accepted" &&
-                  "Technician arriving in 20 minutes"}
+                  "Technician accepted your booking"}
+
+                {booking.status === "On The Way" &&
+                  "Technician is on the way"}
 
                 {booking.status === "In Progress" &&
                   "Technician is working at your location"}
@@ -798,6 +827,44 @@ const TrackBooking = () => {
           <div className="live-tracking-wrapper">
 
             {/* ==================================
+                ON THE WAY
+            ================================== */}
+
+            {booking.status === "On The Way" && (
+
+              <>
+
+                <div className="live-tracking-heading">
+
+                  <span className="live-dot"></span>
+
+                  <h3>
+                    Live Technician Tracking
+                  </h3>
+
+                  <span className="tracking-live-badge">
+                    LIVE
+                  </span>
+
+                </div>
+
+                <p className="live-tracking-subtitle">
+
+                  Your technician is on the way.
+                  You can view their live location
+                  below.
+
+                </p>
+
+                <LiveLocation
+                  bookingId={booking._id}
+                />
+
+              </>
+
+            )}
+
+            {/* ==================================
                 IN PROGRESS
             ================================== */}
 
@@ -858,7 +925,7 @@ const TrackBooking = () => {
                     Your technician has accepted
                     the booking. Live location will
                     appear here when the technician
-                    starts the job.
+                    starts the journey.
 
                   </p>
 
