@@ -377,12 +377,21 @@ const app = express();
 
 connectDB();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://fixora-4cdg.vercel.app",
+  "https://fixora-4cdg-git-main-legends-d834.vercel.app",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://fixora-4cdg.vercel.app",
-    ],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -435,10 +444,13 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:5173",
-      "https://fixora-4cdg.vercel.app",
-    ],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST"],
     credentials: true,
   },
