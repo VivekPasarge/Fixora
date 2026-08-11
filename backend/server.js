@@ -1,355 +1,3 @@
-// require("dotenv").config();
-
-// const express = require("express");
-// const cors = require("cors");
-// const http = require("http");
-// const { Server } = require("socket.io");
-
-// const connectDB = require("./config/db");
-// const Booking = require("./models/Booking");
-
-// // =========================
-// // Routes
-// // =========================
-
-// const authRoutes = require("./routes/authRoutes");
-// const serviceRoutes = require("./routes/serviceRoutes");
-// const bookingRoutes = require("./routes/bookingRoutes");
-// const reviewRoutes = require("./routes/reviewRoutes");
-// const partnerRoutes = require("./routes/partnerRoutes");
-// const adminRoutes = require("./routes/adminRoutes");
-
-// const adminCustomerRoutes = require("./routes/adminCustomerRoutes");
-// const adminTechnicianRoutes = require("./routes/adminTechnicianRoutes");
-// const adminBookingRoutes = require("./routes/adminBookingRoutes");
-
-// // =========================
-// // App
-// // =========================
-
-// const app = express();
-
-// connectDB();
-
-// // =========================
-// // Middleware
-// // =========================
-
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173",
-//     credentials: true,
-//   })
-// );
-
-// app.use(express.json());
-
-// // =========================
-// // API Routes
-// // =========================
-
-// app.use("/api/auth", authRoutes);
-
-// app.use("/api/services", serviceRoutes);
-
-// app.use("/api/bookings", bookingRoutes);
-
-// app.use("/api/reviews", reviewRoutes);
-
-// app.use("/api/partners", partnerRoutes);
-
-// app.use("/api/admin", adminRoutes);
-
-// app.use(
-//   "/api/admin/customers",
-//   adminCustomerRoutes
-// );
-
-// app.use(
-//   "/api/admin/technicians",
-//   adminTechnicianRoutes
-// );
-
-// app.use(
-//   "/api/admin/bookings",
-//   adminBookingRoutes
-// );
-
-// // =========================
-// // Home Route
-// // =========================
-
-// app.get("/", (req, res) => {
-//   res.send("Welcome to Fixora Backend");
-// });
-
-// // =========================
-// // HTTP Server
-// // =========================
-
-// const server = http.createServer(app);
-
-// // =========================
-// // Socket.IO
-// // =========================
-
-// const io = new Server(server, {
-//   cors: {
-//     origin: "http://localhost:5173",
-//     methods: ["GET", "POST"],
-//     credentials: true,
-//   },
-// });
-
-// // =========================
-// // Socket Connection
-// // =========================
-
-// io.on("connection", (socket) => {
-//   console.log(
-//     "🟢 User Connected:",
-//     socket.id
-//   );
-
-//   // =====================================================
-//   // CUSTOMER / USER JOINS BOOKING ROOM
-//   // =====================================================
-
-//   socket.on(
-//     "join-booking",
-//     async (bookingId) => {
-//       try {
-//         if (!bookingId) {
-//           console.log(
-//             "❌ No booking ID received"
-//           );
-
-//           return;
-//         }
-
-//         // Join Socket.IO room
-//         socket.join(bookingId);
-
-//         console.log(
-//           `📦 Socket ${socket.id} joined booking room: ${bookingId}`
-//         );
-
-//         // =================================================
-//         // GET LAST SAVED TECHNICIAN LOCATION
-//         // =================================================
-
-//         const booking =
-//           await Booking.findById(bookingId);
-
-//         if (!booking) {
-//           console.log(
-//             "❌ Booking not found:",
-//             bookingId
-//           );
-
-//           return;
-//         }
-
-//         const savedLocation =
-//           booking.technicianLocation;
-
-//         if (
-//           savedLocation &&
-//           savedLocation.latitude !== null &&
-//           savedLocation.longitude !== null
-//         ) {
-//           // Send previous location immediately
-//           // to the customer who just refreshed.
-
-//           socket.emit(
-//             "receive-location",
-//             {
-//               bookingId: bookingId,
-
-//               latitude:
-//                 savedLocation.latitude,
-
-//               longitude:
-//                 savedLocation.longitude,
-
-//               trackingActive:
-//                 booking.trackingActive,
-
-//               updatedAt:
-//                 savedLocation.updatedAt,
-//             }
-//           );
-
-//           console.log(
-//             "📍 Sent saved technician location:",
-//             {
-//               bookingId,
-//               latitude:
-//                 savedLocation.latitude,
-//               longitude:
-//                 savedLocation.longitude,
-//             }
-//           );
-//         } else {
-//           console.log(
-//             "⏳ No technician location saved yet."
-//           );
-//         }
-//       } catch (error) {
-//         console.error(
-//           "❌ Join booking error:",
-//           error
-//         );
-//       }
-//     }
-//   );
-
-//   // =====================================================
-//   // TECHNICIAN SENDS LOCATION
-//   // =====================================================
-
-//   socket.on(
-//     "send-location",
-//     async (data) => {
-//       try {
-//         console.log(
-//           "📍 Location received from technician:",
-//           data
-//         );
-
-//         // Validate data
-//         if (
-//           !data ||
-//           !data.bookingId ||
-//           data.latitude === undefined ||
-//           data.longitude === undefined
-//         ) {
-//           console.log(
-//             "❌ Invalid location data"
-//           );
-
-//           return;
-//         }
-
-//         // =================================================
-//         // FIND BOOKING
-//         // =================================================
-
-//         const booking =
-//           await Booking.findById(
-//             data.bookingId
-//           );
-
-//         if (!booking) {
-//           console.log(
-//             "❌ Booking not found:",
-//             data.bookingId
-//           );
-
-//           return;
-//         }
-
-//         // =================================================
-//         // ONLY SAVE LOCATION FOR ACTIVE JOB
-//         // =================================================
-
-//         if (
-//           booking.status !==
-//           "In Progress"
-//         ) {
-//           console.log(
-//             "⚠️ Booking is not In Progress."
-//           );
-
-//           return;
-//         }
-
-//         // =================================================
-//         // SAVE LATEST TECHNICIAN LOCATION
-//         // =================================================
-
-//         booking.technicianLocation = {
-//           latitude: Number(
-//             data.latitude
-//           ),
-
-//           longitude: Number(
-//             data.longitude
-//           ),
-
-//           updatedAt: new Date(),
-//         };
-
-//         booking.trackingActive = true;
-
-//         await booking.save();
-
-//         console.log(
-//           "💾 Technician location saved to MongoDB."
-//         );
-
-//         // =================================================
-//         // SEND LOCATION TO CUSTOMER
-//         // =================================================
-
-//         io.to(data.bookingId).emit(
-//           "receive-location",
-//           {
-//             bookingId:
-//               data.bookingId,
-
-//             latitude:
-//               Number(data.latitude),
-
-//             longitude:
-//               Number(data.longitude),
-
-//             trackingActive: true,
-
-//             updatedAt: new Date(),
-//           }
-//         );
-
-//         console.log(
-//           "📤 Location sent to booking room:",
-//           data.bookingId
-//         );
-//       } catch (error) {
-//         console.error(
-//           "❌ Location update error:",
-//           error
-//         );
-//       }
-//     }
-//   );
-
-//   // =====================================================
-//   // DISCONNECT
-//   // =====================================================
-
-//   socket.on("disconnect", () => {
-//     console.log(
-//       "🔴 User Disconnected:",
-//       socket.id
-//     );
-//   });
-// });
-
-// // =========================
-// // Server
-// // =========================
-
-// const PORT =
-//   process.env.PORT || 5000;
-
-// server.listen(PORT, () => {
-//   console.log(
-//     `🚀 Server running on port ${PORT}`
-//   );
-// });
-
-
-
 require("dotenv").config();
 
 const express = require("express");
@@ -358,6 +6,16 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const connectDB = require("./config/db");
+
+// =========================
+// Models
+// =========================
+
+const Booking = require("./models/Booking");
+
+// =========================
+// Routes
+// =========================
 
 const authRoutes = require("./routes/authRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
@@ -370,31 +28,96 @@ const adminCustomerRoutes = require("./routes/adminCustomerRoutes");
 const adminTechnicianRoutes = require("./routes/adminTechnicianRoutes");
 const adminBookingRoutes = require("./routes/adminBookingRoutes");
 
-// Booking model
-const Booking = require("./models/Booking");
+// =========================
+// App
+// =========================
 
 const app = express();
 
+// =========================
+// Database
+// =========================
+
 connectDB();
 
+// =========================
+// CORS
+// =========================
+
+// Main allowed origins
 const allowedOrigins = [
   "http://localhost:5173",
   "https://fixora-4cdg.vercel.app",
-  "https://fixora-4cdg-git-main-legends-d834.vercel.app",
 ];
+
+// Check whether an origin is allowed
+const isAllowedOrigin = (origin) => {
+  // Requests without an origin
+  // such as Postman/server-to-server requests
+  if (!origin) {
+    return true;
+  }
+
+  // Local development
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  // Allow Vercel deployment / preview URLs
+  //
+  // Examples:
+  // https://fixora-4cdg-git-main-legends-d834.vercel.app
+  // https://fixora-4cdg-5j7sfp2oa-legends-d834.vercel.app
+  //
+  if (
+    /^https:\/\/fixora-4cdg-[a-z0-9-]+\.vercel\.app$/i.test(
+      origin
+    )
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+// =========================
+// Express CORS
+// =========================
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
       } else {
+        console.log("❌ CORS blocked origin:", origin);
+
         callback(new Error("Not allowed by CORS"));
       }
     },
+
     credentials: true,
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
   })
 );
+
+// =========================
+// JSON Middleware
+// =========================
+
 app.use(express.json());
 
 // =========================
@@ -428,6 +151,10 @@ app.use(
   adminBookingRoutes
 );
 
+// =========================
+// Home Route
+// =========================
+
 app.get("/", (req, res) => {
   res.send("Welcome to Fixora Backend");
 });
@@ -439,22 +166,33 @@ app.get("/", (req, res) => {
 const server = http.createServer(app);
 
 // =========================
-// Socket.IO Setup
+// Socket.IO
 // =========================
 
 const io = new Server(server, {
   cors: {
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
       } else {
+        console.log(
+          "❌ Socket.IO CORS blocked origin:",
+          origin
+        );
+
         callback(new Error("Not allowed by CORS"));
       }
     },
-    methods: ["GET", "POST"],
+
+    methods: [
+      "GET",
+      "POST",
+    ],
+
     credentials: true,
   },
 });
+
 // =========================
 // Socket Connection
 // =========================
@@ -466,7 +204,7 @@ io.on("connection", (socket) => {
   );
 
   // ========================================
-  // JOIN BOOKING ROOM
+  // CUSTOMER / USER JOINS BOOKING ROOM
   // ========================================
 
   socket.on(
@@ -481,13 +219,17 @@ io.on("connection", (socket) => {
           return;
         }
 
+        // Join booking room
         socket.join(bookingId);
 
         console.log(
           `📦 Socket ${socket.id} joined booking room: ${bookingId}`
         );
 
-        // Check current number of users in room
+        // ====================================
+        // CHECK ROOM USERS
+        // ====================================
+
         const room =
           io.sockets.adapter.rooms.get(
             bookingId
@@ -502,7 +244,7 @@ io.on("connection", (socket) => {
         );
 
         // ====================================
-        // SEND LAST SAVED LOCATION
+        // GET LAST SAVED LOCATION
         // ====================================
 
         const booking =
@@ -520,6 +262,9 @@ io.on("connection", (socket) => {
           booking.technicianLocation.longitude !==
             null
         ) {
+          // Send previous location
+          // to newly connected customer
+
           socket.emit(
             "receive-location",
             {
@@ -552,6 +297,10 @@ io.on("connection", (socket) => {
             "📤 Sent saved location to newly joined socket:",
             bookingId
           );
+        } else {
+          console.log(
+            "⏳ No technician location available yet."
+          );
         }
       } catch (error) {
         console.error(
@@ -575,6 +324,7 @@ io.on("connection", (socket) => {
           data
         );
 
+        // Validate data
         if (
           !data ||
           !data.bookingId ||
@@ -595,7 +345,7 @@ io.on("connection", (socket) => {
         } = data;
 
         // ====================================
-        // SAVE LOCATION IN DATABASE
+        // FIND BOOKING
         // ====================================
 
         const booking =
@@ -612,6 +362,10 @@ io.on("connection", (socket) => {
           return;
         }
 
+        // ====================================
+        // SAVE TECHNICIAN LOCATION
+        // ====================================
+
         booking.technicianLocation = {
           latitude: Number(latitude),
 
@@ -622,8 +376,9 @@ io.on("connection", (socket) => {
 
         booking.trackingActive = true;
 
-        // If technician is travelling,
-        // keep status as On The Way
+        // Keep tracking active
+        // when technician is on the way
+
         if (
           booking.status === "On The Way"
         ) {
@@ -638,7 +393,7 @@ io.on("connection", (socket) => {
         );
 
         // ====================================
-        // SEND TO CUSTOMER
+        // SEND LOCATION TO CUSTOMER
         // ====================================
 
         const locationData = {
@@ -698,7 +453,9 @@ io.on("connection", (socket) => {
     "stop-location",
     async (bookingId) => {
       try {
-        if (!bookingId) return;
+        if (!bookingId) {
+          return;
+        }
 
         await Booking.findByIdAndUpdate(
           bookingId,
@@ -720,7 +477,7 @@ io.on("connection", (socket) => {
         );
       } catch (error) {
         console.error(
-          "Stop Tracking Error:",
+          "❌ Stop Tracking Error:",
           error.message
         );
       }
@@ -731,16 +488,19 @@ io.on("connection", (socket) => {
   // DISCONNECT
   // ========================================
 
-  socket.on("disconnect", () => {
-    console.log(
-      "🔴 User Disconnected:",
-      socket.id
-    );
-  });
+  socket.on(
+    "disconnect",
+    () => {
+      console.log(
+        "🔴 User Disconnected:",
+        socket.id
+      );
+    }
+  );
 });
 
 // =========================
-// Start Server
+// Server
 // =========================
 
 const PORT =
