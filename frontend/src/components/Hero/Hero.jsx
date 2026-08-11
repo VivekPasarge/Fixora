@@ -3,9 +3,7 @@ import { Link } from "react-router-dom";
 
 import heroImage from "../../assets/hero/hero.png";
 
-import heroStats from "./heroData";
 import SearchCard from "./SearchCard";
-//import FloatingCards from "./FloatingCards";
 
 import "./Hero.css";
 import "./SearchCard.css";
@@ -14,7 +12,10 @@ import "./FloatingCards.css";
 const Hero = () => {
   return (
     <section className="hero">
-      {/* Background */}
+
+      {/* =====================================================
+          HERO BACKGROUND
+      ===================================================== */}
 
       <div className="hero-bg">
         <div className="hero-gradient"></div>
@@ -24,9 +25,18 @@ const Hero = () => {
         <div className="hero-glow-right"></div>
       </div>
 
+
+      {/* =====================================================
+          HERO CONTAINER
+      ===================================================== */}
+
       <div className="container hero-container">
+
         <div className="hero-grid">
-          {/* LEFT */}
+
+          {/* =================================================
+              LEFT SIDE
+          ================================================= */}
 
           <motion.div
             className="hero-left"
@@ -34,9 +44,15 @@ const Hero = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
+
+            {/* Badge */}
+
             <span className="hero-badge">
               PROFESSIONAL HOME SERVICES
             </span>
+
+
+            {/* Heading */}
 
             <h1 className="hero-title">
               Smart Home
@@ -48,6 +64,9 @@ const Hero = () => {
               You Can Trust.
             </h1>
 
+
+            {/* Description */}
+
             <p className="hero-text">
               Verified professionals for repairs,
               maintenance, installation and cleaning.
@@ -56,7 +75,11 @@ const Hero = () => {
               services across your city.
             </p>
 
+
+            {/* Buttons */}
+
             <div className="hero-buttons">
+
               <Link
                 to="/services"
                 className="btn btn-primary btn-lg"
@@ -64,31 +87,48 @@ const Hero = () => {
                 Book Service
               </Link>
 
+
               <Link
                 to="/services"
                 className="btn btn-secondary btn-lg"
               >
                 Explore Services
               </Link>
+
             </div>
+
+
+            {/* Search Card */}
 
             <div className="hero-search">
               <SearchCard />
             </div>
 
-            {/* <div className="hero-stats">
+
+            {/* =================================================
+                HERO STATS
+                Currently disabled
+            ================================================= */}
+
+            {/*
+            <div className="hero-stats">
+
               {heroStats.map((item) => (
+
                 <motion.div
                   key={item.id}
                   className="stat-card"
+
                   whileHover={{
                     y: -8,
                     scale: 1.03,
                   }}
+
                   transition={{
                     duration: 0.25,
                   }}
                 >
+
                   <h2 className="stat-number">
                     {item.number}
                   </h2>
@@ -96,12 +136,20 @@ const Hero = () => {
                   <p className="stat-title">
                     {item.title}
                   </p>
+
                 </motion.div>
+
               ))}
-            </div> */}
+
+            </div>
+            */}
+
           </motion.div>
 
-          {/* RIGHT */}
+
+          {/* =================================================
+              RIGHT SIDE
+          ================================================= */}
 
           <motion.div
             className="hero-right"
@@ -109,7 +157,13 @@ const Hero = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
+
+            {/* Image Glow */}
+
             <div className="image-glow"></div>
+
+
+            {/* Main Hero Image */}
 
             <img
               src={heroImage}
@@ -117,22 +171,48 @@ const Hero = () => {
               className="hero-main-image"
             />
 
-            {/* <FloatingCards /> */}
+
+            {/* =================================================
+                FLOATING CARDS
+                Currently disabled
+            ================================================= */}
+
+            {/*
+            <FloatingCards />
+            */}
+
           </motion.div>
+
         </div>
 
-        {/* Trust Strip */}
-{/* 
+
+        {/* =====================================================
+            TRUST STRIP
+            Currently disabled
+        ===================================================== */}
+
+        {/*
         <motion.div
           className="trust-wrapper"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
+
+          initial={{
+            opacity: 0,
+            y: 40,
+          }}
+
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+
           transition={{
             delay: 0.45,
             duration: 0.7,
           }}
         >
+
           <div className="trust-strip">
+
             <div className="trust-item">
               <h3>✔</h3>
               <p>Verified Experts</p>
@@ -152,9 +232,14 @@ const Hero = () => {
               <h3>🛡️</h3>
               <p>Secure Payments</p>
             </div>
+
           </div>
-        </motion.div> */}
+
+        </motion.div>
+        */}
+
       </div>
+
     </section>
   );
 };

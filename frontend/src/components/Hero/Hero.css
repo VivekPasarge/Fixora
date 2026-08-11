@@ -31,19 +31,6 @@
 .hero-gradient {
   position: absolute;
   inset: 0;
-
-  /* background:
-    radial-gradient(
-      circle at 12% 18%,
-      rgba(59,130,246,.18),
-      transparent 30%
-    ),
-
-    radial-gradient(
-      circle at 85% 82%,
-      rgba(6,182,212,.14),
-      transparent 34%
-    ); */
 }
 
 .hero-glow-left,
@@ -60,7 +47,7 @@
   top: -260px;
   left: -240px;
 
-  background: rgba(37,99,235,.22);
+  background: rgba(37, 99, 235, 0.22);
 
   animation: leftGlow 12s ease-in-out infinite;
 }
@@ -72,41 +59,37 @@
   right: -180px;
   bottom: -180px;
 
-  background: rgba(6,182,212,.18);
+  background: rgba(6, 182, 212, 0.18);
 
   animation: rightGlow 14s ease-in-out infinite;
 }
 
 @keyframes leftGlow {
-
-  0%{
-    transform:translate(0,0);
+  0% {
+    transform: translate(0, 0);
   }
 
-  50%{
-    transform:translate(50px,40px);
+  50% {
+    transform: translate(50px, 40px);
   }
 
-  100%{
-    transform:translate(0,0);
+  100% {
+    transform: translate(0, 0);
   }
-
 }
 
 @keyframes rightGlow {
-
-  0%{
-    transform:translate(0,0);
+  0% {
+    transform: translate(0, 0);
   }
 
-  50%{
-    transform:translate(-50px,-35px);
+  50% {
+    transform: translate(-50px, -35px);
   }
 
-  100%{
-    transform:translate(0,0);
+  100% {
+    transform: translate(0, 0);
   }
-
 }
 
 /* =========================================================
@@ -124,23 +107,31 @@
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.05fr .95fr;
+
+  grid-template-columns: 1.05fr 0.95fr;
+
   align-items: center;
-  gap: 80px;
+
+  gap: 70px;
 
   min-height: 760px;
 }
 
 /* =========================================================
-   LEFT
+   LEFT SIDE
 ========================================================= */
 
 .hero-left {
   width: 100%;
+
+  position: relative;
+
+  z-index: 10;
 }
 
 .hero-badge {
   display: inline-flex;
+
   align-items: center;
   justify-content: center;
 
@@ -151,18 +142,21 @@
   color: #bfdbfe;
 
   font-size: 12px;
+
   font-weight: 700;
-  letter-spacing: .22em;
+
+  letter-spacing: 0.22em;
+
   text-transform: uppercase;
 
-  border: 1px solid rgba(255,255,255,.10);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 
-  background: rgba(255,255,255,.06);
+  background: rgba(255, 255, 255, 0.06);
 
   backdrop-filter: blur(18px);
 
   box-shadow:
-      0 15px 35px rgba(0,0,0,.20);
+    0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
 /* =========================================================
@@ -170,54 +164,50 @@
 ========================================================= */
 
 .hero-title {
-
   margin-top: 28px;
 
   max-width: 700px;
 
-  color: #fff;
+  color: #ffffff;
 
   font-size: 64px;
+
   font-weight: 800;
 
   line-height: 1.08;
 
   letter-spacing: -2px;
-
 }
 
 .hero-highlight {
+  display: block;
 
-  display:block;
+  margin: 10px 0;
 
-  margin:10px 0;
-
-  background:linear-gradient(
-      90deg,
-      #60a5fa,
-      #67e8f9,
-      #ffffff
+  background: linear-gradient(
+    90deg,
+    #60a5fa,
+    #67e8f9,
+    #ffffff
   );
 
-  background-size:200% auto;
+  background-size: 200% auto;
 
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+  -webkit-background-clip: text;
 
-  animation:gradientMove 6s linear infinite;
+  -webkit-text-fill-color: transparent;
 
+  animation: gradientMove 6s linear infinite;
 }
 
-@keyframes gradientMove{
+@keyframes gradientMove {
+  from {
+    background-position: 0%;
+  }
 
-    from{
-        background-position:0%;
-    }
-
-    to{
-        background-position:200%;
-    }
-
+  to {
+    background-position: 200%;
+  }
 }
 
 /* =========================================================
@@ -225,7 +215,6 @@
 ========================================================= */
 
 .hero-text {
-
   margin-top: 30px;
 
   max-width: 560px;
@@ -235,7 +224,6 @@
   font-size: 18px;
 
   line-height: 1.9;
-
 }
 
 /* =========================================================
@@ -243,144 +231,138 @@
 ========================================================= */
 
 .hero-buttons {
+  display: flex;
 
-  display:flex;
-  align-items:center;
-  flex-wrap:wrap;
+  align-items: center;
 
-  gap:18px;
+  flex-wrap: wrap;
 
-  margin-top:42px;
+  gap: 18px;
 
+  margin-top: 42px;
 }
 
-.hero-buttons .btn{
-    min-width:190px;
+.hero-buttons .btn {
+  min-width: 190px;
+
+  cursor: pointer;
 }
 
 /* =========================================================
    SEARCH
 ========================================================= */
 
-.hero-search{
+.hero-search {
+  margin-top: 48px;
 
-    margin-top:48px;
-
-    width:100%;
+  width: 100%;
 }
 
 /* =========================================================
    STATS
 ========================================================= */
 
-.hero-stats{
+.hero-stats {
+  display: grid;
 
-    display:grid;
+  grid-template-columns: repeat(3, 1fr);
 
-    grid-template-columns:repeat(3,1fr);
+  gap: 22px;
 
-    gap:22px;
+  margin-top: 55px;
 
-    margin-top:55px;
-
-    max-width:650px;
-
+  max-width: 650px;
 }
 
-.stat-card{
+.stat-card {
+  position: relative;
 
-    position:relative;
+  overflow: hidden;
 
-    overflow:hidden;
+  padding: 28px 24px;
 
-    padding:28px 24px;
+  border-radius: 24px;
 
-    border-radius:24px;
+  background: rgba(255, 255, 255, 0.08);
 
-    background:rgba(255,255,255,.08);
+  backdrop-filter: blur(18px);
 
-    backdrop-filter:blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 
-    border:1px solid rgba(255,255,255,.12);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 
-    transition:
-        transform .3s ease,
-        box-shadow .3s ease,
-        border-color .3s ease;
-
-    box-shadow:
-        0 18px 35px rgba(0,0,0,.18);
-
+  box-shadow:
+    0 18px 35px rgba(0, 0, 0, 0.18);
 }
 
-.stat-card::before{
+.stat-card::before {
+  content: "";
 
-    content:"";
+  position: absolute;
 
-    position:absolute;
+  top: 0;
+  left: 0;
 
-    top:0;
-    left:0;
+  width: 5px;
+  height: 100%;
 
-    width:5px;
-    height:100%;
-
-    background:linear-gradient(
-        180deg,
-        #3b82f6,
-        #06b6d4
-    );
-
+  background: linear-gradient(
+    180deg,
+    #3b82f6,
+    #06b6d4
+  );
 }
 
-.stat-card:hover{
+.stat-card:hover {
+  transform: translateY(-8px);
 
-    transform:translateY(-8px);
+  border-color: rgba(59, 130, 246, 0.4);
 
-    border-color:rgba(59,130,246,.40);
-
-    box-shadow:
-        0 28px 60px rgba(37,99,235,.22);
-
+  box-shadow:
+    0 28px 60px rgba(37, 99, 235, 0.22);
 }
 
-.stat-number{
+.stat-number {
+  font-size: 42px;
 
-    font-size:42px;
+  font-weight: 800;
 
-    font-weight:800;
-
-    color:black;
-
+  color: #ffffff;
 }
 
-.stat-title{
+.stat-title {
+  margin-top: 12px;
 
-    margin-top:12px;
+  color: #cbd5e1;
 
-    color:#cbd5e1;
+  font-size: 15px;
 
-    font-size:15px;
-
-    line-height:1.6;
-
+  line-height: 1.6;
 }
+
 /* =========================================================
    RIGHT SIDE
 ========================================================= */
 
-.hero-right{
-    position: relative;
+.hero-right {
+  position: relative;
 
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+  display: flex;
 
-    min-height: 760px;
+  justify-content: center;
 
-    overflow: visible;
+  align-items: flex-start;
 
-    padding-top: 20px;
+  min-height: 760px;
+
+  overflow: visible;
+
+  padding-top: 20px;
+
+  z-index: 3;
 }
 
 /* =========================================================
@@ -390,17 +372,18 @@
 .image-glow {
   position: absolute;
 
-  width: 760px;
-  height: 760px;
+  width: 700px;
+
+  height: 700px;
 
   border-radius: 50%;
 
   background:
     radial-gradient(
       circle,
-      rgba(37,99,235,.34) 0%,
-      rgba(59,130,246,.18) 38%,
-      rgba(6,182,212,.12) 64%,
+      rgba(37, 99, 235, 0.34) 0%,
+      rgba(59, 130, 246, 0.18) 38%,
+      rgba(6, 182, 212, 0.12) 64%,
       transparent 80%
     );
 
@@ -414,82 +397,102 @@
 /* =========================================================
    HERO IMAGE
 ========================================================= */
-.hero-main-image{
 
-    position: absolute;
+.hero-main-image {
+  position: absolute;
 
-    top: -120px;          /* Move up */
-    right: 20px;            /* Align under Login/Register */
+  /*
+    IMPORTANT:
+    hero.png already contains the technician,
+    rating card, verified card, arrival card,
+    and blue background.
 
-    width: 100%;
-    max-width: 640px;
+    Therefore we control the entire composition
+    from this single image.
+  */
 
-    height: auto;
+  width: 700px;
 
-    object-fit: contain;
+  max-width: none;
 
-    z-index: 5;
+  height: auto;
 
-    animation: heroFloat 6s ease-in-out infinite;
+  object-fit: contain;
+
+  top: -80px;
+
+  right: -20px;
+
+  z-index: 5;
+
+  display: block;
+
+  user-select: none;
+
+  pointer-events: none;
+
+  -webkit-user-drag: none;
+
+  animation: heroFloat 6s ease-in-out infinite;
+
+  will-change: transform;
 }
 
 @keyframes heroFloat {
-
-  0%{
-    transform:translateY(0);
+  0% {
+    transform: translateY(0);
   }
 
-  50%{
-    transform:translateY(-12px);
+  50% {
+    transform: translateY(-12px);
   }
 
-  100%{
-    transform:translateY(0);
+  100% {
+    transform: translateY(0);
   }
-
 }
 
 @keyframes glowPulse {
+  0%,
+  100% {
+    transform: scale(1);
 
-  0%,100%{
-    transform:scale(1);
-    opacity:.85;
+    opacity: 0.85;
   }
 
-  50%{
-    transform:scale(1.08);
-    opacity:1;
-  }
+  50% {
+    transform: scale(1.08);
 
+    opacity: 1;
+  }
 }
 
 /* =========================================================
    FLOATING CARDS
+   Currently disabled in Hero.jsx
 ========================================================= */
 
 .hero-right .floating-card {
   position: absolute;
+
   z-index: 30;
 }
 
-/* Rating */
-
 .rating-card {
   top: 40px;
+
   left: 50%;
 }
 
-/* Verified */
-
 .verified-card {
   top: 380px;
+
   left: 10px;
 }
 
-/* Arrival */
-
 .arrival-card {
   top: 380px;
+
   right: 10px;
 
   transform: none;
@@ -497,15 +500,15 @@
 
 .floating-card {
   transition:
-    transform .3s ease,
-    box-shadow .3s ease;
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .floating-card:hover {
   transform: translateY(-8px) scale(1.04);
 
   box-shadow:
-    0 24px 55px rgba(37,99,235,.22);
+    0 24px 55px rgba(37, 99, 235, 0.22);
 }
 
 /* =========================================================
@@ -518,7 +521,8 @@
 
 .trust-strip {
   display: grid;
-  grid-template-columns: repeat(4,1fr);
+
+  grid-template-columns: repeat(4, 1fr);
 
   gap: 22px;
 
@@ -526,21 +530,23 @@
 
   border-radius: 28px;
 
-  background: rgba(255,255,255,.06);
+  background: rgba(255, 255, 255, 0.06);
 
-  border: 1px solid rgba(255,255,255,.10);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 
   backdrop-filter: blur(20px);
 
   box-shadow:
-      0 20px 50px rgba(0,0,0,.20);
+    0 20px 50px rgba(0, 0, 0, 0.2);
 }
 
 .trust-item {
   display: flex;
+
   flex-direction: column;
 
   justify-content: center;
+
   align-items: center;
 
   text-align: center;
@@ -550,18 +556,19 @@
   border-radius: 18px;
 
   transition:
-      transform .3s ease,
-      background .3s ease;
+    transform 0.3s ease,
+    background 0.3s ease;
 }
 
 .trust-item:hover {
   transform: translateY(-6px);
 
-  background: rgba(255,255,255,.05);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .trust-item h3 {
   font-size: 34px;
+
   color: #ffffff;
 }
 
@@ -569,7 +576,6 @@
   margin-top: 12px;
 
   color: #cbd5e1;
-  color: black;
 
   font-size: 15px;
 
@@ -580,497 +586,405 @@
    LARGE DESKTOP
 ========================================================= */
 
-@media (min-width:1500px){
-
-  .hero-main-image{
-
-      max-width:960px;
-
-      margin-right:-70px;
-
+@media (min-width: 1500px) {
+  .hero-grid {
+    gap: 80px;
   }
 
+  .hero-main-image {
+    width: 720px;
+
+    right: -510px;
+
+    top: -50px;
+  }
+
+  .image-glow {
+    width: 750px;
+
+    height: 750px;
+  }
+}
+
+/* =========================================================
+   EXTRA LARGE DESKTOP
+========================================================= */
+
+@media (min-width: 1600px) {
+  .hero-container {
+    max-width: 1450px;
+
+    margin: 0 auto;
+  }
+
+  .hero-grid {
+    gap: 90px;
+  }
+
+  .hero-title {
+    font-size: 72px;
+  }
+
+  /*
+    DO NOT increase this to 950px/1000px.
+    That was causing the overlap.
+  */
+
+  .hero-main-image {
+    width: 740px;
+
+    right: -25px;
+
+    top: -100px;
+  }
+
+  .image-glow {
+    width: 780px;
+
+    height: 780px;
+  }
 }
 
 /* =========================================================
    LAPTOP
 ========================================================= */
 
-@media (max-width:1200px){
-
-  .hero-main-image{
-
-      max-width:700px;
-
-      margin-right:0;
-
+@media (max-width: 1200px) {
+  .hero-grid {
+    gap: 45px;
   }
 
-  .image-glow{
-
-      width:620px;
-      height:620px;
-
+  .hero-title {
+    font-size: 56px;
   }
 
-}
-/* =========================================================
-   TABLET (1024px)
-========================================================= */
+  .hero-main-image {
+    width: 650px;
 
-@media (max-width:1024px){
+    right: -20px;
 
-  .hero{
-
-    padding:120px 0 90px;
-
+    top: -70px;
   }
 
-  .hero-grid{
+  .image-glow {
+    width: 620px;
 
-    grid-template-columns:1fr;
-
-    text-align:center;
-
-    gap:70px;
-
+    height: 620px;
   }
-
-  .hero-left{
-
-    display:flex;
-
-    flex-direction:column;
-
-    align-items:center;
-
-  }
-
-  .hero-title{
-
-    max-width:700px;
-
-  }
-
-  .hero-text{
-
-    max-width:650px;
-
-  }
-
-  .hero-buttons{
-
-    justify-content:center;
-
-  }
-
-  .hero-search{
-
-    width:100%;
-
-    display:flex;
-
-    justify-content:center;
-
-  }
-
-  .hero-stats{
-
-    max-width:700px;
-
-    width:100%;
-
-  }
-
-  .hero-right{
-
-    min-height:auto;
-
-  }
-
-  .hero-main-image{
-
-    max-width:620px;
-
-    margin-top:0;
-
-    margin-right:0;
-
-  }
-
-  .image-glow{
-
-    width:520px;
-
-    height:520px;
-
-  }
-
-  .rating-card{
-
-    left:20px;
-
-  }
-
-  .verified-card{
-
-    left:20px;
-
-  }
-
-  .arrival-card{
-
-    right:20px;
-
-  }
-
-  .trust-strip{
-
-    grid-template-columns:repeat(2,1fr);
-
-  }
-
 }
 
 /* =========================================================
-   MOBILE (768px)
+   TABLET
 ========================================================= */
 
-@media (max-width:768px){
-
-  .hero{
-
-    padding:100px 0 70px;
-
+@media (max-width: 1024px) {
+  .hero {
+    padding: 120px 0 90px;
   }
 
-  .hero-grid{
+  .hero-grid {
+    grid-template-columns: 1fr;
 
-    gap:50px;
+    text-align: center;
 
+    gap: 70px;
   }
 
-  .hero-title{
+  .hero-left {
+    display: flex;
 
-    font-size:44px;
+    flex-direction: column;
 
-    line-height:1.15;
-
+    align-items: center;
   }
 
-  .hero-text{
+  .hero-title {
+    max-width: 700px;
 
-    font-size:16px;
-
-    line-height:1.8;
-
+    font-size: 56px;
   }
 
-  .hero-buttons{
-
-    width:100%;
-
-    flex-direction:column;
-
+  .hero-text {
+    max-width: 650px;
   }
 
-  .hero-buttons .btn{
-
-    width:100%;
-
+  .hero-buttons {
+    justify-content: center;
   }
 
-  .hero-search{
+  .hero-search {
+    width: 100%;
 
-    margin-top:35px;
+    display: flex;
 
+    justify-content: center;
   }
 
-  .hero-stats{
+  .hero-stats {
+    max-width: 700px;
 
-    grid-template-columns:1fr;
-
+    width: 100%;
   }
 
-  .stat-card{
+  .hero-right {
+    min-height: 620px;
 
-    padding:24px;
-
+    width: 100%;
   }
 
-  .stat-number{
+  .hero-main-image {
+    position: relative;
 
-    font-size:40px;
+    width: 650px;
 
+    max-width: 90%;
+
+    right: auto;
+
+    top: auto;
+
+    margin: -30px auto 0;
   }
 
-  .hero-main-image{
+  .image-glow {
+    width: 520px;
 
-    max-width:430px;
-
+    height: 520px;
   }
 
-  .image-glow{
-
-    width:360px;
-
-    height:360px;
-
+  .rating-card {
+    left: 20px;
   }
 
-  .rating-card{
-
-    top:20px;
-
-    left:0;
-
-    transform:scale(.88);
-
+  .verified-card {
+    left: 20px;
   }
 
-  .verified-card{
-
-    left:0;
-
-    bottom:25px;
-
-    transform:scale(.88);
-
+  .arrival-card {
+    right: 20px;
   }
 
-  .arrival-card{
-
-    right:0;
-
-    transform:translateY(-50%) scale(.88);
-
+  .trust-strip {
+    grid-template-columns: repeat(2, 1fr);
   }
-
-  .trust-strip{
-
-    grid-template-columns:1fr;
-
-    gap:18px;
-
-  }
-
 }
 
 /* =========================================================
-   SMALL MOBILE (480px)
+   MOBILE
 ========================================================= */
 
-@media (max-width:480px){
-
-  .hero{
-
-    padding-top:90px;
-
+@media (max-width: 768px) {
+  .hero {
+    padding: 100px 0 70px;
   }
 
-  .hero-title{
-
-    font-size:34px;
-
+  .hero-grid {
+    gap: 50px;
   }
 
-  .hero-badge{
+  .hero-title {
+    font-size: 44px;
 
-    padding:10px 18px;
-
-    font-size:10px;
-
-    letter-spacing:.18em;
-
+    line-height: 1.15;
   }
 
-  .hero-text{
+  .hero-text {
+    font-size: 16px;
 
-    font-size:15px;
-
+    line-height: 1.8;
   }
 
-  .hero-main-image{
+  .hero-buttons {
+    width: 100%;
 
-    max-width:320px;
-
+    flex-direction: column;
   }
 
-  .image-glow{
-
-    width:290px;
-
-    height:290px;
-
+  .hero-buttons .btn {
+    width: 100%;
   }
 
-  .rating-card{
-
-    left:-12px;
-
-    transform:scale(.78);
-
+  .hero-search {
+    margin-top: 35px;
   }
 
-  .verified-card{
-
-    left:-12px;
-
-    transform:scale(.78);
-
+  .hero-stats {
+    grid-template-columns: 1fr;
   }
 
-  .arrival-card{
-
-    right:-12px;
-
-    transform:translateY(-50%) scale(.78);
-
+  .stat-card {
+    padding: 24px;
   }
 
-}
-/* =========================================================
-   LINKS & INTERACTION
-========================================================= */
+  .stat-number {
+    font-size: 40px;
+  }
 
-.hero a{
-    text-decoration:none;
-}
+  .hero-right {
+    min-height: 480px;
+  }
 
-.hero-badge{
-    user-select:none;
-}
+  .hero-main-image {
+    width: 500px;
 
-.hero-buttons .btn{
-    cursor:pointer;
-}
+    max-width: 100%;
 
-/* =========================================================
-   IMAGE OPTIMIZATION
-========================================================= */
+    margin-top: 0;
+  }
 
-.hero-main-image{
-    display:block;
-    user-select:none;
-    pointer-events:none;
-    -webkit-user-drag:none;
+  .image-glow {
+    width: 360px;
+
+    height: 360px;
+  }
+
+  .rating-card {
+    top: 20px;
+
+    left: 0;
+
+    transform: scale(0.88);
+  }
+
+  .verified-card {
+    left: 0;
+
+    bottom: 25px;
+
+    transform: scale(0.88);
+  }
+
+  .arrival-card {
+    right: 0;
+
+    transform: translateY(-50%) scale(0.88);
+  }
+
+  .trust-strip {
+    grid-template-columns: 1fr;
+
+    gap: 18px;
+  }
 }
 
 /* =========================================================
-   ACCESSIBILITY
+   SMALL MOBILE
 ========================================================= */
 
-.hero :focus-visible{
+@media (max-width: 480px) {
+  .hero {
+    padding-top: 90px;
+  }
 
-    outline:3px solid rgba(96,165,250,.55);
+  .hero-title {
+    font-size: 34px;
+  }
 
-    outline-offset:4px;
+  .hero-badge {
+    padding: 10px 18px;
 
-    border-radius:12px;
+    font-size: 10px;
 
-}
+    letter-spacing: 0.18em;
+  }
 
-/* =========================================================
-   REDUCE MOTION
-========================================================= */
+  .hero-text {
+    font-size: 15px;
+  }
 
-@media (prefers-reduced-motion: reduce){
+  .hero-right {
+    min-height: 400px;
+  }
 
-    *,
-    *::before,
-    *::after{
+  .hero-main-image {
+    width: 380px;
 
-        animation-duration:.01ms !important;
+    max-width: 110%;
 
-        animation-iteration-count:1 !important;
+    margin-left: auto;
 
-        transition-duration:.01ms !important;
+    margin-right: auto;
+  }
 
-        scroll-behavior:auto !important;
+  .image-glow {
+    width: 290px;
 
-    }
+    height: 290px;
+  }
 
-}
+  .rating-card {
+    left: -12px;
 
-/* =========================================================
-   LARGE DESKTOP IMPROVEMENTS
-========================================================= */
+    transform: scale(0.78);
+  }
 
-@media (min-width:1600px){
+  .verified-card {
+    left: -12px;
 
-    .hero-container{
+    transform: scale(0.78);
+  }
 
-        max-width:1450px;
+  .arrival-card {
+    right: -12px;
 
-        margin:0 auto;
-
-    }
-
-    .hero-grid{
-
-        gap:110px;
-
-    }
-
-    .hero-title{
-
-        font-size:72px;
-
-    }
-
-    .hero-main-image{
-
-        max-width:980px;
-
-    }
-
+    transform: translateY(-50%) scale(0.78);
+  }
 }
 
 /* =========================================================
    EXTRA SMALL DEVICES
 ========================================================= */
 
-@media (max-width:360px){
+@media (max-width: 360px) {
+  .hero {
+    padding-top: 85px;
+  }
 
-    .hero{
+  .hero-title {
+    font-size: 30px;
 
-        padding-top:85px;
+    letter-spacing: -1px;
+  }
 
-    }
+  .hero-text {
+    font-size: 14px;
+  }
 
-    .hero-title{
+  .hero-right {
+    min-height: 350px;
+  }
 
-        font-size:30px;
+  .hero-main-image {
+    width: 320px;
 
-        letter-spacing:-1px;
+    max-width: 110%;
+  }
 
-    }
+  .image-glow {
+    width: 240px;
 
-    .hero-text{
+    height: 240px;
+  }
 
-        font-size:14px;
+  .hero-buttons .btn {
+    min-width: 100%;
+  }
+}
 
-    }
+/* =========================================================
+   LINKS & INTERACTION
+========================================================= */
 
-    .hero-main-image{
+.hero a {
+  text-decoration: none;
+}
 
-        max-width:280px;
+.hero-badge {
+  user-select: none;
+}
 
-    }
-
-    .image-glow{
-
-        width:240px;
-        height:240px;
-
-    }
-
-    .hero-buttons .btn{
-
-        min-width:100%;
-
-    }
-
+.hero-buttons .btn {
+  cursor: pointer;
 }
 
 /* =========================================================
@@ -1080,42 +994,62 @@
 .hero-main-image,
 .image-glow,
 .floating-card,
-.stat-card{
-
-    will-change:transform;
-
+.stat-card {
+  will-change: transform;
 }
 
-.hero-right{
+.hero-right {
+  contain: layout;
+}
 
-    contain:layout;
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
 
+.hero :focus-visible {
+  outline: 3px solid rgba(96, 165, 250, 0.55);
+
+  outline-offset: 4px;
+
+  border-radius: 12px;
+}
+
+/* =========================================================
+   REDUCE MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+
+    animation-iteration-count: 1 !important;
+
+    transition-duration: 0.01ms !important;
+
+    scroll-behavior: auto !important;
+  }
 }
 
 /* =========================================================
    PRINT
 ========================================================= */
 
-@media print{
+@media print {
+  .hero {
+    background: #ffffff;
 
-    .hero{
+    color: #000000;
 
-        background:#fff;
+    padding: 40px 0;
+  }
 
-        color:#000;
-
-        padding:40px 0;
-
-    }
-
-    .hero-bg,
-    .image-glow,
-    .floating-card{
-
-        display:none;
-
-    }
-
+  .hero-bg,
+  .image-glow,
+  .floating-card {
+    display: none;
+  }
 }
 
 /* =========================================================
