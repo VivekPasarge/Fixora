@@ -12,7 +12,6 @@ const AvailableJobs = () => {
   const [acceptingJobId, setAcceptingJobId] =
     useState(null);
 
-
   /* =========================================================
      LOAD TECHNICIAN AVAILABILITY
   ========================================================= */
@@ -28,7 +27,6 @@ const AvailableJobs = () => {
     }
   }, []);
 
-
   /* =========================================================
      LISTEN FOR AVAILABILITY CHANGES
   ========================================================= */
@@ -37,9 +35,19 @@ const AvailableJobs = () => {
     const handleAvailabilityChange = (
       event
     ) => {
-      setIsOnline(
-        event.detail.isOnline
-      );
+      const online =
+        event.detail?.isOnline;
+
+      setIsOnline(online);
+
+      /*
+        If technician goes offline,
+        immediately clear the jobs.
+      */
+
+      if (!online) {
+        setJobs([]);
+      }
     };
 
     window.addEventListener(
@@ -55,59 +63,125 @@ const AvailableJobs = () => {
     };
   }, []);
 
-
   /* =========================================================
      FETCH AVAILABLE JOBS
   ========================================================= */
 
   useEffect(() => {
-    if (isOnline) {
-      fetchJobs();
-    } else {
+    if (!isOnline) {
       setJobs([]);
       setLoading(false);
+
+      return;
     }
+
+    /*
+      Fetch immediately when technician
+      becomes online.
+    */
+
+    fetchJobs();
+
+    /*
+      Automatically check for new jobs
+      every 5 seconds.
+
+      This removes the need to refresh
+      the technician page manually.
+    */
+
+    const interval = setInterval(() => {
+      fetchJobs(true);
+    }, 5000);
+
+    return () => {
+      clearInterval(interval);
+    };
   }, [isOnline]);
 
+  /* =========================================================
+     FETCH JOBS
+  ========================================================= */
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (
+    silent = false
+  ) => {
     try {
-      setLoading(true);
+      /*
+        Don't show the loading screen
+        during automatic background refresh.
+      */
+
+      if (!silent) {
+        setLoading(true);
+      }
 
       const token =
         localStorage.getItem("token");
+
+      if (!token) {
+        console.log(
+          "❌ No technician token found"
+        );
+
+        setJobs([]);
+
+        return;
+      }
 
       const response = await api.get(
         "/bookings/available",
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization:
+              `Bearer ${token}`,
           },
         }
       );
 
       console.log(
-        "Available Jobs:",
+        "📦 Available Jobs:",
         response.data
       );
 
-      setJobs(
-        response.data.bookings || []
-      );
+      const availableJobs =
+        response.data?.bookings || [];
 
+      /*
+        Update jobs.
+
+        If a booking has already been
+        accepted elsewhere, the backend
+        should no longer return it.
+      */
+
+      setJobs(
+        Array.isArray(availableJobs)
+          ? availableJobs
+          : []
+      );
     } catch (error) {
       console.log(
         "Available Jobs Error:",
         error
       );
 
-      setJobs([]);
+      /*
+        During an automatic refresh,
+        don't unnecessarily destroy
+        the existing job list because
+        of a temporary network error.
+      */
 
+      if (!silent) {
+        setJobs([]);
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
-
 
   /* =========================================================
      ACCEPT JOB
@@ -116,8 +190,9 @@ const AvailableJobs = () => {
   const handleAccept = async (
     bookingId
   ) => {
-
-    // Technician must be online
+    /*
+      Technician must be online.
+    */
 
     if (!isOnline) {
       alert(
@@ -128,13 +203,25 @@ const AvailableJobs = () => {
     }
 
     try {
-
       setAcceptingJobId(
         bookingId
       );
 
       const token =
         localStorage.getItem("token");
+
+      if (!token) {
+        alert(
+          "Please login again."
+        );
+
+        return;
+      }
+
+      console.log(
+        "🚀 Accepting booking:",
+        bookingId
+      );
 
       const response = await api.put(
         `/bookings/${bookingId}/accept`,
@@ -147,14 +234,61 @@ const AvailableJobs = () => {
         }
       );
 
-      alert(
-        response.data.message
+      console.log(
+        "✅ Accept Job Response:",
+        response.data
       );
 
-      await fetchJobs();
+      /*
+        Remove the accepted job
+        immediately from the UI.
 
+        No page refresh required.
+      */
+
+      setJobs((currentJobs) =>
+        currentJobs.filter(
+          (job) =>
+            job._id !== bookingId
+        )
+      );
+
+      alert(
+        response.data.message ||
+          "Booking accepted successfully."
+      );
+
+      /*
+        Fetch again in the background
+        to make sure the UI matches
+        the server.
+      */
+
+      fetchJobs(true);
+
+      /*
+        Notify other technician
+        dashboard components that
+        the technician has a new
+        active job.
+
+        This allows components such
+        as ActiveJob to refresh their
+        data without a page reload.
+      */
+
+      window.dispatchEvent(
+        new CustomEvent(
+          "technicianBookingChanged",
+          {
+            detail: {
+              bookingId,
+              status: "Accepted",
+            },
+          }
+        )
+      );
     } catch (error) {
-
       console.log(
         "Accept Job Error:",
         error
@@ -164,14 +298,12 @@ const AvailableJobs = () => {
         error.response?.data?.message ||
           "Failed to accept booking"
       );
-
     } finally {
-
-      setAcceptingJobId(null);
-
+      setAcceptingJobId(
+        null
+      );
     }
   };
-
 
   /* =========================================================
      OFFLINE UI
@@ -202,7 +334,6 @@ const AvailableJobs = () => {
 
         </div>
 
-
         <div className="offline-jobs-card">
 
           <div className="offline-jobs-icon">
@@ -224,7 +355,6 @@ const AvailableJobs = () => {
       </section>
     );
   }
-
 
   /* =========================================================
      PAGE
@@ -256,7 +386,6 @@ const AvailableJobs = () => {
 
         </div>
 
-
         <div className="online-indicator">
 
           <span className="online-indicator-dot"></span>
@@ -265,6 +394,25 @@ const AvailableJobs = () => {
 
         </div>
 
+      </div>
+
+
+      {/* =====================================================
+          AUTO REFRESH INDICATOR
+      ===================================================== */}
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: "15px",
+          fontSize: "12px",
+          color: "#64748b",
+        }}
+      >
+        <span>
+          Automatically checking for new jobs
+        </span>
       </div>
 
 
