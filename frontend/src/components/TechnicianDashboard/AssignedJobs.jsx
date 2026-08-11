@@ -33,7 +33,7 @@ const AssignedJobs = () => {
 }, []);
 
 
-  const fetchAssignedJobs = async () => {
+  const fetchAssignedJobs = async (silent = false) => {
     try {
       const token =
         localStorage.getItem("token");
@@ -58,7 +58,9 @@ const AssignedJobs = () => {
       );
 
     } finally {
-      setLoading(false);
+    if (!silent) {
+  setLoading(false);
+}
     }
   };
 
