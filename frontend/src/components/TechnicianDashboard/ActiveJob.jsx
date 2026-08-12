@@ -1,4 +1,8 @@
-import { useEffect, useState, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  useRef,
+} from "react";
 
 import { motion } from "framer-motion";
 
@@ -12,16 +16,92 @@ import {
   FiMap,
 } from "react-icons/fi";
 
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+} from "react-leaflet";
+
+import L from "leaflet";
+
+import "leaflet/dist/leaflet.css";
+
 import api from "../../api/axios";
 
 import socket from "../../socket";
 
 import "./ActiveJob.css";
 
-const ActiveJob = () => {
-  const [booking, setBooking] = useState(null);
 
-  const [loading, setLoading] = useState(true);
+/* =========================================================
+   TECHNICIAN MAP ICON
+========================================================= */
+
+const technicianIcon = new L.Icon({
+  iconUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+
+  iconSize: [25, 41],
+
+  iconAnchor: [12, 41],
+
+  popupAnchor: [1, -34],
+
+  shadowSize: [41, 41],
+});
+
+
+/* =========================================================
+   MAP RECENTER COMPONENT
+========================================================= */
+
+const RecenterTechnicianMap = ({
+  latitude,
+  longitude,
+}) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (
+      typeof latitude !== "number" ||
+      typeof longitude !== "number"
+    ) {
+      return;
+    }
+
+    map.setView(
+      [latitude, longitude],
+      Math.max(map.getZoom(), 16),
+      {
+        animate: true,
+      }
+    );
+  }, [
+    latitude,
+    longitude,
+    map,
+  ]);
+
+  return null;
+};
+
+
+/* =========================================================
+   ACTIVE JOB
+========================================================= */
+
+const ActiveJob = () => {
+
+  const [booking, setBooking] =
+    useState(null);
+
+  const [loading, setLoading] =
+    useState(true);
 
   const [actionLoading, setActionLoading] =
     useState(false);
@@ -33,63 +113,88 @@ const ActiveJob = () => {
     useState("");
 
   /*
-    Store the browser GPS watch ID.
+    NEW
 
-    We use useRef because changing this value
-    should NOT cause a React re-render.
+    Stores the technician's current
+    latitude and longitude.
+
+    Every time GPS gives a new position,
+    this state changes and the marker
+    moves automatically.
   */
 
-  const watchIdRef = useRef(null);
+  const [
+    technicianLocation,
+    setTechnicianLocation,
+  ] = useState(null);
+
 
   /*
-    Store the current booking ID.
-
-    This prevents old GPS callbacks from
-    sending locations for another booking.
+    Store browser GPS watch ID.
   */
 
-  const bookingIdRef = useRef(null);
+  const watchIdRef =
+    useRef(null);
+
 
   /*
-    Prevent multiple GPS watchers.
+    Store current booking ID.
   */
 
-  const trackingStartedRef = useRef(false);
+  const bookingIdRef =
+    useRef(null);
+
+
+  /*
+    Prevent duplicate GPS watchers.
+  */
+
+  const trackingStartedRef =
+    useRef(false);
+
 
   /* =========================================================
      FETCH ACTIVE BOOKING
   ========================================================= */
 
   useEffect(() => {
+
     fetchActiveBooking();
 
     /*
-      Keep checking the server every 5 seconds.
-
-      This is useful if the customer/admin changes
-      something from another device.
-
-      It is NOT required for Start Journey anymore
-      because we update React state immediately.
+      Automatically check the server
+      every 5 seconds.
     */
 
-    const interval = setInterval(() => {
-      fetchActiveBooking(true);
-    }, 5000);
+    const interval =
+      setInterval(() => {
+
+        fetchActiveBooking(true);
+
+      }, 5000);
+
 
     return () => {
+
       clearInterval(interval);
 
       stopLocationTracking();
+
     };
+
   }, []);
+
 
   /* =========================================================
      FETCH ACTIVE BOOKING
   ========================================================= */
 
-  const fetchActiveBooking = async (silent = false) => {
+  const fetchActiveBooking = async (
+    silent = false
+  ) => {
+
     try {
+
       if (!silent) {
         setLoading(true);
       }
@@ -97,17 +202,22 @@ const ActiveJob = () => {
       const token =
         localStorage.getItem("token");
 
-      const response = await api.get(
-        "/bookings/technician/assigned",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+
+      const response =
+        await api.get(
+          "/bookings/technician/assigned",
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
 
       const bookings =
         response.data?.bookings || [];
+
 
       const activeBooking =
         bookings.find(
@@ -117,34 +227,36 @@ const ActiveJob = () => {
             item.status === "In Progress"
         );
 
-      /*
-        Update booking state.
 
-        If we already started tracking locally,
-        don't accidentally remove the booking
-        because of a temporary stale response.
-      */
+      setBooking(
+        (currentBooking) => {
 
-      setBooking((currentBooking) => {
-        if (
-          !activeBooking &&
-          currentBooking &&
-          (
-            currentBooking.status ===
-              "On The Way" ||
-            currentBooking.status ===
-              "In Progress"
-          )
-        ) {
-          return currentBooking;
+          if (
+            !activeBooking &&
+            currentBooking &&
+            (
+              currentBooking.status ===
+                "On The Way" ||
+              currentBooking.status ===
+                "In Progress"
+            )
+          ) {
+            return currentBooking;
+          }
+
+          return (
+            activeBooking ||
+            null
+          );
         }
+      );
 
-        return activeBooking || null;
-      });
 
       /*
-        If server says On The Way, make sure
-        GPS tracking is running.
+        If backend says technician
+        is already On The Way or
+        In Progress, make sure GPS
+        tracking is running.
       */
 
       if (
@@ -156,32 +268,40 @@ const ActiveJob = () => {
             "In Progress"
         )
       ) {
+
         bookingIdRef.current =
           activeBooking._id;
 
-        /*
-          Start tracking if it isn't already running.
-        */
 
         if (
           !trackingStartedRef.current
         ) {
+
           startLocationTracking(
             activeBooking._id
           );
+
         }
+
       }
+
     } catch (error) {
+
       console.log(
         "Fetch Active Booking Error:",
         error
       );
+
     } finally {
+
       if (!silent) {
         setLoading(false);
       }
+
     }
+
   };
+
 
   /* =========================================================
      START LOCATION TRACKING
@@ -190,37 +310,45 @@ const ActiveJob = () => {
   const startLocationTracking = (
     bookingId
   ) => {
+
     /*
-      Prevent duplicate GPS watchers.
+      Prevent duplicate watchers.
     */
 
     if (
       trackingStartedRef.current
     ) {
+
       console.log(
         "📍 Location tracking already active"
       );
 
       return;
+
     }
 
+
     if (!bookingId) {
+
       console.log(
-        "❌ Cannot start location tracking without booking ID"
+        "❌ Cannot start tracking without booking ID"
       );
 
       return;
+
     }
 
+
     /*
-      Check browser support.
+      Browser GPS support.
     */
 
     if (
       !navigator.geolocation
     ) {
+
       console.log(
-        "❌ Geolocation is not supported by this browser."
+        "❌ Geolocation not supported"
       );
 
       setLocationError(
@@ -228,7 +356,9 @@ const ActiveJob = () => {
       );
 
       return;
+
     }
+
 
     console.log(
       "📍 Starting technician location tracking..."
@@ -239,57 +369,64 @@ const ActiveJob = () => {
       bookingId
     );
 
+
     bookingIdRef.current =
       bookingId;
 
+
     trackingStartedRef.current =
       true;
+
 
     setLocationSharing(true);
 
     setLocationError("");
 
+
     /*
-      Make sure Socket.IO is connected.
+      Socket connection.
     */
 
     if (!socket.connected) {
+
       console.log(
-        "🔄 Socket is disconnected. Connecting..."
+        "🔄 Socket disconnected. Connecting..."
       );
 
       socket.connect();
+
     }
 
-    /*
-      Join the booking room.
-
-      This allows the backend to associate
-      this technician with the booking room.
-    */
-
-    const joinBookingRoom = () => {
-      console.log(
-        "🚪 Technician joining booking room:",
-        bookingId
-      );
-
-      socket.emit(
-        "join-booking",
-        bookingId
-      );
-    };
 
     /*
-      If already connected, join immediately.
+      Join booking room.
     */
+
+    const joinBookingRoom =
+      () => {
+
+        console.log(
+          "🚪 Technician joining booking room:",
+          bookingId
+        );
+
+        socket.emit(
+          "join-booking",
+          bookingId
+        );
+
+      };
+
 
     if (socket.connected) {
+
       joinBookingRoom();
+
     }
 
+
     /*
-      Also join when Socket.IO reconnects.
+      Rejoin after reconnect.
     */
 
     socket.on(
@@ -297,16 +434,16 @@ const ActiveJob = () => {
       joinBookingRoom
     );
 
-    /*
-      Start browser GPS watcher.
 
-      watchPosition continuously receives
-      location changes.
-    */
+    /* =====================================================
+       GPS WATCH
+    ===================================================== */
 
     const watchId =
       navigator.geolocation.watchPosition(
+
         (position) => {
+
           const latitude =
             Number(
               position.coords.latitude
@@ -322,8 +459,9 @@ const ActiveJob = () => {
               position.coords.accuracy
             );
 
+
           /*
-            Validate coordinates.
+            Validate GPS.
           */
 
           if (
@@ -334,28 +472,46 @@ const ActiveJob = () => {
               longitude
             )
           ) {
+
             console.log(
               "❌ Invalid GPS coordinates"
             );
 
             return;
+
           }
 
+
           /*
-            Make sure this callback still
-            belongs to the current booking.
+            Prevent old booking
+            from sending location.
           */
 
           if (
             bookingIdRef.current !==
             bookingId
           ) {
+
             console.log(
-              "⚠️ Ignoring GPS update for old booking"
+              "⚠️ Ignoring GPS from old booking"
             );
 
             return;
+
           }
+
+
+          /*
+            =========================================
+            THIS MOVES THE TECHNICIAN MAP
+            =========================================
+          */
+
+          setTechnicianLocation({
+            latitude,
+            longitude,
+          });
+
 
           console.log(
             "📍 TECHNICIAN GPS:",
@@ -367,8 +523,10 @@ const ActiveJob = () => {
             }
           );
 
+
           /*
-            Send location to backend.
+            Send same location
+            to customer through Socket.IO.
           */
 
           socket.emit(
@@ -387,196 +545,264 @@ const ActiveJob = () => {
             }
           );
 
+
           console.log(
             "📤 Location sent to server"
           );
+
         },
 
+
+        /* =================================================
+           GPS ERROR
+        ================================================= */
+
         (error) => {
+
           console.log(
             "❌ GPS Error:",
             error
           );
 
+
           let message =
             "Unable to access your location.";
+
 
           if (
             error.code ===
             error.PERMISSION_DENIED
           ) {
+
             message =
               "Location permission was denied. Please allow location access for Fixora.";
+
           }
+
 
           if (
             error.code ===
             error.POSITION_UNAVAILABLE
           ) {
+
             message =
               "Your current location is unavailable.";
+
           }
+
 
           if (
             error.code ===
             error.TIMEOUT
           ) {
+
             message =
               "Location request timed out. Trying again...";
+
           }
+
 
           setLocationError(
             message
           );
+
         },
+
+
+        /* =================================================
+           GPS OPTIONS
+        ================================================= */
 
         {
           enableHighAccuracy: true,
 
-          maximumAge: 5000,
+          maximumAge: 3000,
 
           timeout: 15000,
         }
+
       );
+
 
     watchIdRef.current =
       watchId;
+
 
     console.log(
       "✅ GPS tracking started. Watch ID:",
       watchId
     );
+
   };
+
 
   /* =========================================================
      STOP LOCATION TRACKING
   ========================================================= */
 
-  const stopLocationTracking = () => {
-    console.log(
-      "🛑 Stopping technician location tracking..."
-    );
+  const stopLocationTracking =
+    () => {
 
-    /*
-      Stop browser GPS watcher.
-    */
-
-    if (
-      watchIdRef.current !==
-      null
-    ) {
-      navigator.geolocation.clearWatch(
-        watchIdRef.current
+      console.log(
+        "🛑 Stopping technician location tracking..."
       );
 
-      watchIdRef.current =
-        null;
-    }
 
-    /*
-      Tell backend to stop tracking.
-    */
+      /*
+        Stop GPS.
+      */
 
-    if (
-      bookingIdRef.current
-    ) {
-      socket.emit(
-        "stop-location",
+      if (
+        watchIdRef.current !==
+        null
+      ) {
+
+        navigator.geolocation.clearWatch(
+          watchIdRef.current
+        );
+
+        watchIdRef.current =
+          null;
+
+      }
+
+
+      /*
+        Tell backend.
+      */
+
+      if (
         bookingIdRef.current
+      ) {
+
+        socket.emit(
+          "stop-location",
+          bookingIdRef.current
+        );
+
+      }
+
+
+      /*
+        Remove only our
+        connect listener.
+      */
+
+      /*
+        We intentionally don't use
+        socket.off("connect") here
+        because that could remove
+        listeners registered by
+        other components.
+      */
+
+
+      trackingStartedRef.current =
+        false;
+
+
+      setLocationSharing(
+        false
       );
-    }
 
-    /*
-      Remove reconnect listener.
-    */
 
-    socket.off(
-      "connect"
-    );
+      bookingIdRef.current =
+        null;
 
-    /*
-      Reset tracking state.
-    */
 
-    trackingStartedRef.current =
-      false;
+      setTechnicianLocation(
+        null
+      );
 
-    setLocationSharing(false);
 
-    bookingIdRef.current =
-      null;
+      setLocationError("");
 
-    setLocationError("");
+      console.log(
+        "✅ Technician location tracking stopped"
+      );
 
-    console.log(
-      "✅ Technician location tracking stopped"
-    );
-  };
+    };
+
 
   /* =========================================================
      START JOURNEY
   ========================================================= */
 
   const startJourney = async () => {
+
     if (!booking) {
       return;
     }
 
+
     try {
+
       setActionLoading(true);
 
       setLocationError("");
 
+
       const token =
         localStorage.getItem("token");
+
 
       console.log(
         "🚀 Starting journey for:",
         booking._id
       );
 
-      const response = await api.put(
-        `/bookings/${booking._id}/status`,
-        {
-          status: "On The Way",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+
+      const response =
+        await api.put(
+
+          `/bookings/${booking._id}/status`,
+
+          {
+            status:
+              "On The Way",
           },
-        }
-      );
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+
+        );
+
 
       console.log(
         "✅ Start Journey Response:",
         response.data
       );
 
-      /*
-        IMPORTANT:
-        Update React state immediately.
 
-        This removes the need to refresh the page.
+      /*
+        Update UI immediately.
       */
 
-      setBooking((currentBooking) => {
-        if (!currentBooking) {
-          return currentBooking;
+      setBooking(
+        (currentBooking) => {
+
+          if (!currentBooking) {
+            return currentBooking;
+          }
+
+          return {
+            ...currentBooking,
+
+            status:
+              "On The Way",
+          };
+
         }
+      );
 
-        return {
-          ...currentBooking,
-
-          status: "On The Way",
-        };
-      });
-
-      /*
-        Store booking ID.
-      */
 
       bookingIdRef.current =
         booking._id;
+
 
       /*
         Start GPS immediately.
@@ -586,179 +812,231 @@ const ActiveJob = () => {
         booking._id
       );
 
+
       alert(
         response.data.message ||
           "Journey started successfully."
       );
 
-      /*
-        Refresh from server in the background.
 
-        This verifies that the backend state
-        matches the frontend state.
+      /*
+        Verify backend in background.
       */
 
       fetchActiveBooking(true);
+
     } catch (error) {
+
       console.log(
         "Start Journey Error:",
         error
       );
 
+
       alert(
         error.response?.data?.message ||
           "Failed to start journey."
       );
+
     } finally {
+
       setActionLoading(false);
+
     }
+
   };
+
 
   /* =========================================================
      COMPLETE JOB
   ========================================================= */
 
   const completeJob = async () => {
+
     if (!booking) {
       return;
     }
 
+
     try {
+
       setActionLoading(true);
+
 
       const token =
         localStorage.getItem("token");
 
-      console.log(
-        "🏁 Completing booking:",
-        booking._id
-      );
 
-      const response = await api.put(
-        `/bookings/${booking._id}/status`,
-        {
-          status: "Completed",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      const response =
+        await api.put(
+
+          `/bookings/${booking._id}/status`,
+
+          {
+            status:
+              "Completed",
           },
-        }
-      );
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+
+        );
+
 
       console.log(
         "✅ Complete Job Response:",
         response.data
       );
 
+
       /*
-        Stop GPS immediately.
+        Stop GPS.
       */
 
       stopLocationTracking();
 
+
       /*
         Update UI immediately.
-
-        No refresh required.
       */
 
-      setBooking((currentBooking) => {
-        if (!currentBooking) {
-          return currentBooking;
+      setBooking(
+        (currentBooking) => {
+
+          if (!currentBooking) {
+            return currentBooking;
+          }
+
+          return {
+            ...currentBooking,
+
+            status:
+              "Completed",
+          };
+
         }
+      );
 
-        return {
-          ...currentBooking,
-
-          status: "Completed",
-        };
-      });
 
       alert(
         response.data.message ||
           "Job completed successfully."
       );
 
-      /*
-        Check server state in background.
-      */
 
       fetchActiveBooking(true);
+
     } catch (error) {
+
       console.log(
         "Complete Job Error:",
         error
       );
 
+
       alert(
         error.response?.data?.message ||
           "Failed to complete job."
       );
+
     } finally {
+
       setActionLoading(false);
+
     }
+
   };
+
 
   /* =========================================================
      NAVIGATE TO CUSTOMER
   ========================================================= */
 
-  const navigateToCustomer = () => {
-    if (!booking?.address) {
-      alert(
-        "Customer address not available."
+  const navigateToCustomer =
+    () => {
+
+      if (!booking?.address) {
+
+        alert(
+          "Customer address not available."
+        );
+
+        return;
+
+      }
+
+
+      window.open(
+
+        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+          booking.address
+        )}`,
+
+        "_blank"
+
       );
 
-      return;
-    }
+    };
 
-    window.open(
-      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-        booking.address
-      )}`,
-      "_blank"
-    );
-  };
 
   /* =========================================================
-     CLEANUP WHEN COMPONENT UNMOUNTS
+     CLEANUP
   ========================================================= */
 
   useEffect(() => {
+
     return () => {
+
       stopLocationTracking();
+
     };
+
   }, []);
+
 
   /* =========================================================
      LOADING
   ========================================================= */
 
   if (loading) {
+
     return (
+
       <section className="active-job-section">
 
         <div className="active-job-loading">
+
           Loading active job...
+
         </div>
 
       </section>
+
     );
+
   }
+
 
   /* =========================================================
      NO ACTIVE JOB
   ========================================================= */
 
   if (!booking) {
+
     return (
+
       <section className="active-job-section">
 
         <div className="no-active-job">
 
           <div className="no-active-job-icon">
+
             <FiMap />
+
           </div>
 
           <h2>
@@ -773,27 +1051,36 @@ const ActiveJob = () => {
         </div>
 
       </section>
+
     );
+
   }
+
 
   /* =========================================================
      MAIN PAGE
   ========================================================= */
 
   return (
+
     <motion.section
+
       initial={{
         opacity: 0,
         y: 25,
       }}
+
       animate={{
         opacity: 1,
         y: 0,
       }}
+
       transition={{
         duration: 0.5,
       }}
+
       className="active-job-section"
+
     >
 
       {/* =====================================================
@@ -809,27 +1096,34 @@ const ActiveJob = () => {
           </span>
 
           <h2 className="active-job-title">
+
             {booking.service?.name ||
               "Home Service"}
+
           </h2>
 
           <p className="active-job-subtitle">
+
             Your current assigned booking.
+
           </p>
 
         </div>
 
+
         <div className="job-id">
+
           <span>
             {booking.bookingId}
           </span>
+
         </div>
 
       </div>
 
 
       {/* =====================================================
-          STATUS BANNER
+          STATUS
       ===================================================== */}
 
       <div
@@ -859,8 +1153,12 @@ const ActiveJob = () => {
         </div>
 
 
-        {booking.status ===
-          "On The Way" && (
+        {(
+          booking.status ===
+            "On The Way" ||
+          booking.status ===
+            "In Progress"
+        ) && (
 
           <span className="live-status-label">
             LIVE JOURNEY
@@ -889,21 +1187,318 @@ const ActiveJob = () => {
             fontWeight: 600,
           }}
         >
+
           {locationError}
+
         </div>
 
       )}
 
 
       {/* =====================================================
-          GRID
+          TECHNICIAN LIVE MAP
+      ===================================================== */}
+
+      {(
+        booking.status ===
+          "On The Way" ||
+        booking.status ===
+          "In Progress"
+      ) && (
+
+        <div
+          className="technician-live-map-card"
+          style={{
+            marginTop: "24px",
+            background: "#ffffff",
+            borderRadius: "22px",
+            padding: "20px",
+            boxShadow:
+              "0 15px 40px rgba(15, 23, 42, 0.10)",
+            border:
+              "1px solid rgba(148, 163, 184, 0.18)",
+          }}
+        >
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent:
+                "space-between",
+              alignItems: "center",
+              marginBottom: "16px",
+              gap: "15px",
+              flexWrap: "wrap",
+            }}
+          >
+
+            <div>
+
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  letterSpacing:
+                    "0.08em",
+                  color: "#2563eb",
+                  marginBottom: "5px",
+                }}
+              >
+                LIVE LOCATION
+              </span>
+
+              <h3
+                style={{
+                  margin: 0,
+                  color: "#0f172a",
+                  fontSize: "22px",
+                }}
+              >
+                Your Current Location
+              </h3>
+
+              <p
+                style={{
+                  margin:
+                    "5px 0 0",
+                  color: "#64748b",
+                  fontSize: "14px",
+                }}
+              >
+                This map moves automatically
+                as you move.
+              </p>
+
+            </div>
+
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding:
+                  "8px 13px",
+                borderRadius:
+                  "999px",
+                background:
+                  locationSharing
+                    ? "rgba(22, 163, 74, 0.10)"
+                    : "rgba(245, 158, 11, 0.10)",
+                color:
+                  locationSharing
+                    ? "#16a34a"
+                    : "#d97706",
+                fontSize: "13px",
+                fontWeight: 700,
+              }}
+            >
+
+              <span
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius:
+                    "50%",
+                  background:
+                    locationSharing
+                      ? "#16a34a"
+                      : "#d97706",
+                }}
+              ></span>
+
+              {locationSharing
+                ? "GPS ACTIVE"
+                : "STARTING GPS"}
+
+            </div>
+
+          </div>
+
+
+          {/* =================================================
+              MAP
+          ================================================= */}
+
+          <div
+            style={{
+              width: "100%",
+              height: "420px",
+              borderRadius: "18px",
+              overflow: "hidden",
+              background:
+                "#e2e8f0",
+            }}
+          >
+
+            {technicianLocation ? (
+
+              <MapContainer
+
+                center={[
+                  technicianLocation.latitude,
+                  technicianLocation.longitude,
+                ]}
+
+                zoom={16}
+
+                scrollWheelZoom={true}
+
+                style={{
+                  width: "100%",
+                  height: "100%",
+                }}
+
+              >
+
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution="&copy; OpenStreetMap contributors"
+                />
+
+
+                <RecenterTechnicianMap
+
+                  latitude={
+                    technicianLocation.latitude
+                  }
+
+                  longitude={
+                    technicianLocation.longitude
+                  }
+
+                />
+
+
+                <Marker
+
+                  position={[
+                    technicianLocation.latitude,
+                    technicianLocation.longitude,
+                  ]}
+
+                  icon={
+                    technicianIcon
+                  }
+
+                >
+
+                  <Popup>
+
+                    <strong>
+                      You are here
+                    </strong>
+
+                    <br />
+
+                    Your live technician
+                    location.
+
+                  </Popup>
+
+                </Marker>
+
+              </MapContainer>
+
+            ) : (
+
+              <div
+                style={{
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent:
+                    "center",
+                  flexDirection:
+                    "column",
+                  gap: "10px",
+                  color: "#64748b",
+                  textAlign: "center",
+                  padding: "20px",
+                }}
+              >
+
+                <FiMapPin
+                  size={35}
+                />
+
+                <strong
+                  style={{
+                    color: "#0f172a",
+                  }}
+                >
+                  Waiting for GPS location
+                </strong>
+
+                <span
+                  style={{
+                    fontSize: "14px",
+                  }}
+                >
+                  Allow location permission
+                  and your position will appear
+                  automatically.
+                </span>
+
+              </div>
+
+            )}
+
+          </div>
+
+
+          {/* =================================================
+              COORDINATES
+          ================================================= */}
+
+          {technicianLocation && (
+
+            <div
+              style={{
+                marginTop: "14px",
+                display: "flex",
+                justifyContent:
+                  "space-between",
+                gap: "10px",
+                flexWrap: "wrap",
+                fontSize: "12px",
+                color: "#64748b",
+              }}
+            >
+
+              <span>
+                Latitude:{" "}
+                {technicianLocation.latitude.toFixed(
+                  6
+                )}
+              </span>
+
+              <span>
+                Longitude:{" "}
+                {technicianLocation.longitude.toFixed(
+                  6
+                )}
+              </span>
+
+            </div>
+
+          )}
+
+        </div>
+
+      )}
+
+
+      {/* =====================================================
+          MAIN INFORMATION GRID
       ===================================================== */}
 
       <div className="active-job-grid">
 
 
         {/* ===================================================
-            LEFT SIDE
+            LEFT
         =================================================== */}
 
         <div className="job-info">
@@ -926,8 +1521,10 @@ const ActiveJob = () => {
                 </p>
 
                 <h3 className="info-value">
+
                   {booking.customer?.name ||
                     "N/A"}
+
                 </h3>
 
               </div>
@@ -992,8 +1589,10 @@ const ActiveJob = () => {
                 </p>
 
                 <h3 className="info-value">
+
                   {booking.address ||
                     "N/A"}
+
                 </h3>
 
               </div>
@@ -1006,15 +1605,13 @@ const ActiveJob = () => {
 
 
         {/* ===================================================
-            RIGHT SIDE
+            RIGHT
         =================================================== */}
 
         <div className="active-job-actions">
 
 
-          {/* =================================================
-              ACCEPTED
-          ================================================= */}
+          {/* ACCEPTED */}
 
           {booking.status ===
             "Accepted" && (
@@ -1043,9 +1640,7 @@ const ActiveJob = () => {
           )}
 
 
-          {/* =================================================
-              ON THE WAY
-          ================================================= */}
+          {/* ON THE WAY */}
 
           {booking.status ===
             "On The Way" && (
@@ -1075,9 +1670,7 @@ const ActiveJob = () => {
           )}
 
 
-          {/* =================================================
-              IN PROGRESS
-          ================================================= */}
+          {/* IN PROGRESS */}
 
           {booking.status ===
             "In Progress" && (
@@ -1107,12 +1700,14 @@ const ActiveJob = () => {
           )}
 
 
-          {/* =================================================
-              LOCATION SHARING STATUS
-          ================================================= */}
+          {/* LOCATION SHARING */}
 
-          {booking.status ===
-            "On The Way" && (
+          {(
+            booking.status ===
+              "On The Way" ||
+            booking.status ===
+              "In Progress"
+          ) && (
 
             <div
               className="tracking-active-message"
@@ -1132,9 +1727,7 @@ const ActiveJob = () => {
           )}
 
 
-          {/* =================================================
-              OTP
-          ================================================= */}
+          {/* OTP */}
 
           {booking.status ===
             "In Progress" && (
@@ -1154,8 +1747,10 @@ const ActiveJob = () => {
                   </p>
 
                   <h2 className="otp-code">
+
                     {booking.otp ||
                       "----"}
+
                   </h2>
 
                 </div>
@@ -1167,9 +1762,7 @@ const ActiveJob = () => {
           )}
 
 
-          {/* =================================================
-              ACTIONS
-          ================================================= */}
+          {/* ACTIONS */}
 
           <div className="job-actions">
 
@@ -1284,7 +1877,9 @@ const ActiveJob = () => {
       </div>
 
     </motion.section>
+
   );
 };
+
 
 export default ActiveJob;
