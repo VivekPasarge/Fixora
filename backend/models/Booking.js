@@ -77,6 +77,42 @@ const bookingSchema = new mongoose.Schema(
     },
 
     // ===============================
+    // Customer Booking History
+    // ===============================
+    // CUSTOMER ONLY
+    //
+    // This is a soft delete.
+    //
+    // The booking is NOT deleted from
+    // MongoDB.
+    //
+    // It is only hidden from the customer's
+    // normal "My Bookings" page.
+    //
+    // The booking can still be displayed
+    // inside the customer's "View History"
+    // page.
+    //
+    // This keeps:
+    // - Admin records
+    // - Payment records
+    // - Technician records
+    // - Reviews
+    // - Booking history
+    //
+    // safe.
+
+    customerRemoved: {
+      type: Boolean,
+      default: false,
+    },
+
+    customerRemovedAt: {
+      type: Date,
+      default: null,
+    },
+
+    // ===============================
     // Service
     // ===============================
 

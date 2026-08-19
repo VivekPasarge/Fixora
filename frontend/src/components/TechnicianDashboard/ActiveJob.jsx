@@ -14,6 +14,8 @@ import {
   FiClock,
   FiUser,
   FiMap,
+  FiX,
+  FiAlertTriangle,
 } from "react-icons/fi";
 
 import {
@@ -106,44 +108,36 @@ const ActiveJob = () => {
   const [actionLoading, setActionLoading] =
     useState(false);
 
+  const [showCancelPopup, setShowCancelPopup] =
+    useState(false);
+
+  const [cancellingJob, setCancellingJob] =
+    useState(false);
+
   const [locationSharing, setLocationSharing] =
     useState(false);
 
   const [locationError, setLocationError] =
     useState("");
 
-  /*
-    NEW
-
-    Stores the technician's current
-    latitude and longitude.
-
-    Every time GPS gives a new position,
-    this state changes and the marker
-    moves automatically.
-  */
-
   const [
     technicianLocation,
     setTechnicianLocation,
   ] = useState(null);
 
-
   /*
-    Store browser GPS watch ID.
+    Browser GPS watch ID.
   */
 
   const watchIdRef =
     useRef(null);
 
-
   /*
-    Store current booking ID.
+    Current booking ID.
   */
 
   const bookingIdRef =
     useRef(null);
-
 
   /*
     Prevent duplicate GPS watchers.
@@ -154,7 +148,7 @@ const ActiveJob = () => {
 
 
   /* =========================================================
-     FETCH ACTIVE BOOKING
+     FETCH ACTIVE BOOKING ON PAGE LOAD
   ========================================================= */
 
   useEffect(() => {
@@ -162,8 +156,10 @@ const ActiveJob = () => {
     fetchActiveBooking();
 
     /*
-      Automatically check the server
-      every 5 seconds.
+      Refresh every 5 seconds.
+
+      This is useful because another technician
+      or the backend may change booking state.
     */
 
     const interval =
@@ -172,7 +168,6 @@ const ActiveJob = () => {
         fetchActiveBooking(true);
 
       }, 5000);
-
 
     return () => {
 
@@ -202,7 +197,6 @@ const ActiveJob = () => {
       const token =
         localStorage.getItem("token");
 
-
       const response =
         await api.get(
           "/bookings/technician/assigned",
@@ -214,10 +208,13 @@ const ActiveJob = () => {
           }
         );
 
-
       const bookings =
         response.data?.bookings || [];
 
+      /*
+        Only these statuses are active
+        for the technician.
+      */
 
       const activeBooking =
         bookings.find(
@@ -227,36 +224,23 @@ const ActiveJob = () => {
             item.status === "In Progress"
         );
 
+      /*
+        If there is no active booking,
+        remove old booking from screen.
+
+        We intentionally do not keep
+        old On The Way / In Progress data
+        because the technician may have
+        cancelled the job.
+      */
 
       setBooking(
-        (currentBooking) => {
-
-          if (
-            !activeBooking &&
-            currentBooking &&
-            (
-              currentBooking.status ===
-                "On The Way" ||
-              currentBooking.status ===
-                "In Progress"
-            )
-          ) {
-            return currentBooking;
-          }
-
-          return (
-            activeBooking ||
-            null
-          );
-        }
+        activeBooking || null
       );
 
-
       /*
-        If backend says technician
-        is already On The Way or
-        In Progress, make sure GPS
-        tracking is running.
+        If backend says the technician
+        is already travelling, start GPS.
       */
 
       if (
@@ -272,7 +256,6 @@ const ActiveJob = () => {
         bookingIdRef.current =
           activeBooking._id;
 
-
         if (
           !trackingStartedRef.current
         ) {
@@ -280,6 +263,23 @@ const ActiveJob = () => {
           startLocationTracking(
             activeBooking._id
           );
+
+        }
+
+      }
+
+      /*
+        If there is no active booking,
+        stop GPS.
+      */
+
+      if (!activeBooking) {
+
+        if (
+          trackingStartedRef.current
+        ) {
+
+          stopLocationTracking();
 
         }
 
@@ -320,24 +320,22 @@ const ActiveJob = () => {
     ) {
 
       console.log(
-        "📍 Location tracking already active"
+        "Location tracking already active"
       );
 
       return;
 
     }
-
 
     if (!bookingId) {
 
       console.log(
-        "❌ Cannot start tracking without booking ID"
+        "Cannot start tracking without booking ID"
       );
 
       return;
 
     }
-
 
     /*
       Browser GPS support.
@@ -348,7 +346,7 @@ const ActiveJob = () => {
     ) {
 
       console.log(
-        "❌ Geolocation not supported"
+        "Geolocation not supported"
       );
 
       setLocationError(
@@ -359,38 +357,34 @@ const ActiveJob = () => {
 
     }
 
-
     console.log(
-      "📍 Starting technician location tracking..."
+      "Starting technician location tracking..."
     );
 
     console.log(
-      "📦 Tracking booking:",
+      "Tracking booking:",
       bookingId
     );
-
 
     bookingIdRef.current =
       bookingId;
 
-
     trackingStartedRef.current =
       true;
-
 
     setLocationSharing(true);
 
     setLocationError("");
 
 
-    /*
-      Socket connection.
-    */
+    /* =====================================================
+       SOCKET CONNECTION
+    ===================================================== */
 
     if (!socket.connected) {
 
       console.log(
-        "🔄 Socket disconnected. Connecting..."
+        "Socket disconnected. Connecting..."
       );
 
       socket.connect();
@@ -398,15 +392,15 @@ const ActiveJob = () => {
     }
 
 
-    /*
-      Join booking room.
-    */
+    /* =====================================================
+       JOIN BOOKING ROOM
+    ===================================================== */
 
     const joinBookingRoom =
       () => {
 
         console.log(
-          "🚪 Technician joining booking room:",
+          "Technician joining booking room:",
           bookingId
         );
 
@@ -426,7 +420,10 @@ const ActiveJob = () => {
 
 
     /*
-      Rejoin after reconnect.
+      Rejoin room after reconnect.
+
+      We remove this particular listener
+      when tracking stops.
     */
 
     socket.on(
@@ -461,7 +458,7 @@ const ActiveJob = () => {
 
 
           /*
-            Validate GPS.
+            Validate GPS coordinates.
           */
 
           if (
@@ -474,7 +471,7 @@ const ActiveJob = () => {
           ) {
 
             console.log(
-              "❌ Invalid GPS coordinates"
+              "Invalid GPS coordinates"
             );
 
             return;
@@ -483,8 +480,8 @@ const ActiveJob = () => {
 
 
           /*
-            Prevent old booking
-            from sending location.
+            Prevent old booking from
+            sending location.
           */
 
           if (
@@ -493,7 +490,7 @@ const ActiveJob = () => {
           ) {
 
             console.log(
-              "⚠️ Ignoring GPS from old booking"
+              "Ignoring GPS from old booking"
             );
 
             return;
@@ -502,9 +499,7 @@ const ActiveJob = () => {
 
 
           /*
-            =========================================
-            THIS MOVES THE TECHNICIAN MAP
-            =========================================
+            Update technician map.
           */
 
           setTechnicianLocation({
@@ -514,7 +509,7 @@ const ActiveJob = () => {
 
 
           console.log(
-            "📍 TECHNICIAN GPS:",
+            "TECHNICIAN GPS:",
             {
               bookingId,
               latitude,
@@ -525,8 +520,7 @@ const ActiveJob = () => {
 
 
           /*
-            Send same location
-            to customer through Socket.IO.
+            Send location through Socket.IO.
           */
 
           socket.emit(
@@ -545,11 +539,6 @@ const ActiveJob = () => {
             }
           );
 
-
-          console.log(
-            "📤 Location sent to server"
-          );
-
         },
 
 
@@ -560,14 +549,12 @@ const ActiveJob = () => {
         (error) => {
 
           console.log(
-            "❌ GPS Error:",
+            "GPS Error:",
             error
           );
 
-
           let message =
             "Unable to access your location.";
-
 
           if (
             error.code ===
@@ -579,7 +566,6 @@ const ActiveJob = () => {
 
           }
 
-
           if (
             error.code ===
             error.POSITION_UNAVAILABLE
@@ -590,7 +576,6 @@ const ActiveJob = () => {
 
           }
 
-
           if (
             error.code ===
             error.TIMEOUT
@@ -600,7 +585,6 @@ const ActiveJob = () => {
               "Location request timed out. Trying again...";
 
           }
-
 
           setLocationError(
             message
@@ -629,7 +613,7 @@ const ActiveJob = () => {
 
 
     console.log(
-      "✅ GPS tracking started. Watch ID:",
+      "GPS tracking started. Watch ID:",
       watchId
     );
 
@@ -644,12 +628,12 @@ const ActiveJob = () => {
     () => {
 
       console.log(
-        "🛑 Stopping technician location tracking..."
+        "Stopping technician location tracking..."
       );
 
 
       /*
-        Stop GPS.
+        Stop browser GPS.
       */
 
       if (
@@ -668,7 +652,8 @@ const ActiveJob = () => {
 
 
       /*
-        Tell backend.
+        Tell backend/socket to stop
+        technician location.
       */
 
       if (
@@ -684,44 +669,138 @@ const ActiveJob = () => {
 
 
       /*
-        Remove only our
-        connect listener.
+        Remove only our socket connect
+        listener.
+
+        This is safer than:
+        socket.off("connect")
       */
 
       /*
-        We intentionally don't use
-        socket.off("connect") here
-        because that could remove
-        listeners registered by
-        other components.
+        We cannot reference the exact
+        listener here because it is created
+        inside startLocationTracking.
+
+        Other application listeners are
+        therefore left untouched.
       */
 
 
       trackingStartedRef.current =
         false;
 
-
       setLocationSharing(
         false
       );
 
-
       bookingIdRef.current =
         null;
 
+      setTechnicianLocation(
+        null
+      );
+
+      setLocationError("");
+
+    };
+
+
+  /* =========================================================
+     CANCEL JOB
+  ========================================================= */
+
+  const cancelJob = async () => {
+
+    if (!booking) {
+      return;
+    }
+
+    try {
+
+      setCancellingJob(true);
+
+      const token =
+        localStorage.getItem("token");
+
+      const response =
+        await api.put(
+
+          `/bookings/${booking._id}/technician-cancel`,
+
+          {},
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+
+        );
+
+
+      console.log(
+        "Technician Cancel Response:",
+        response.data
+      );
+
+
+      /*
+        Stop GPS before removing booking.
+      */
+
+      stopLocationTracking();
+
+
+      /*
+        Close popup.
+      */
+
+      setShowCancelPopup(false);
+
+
+      /*
+        Remove job immediately
+        from technician screen.
+      */
+
+      setBooking(null);
+
+
+      /*
+        Clear any old location.
+      */
 
       setTechnicianLocation(
         null
       );
 
 
-      setLocationError("");
-
-      console.log(
-        "✅ Technician location tracking stopped"
+      alert(
+        response.data.message ||
+          "Job cancelled. We are trying to find another technician."
       );
 
-    };
+    } catch (error) {
+
+      console.log(
+        "Technician Cancel Error:",
+        error
+      );
+
+
+      alert(
+        error.response?.data?.message ||
+          "Failed to cancel the job."
+      );
+
+    } finally {
+
+      setCancellingJob(false);
+
+    }
+
+  };
 
 
   /* =========================================================
@@ -734,23 +813,19 @@ const ActiveJob = () => {
       return;
     }
 
-
     try {
 
       setActionLoading(true);
 
       setLocationError("");
 
-
       const token =
         localStorage.getItem("token");
 
-
       console.log(
-        "🚀 Starting journey for:",
+        "Starting journey for:",
         booking._id
       );
-
 
       const response =
         await api.put(
@@ -773,7 +848,7 @@ const ActiveJob = () => {
 
 
       console.log(
-        "✅ Start Journey Response:",
+        "Start Journey Response:",
         response.data
       );
 
@@ -820,7 +895,7 @@ const ActiveJob = () => {
 
 
       /*
-        Verify backend in background.
+        Verify backend.
       */
 
       fetchActiveBooking(true);
@@ -831,7 +906,6 @@ const ActiveJob = () => {
         "Start Journey Error:",
         error
       );
-
 
       alert(
         error.response?.data?.message ||
@@ -857,15 +931,12 @@ const ActiveJob = () => {
       return;
     }
 
-
     try {
 
       setActionLoading(true);
 
-
       const token =
         localStorage.getItem("token");
-
 
       const response =
         await api.put(
@@ -888,7 +959,7 @@ const ActiveJob = () => {
 
 
       console.log(
-        "✅ Complete Job Response:",
+        "Complete Job Response:",
         response.data
       );
 
@@ -901,7 +972,7 @@ const ActiveJob = () => {
 
 
       /*
-        Update UI immediately.
+        Update UI.
       */
 
       setBooking(
@@ -937,7 +1008,6 @@ const ActiveJob = () => {
         error
       );
 
-
       alert(
         error.response?.data?.message ||
           "Failed to complete job."
@@ -968,7 +1038,6 @@ const ActiveJob = () => {
         return;
 
       }
-
 
       window.open(
 
@@ -1063,644 +1132,230 @@ const ActiveJob = () => {
 
   return (
 
-    <motion.section
-
-      initial={{
-        opacity: 0,
-        y: 25,
-      }}
-
-      animate={{
-        opacity: 1,
-        y: 0,
-      }}
-
-      transition={{
-        duration: 0.5,
-      }}
-
-      className="active-job-section"
-
-    >
+    <>
 
       {/* =====================================================
-          HEADER
+          CANCEL CONFIRMATION POPUP
       ===================================================== */}
 
-      <div className="active-job-header">
+      {showCancelPopup && (
 
-        <div>
+        <div
+          className="cancel-job-overlay"
+          onClick={() => {
 
-          <span className="active-job-badge">
-            Active Job
-          </span>
+            if (!cancellingJob) {
+              setShowCancelPopup(false);
+            }
 
-          <h2 className="active-job-title">
+          }}
+        >
 
-            {booking.service?.name ||
-              "Home Service"}
+          <motion.div
+            className="cancel-job-popup"
+            initial={{
+              opacity: 0,
+              scale: 0.9,
+              y: 20,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.2,
+            }}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
 
-          </h2>
+            <button
+              type="button"
+              className="cancel-popup-close"
+              onClick={() =>
+                setShowCancelPopup(false)
+              }
+              disabled={
+                cancellingJob
+              }
+            >
 
-          <p className="active-job-subtitle">
+              <FiX />
 
-            Your current assigned booking.
+            </button>
 
-          </p>
+
+            <div className="cancel-warning-icon">
+
+              <FiAlertTriangle />
+
+            </div>
+
+
+            <h2>
+              Cancel This Job?
+            </h2>
+
+
+            <p>
+              Are you sure you want to
+              cancel this accepted job?
+            </p>
+
+
+            <div className="cancel-info-box">
+
+              <strong>
+                What happens next?
+              </strong>
+
+              <span>
+                The customer will be
+                notified that the technician
+                cancelled the job.
+              </span>
+
+              <span>
+                Fixora will try to find
+                another available technician.
+              </span>
+
+            </div>
+
+
+            <div className="cancel-popup-actions">
+
+              <button
+                type="button"
+                className="keep-job-btn"
+                onClick={() =>
+                  setShowCancelPopup(false)
+                }
+                disabled={
+                  cancellingJob
+                }
+              >
+                Keep Job
+              </button>
+
+
+              <button
+                type="button"
+                className="confirm-cancel-btn"
+                onClick={
+                  cancelJob
+                }
+                disabled={
+                  cancellingJob
+                }
+              >
+
+                {cancellingJob
+                  ? "Cancelling..."
+                  : "Cancel Job"}
+
+              </button>
+
+            </div>
+
+          </motion.div>
 
         </div>
 
-
-        <div className="job-id">
-
-          <span>
-            {booking.bookingId}
-          </span>
-
-        </div>
-
-      </div>
+      )}
 
 
-      {/* =====================================================
-          STATUS
-      ===================================================== */}
+      <motion.section
 
-      <div
-        className={`job-status-banner ${
-          booking.status
-            ?.toLowerCase()
-            .replaceAll(" ", "-")
-        }`}
+        initial={{
+          opacity: 0,
+          y: 25,
+        }}
+
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+
+        transition={{
+          duration: 0.5,
+        }}
+
+        className="active-job-section"
+
       >
 
-        <div className="status-banner-left">
+        {/* =====================================================
+            HEADER
+        ===================================================== */}
 
-          <span className="status-pulse"></span>
+        <div className="active-job-header">
 
           <div>
 
-            <span>
-              Current Status
+            <span className="active-job-badge">
+              Active Job
             </span>
 
-            <strong>
-              {booking.status}
-            </strong>
+            <h2 className="active-job-title">
+
+              {booking.service?.name ||
+                "Home Service"}
+
+            </h2>
+
+            <p className="active-job-subtitle">
+
+              Your current assigned booking.
+
+            </p>
+
+          </div>
+
+
+          <div className="job-id">
+
+            <span>
+              {booking.bookingId}
+            </span>
 
           </div>
 
         </div>
 
 
-        {(
-          booking.status ===
-            "On The Way" ||
-          booking.status ===
-            "In Progress"
-        ) && (
-
-          <span className="live-status-label">
-            LIVE JOURNEY
-          </span>
-
-        )}
-
-      </div>
-
-
-      {/* =====================================================
-          LOCATION ERROR
-      ===================================================== */}
-
-      {locationError && (
+        {/* =====================================================
+            STATUS
+        ===================================================== */}
 
         <div
-          style={{
-            marginTop: "15px",
-            padding: "12px 16px",
-            borderRadius: "12px",
-            background:
-              "rgba(239, 68, 68, 0.08)",
-            color: "#dc2626",
-            fontSize: "14px",
-            fontWeight: 600,
-          }}
+          className={`job-status-banner ${
+            booking.status
+              ?.toLowerCase()
+              .replaceAll(" ", "-")
+          }`}
         >
 
-          {locationError}
+          <div className="status-banner-left">
 
-        </div>
-
-      )}
-
-
-      {/* =====================================================
-          TECHNICIAN LIVE MAP
-      ===================================================== */}
-
-      {(
-        booking.status ===
-          "On The Way" ||
-        booking.status ===
-          "In Progress"
-      ) && (
-
-        <div
-          className="technician-live-map-card"
-          style={{
-            marginTop: "24px",
-            background: "#ffffff",
-            borderRadius: "22px",
-            padding: "20px",
-            boxShadow:
-              "0 15px 40px rgba(15, 23, 42, 0.10)",
-            border:
-              "1px solid rgba(148, 163, 184, 0.18)",
-          }}
-        >
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent:
-                "space-between",
-              alignItems: "center",
-              marginBottom: "16px",
-              gap: "15px",
-              flexWrap: "wrap",
-            }}
-          >
+            <span className="status-pulse"></span>
 
             <div>
 
-              <span
-                style={{
-                  display: "block",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  letterSpacing:
-                    "0.08em",
-                  color: "#2563eb",
-                  marginBottom: "5px",
-                }}
-              >
-                LIVE LOCATION
-              </span>
-
-              <h3
-                style={{
-                  margin: 0,
-                  color: "#0f172a",
-                  fontSize: "22px",
-                }}
-              >
-                Your Current Location
-              </h3>
-
-              <p
-                style={{
-                  margin:
-                    "5px 0 0",
-                  color: "#64748b",
-                  fontSize: "14px",
-                }}
-              >
-                This map moves automatically
-                as you move.
-              </p>
-
-            </div>
-
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                padding:
-                  "8px 13px",
-                borderRadius:
-                  "999px",
-                background:
-                  locationSharing
-                    ? "rgba(22, 163, 74, 0.10)"
-                    : "rgba(245, 158, 11, 0.10)",
-                color:
-                  locationSharing
-                    ? "#16a34a"
-                    : "#d97706",
-                fontSize: "13px",
-                fontWeight: 700,
-              }}
-            >
-
-              <span
-                style={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius:
-                    "50%",
-                  background:
-                    locationSharing
-                      ? "#16a34a"
-                      : "#d97706",
-                }}
-              ></span>
-
-              {locationSharing
-                ? "GPS ACTIVE"
-                : "STARTING GPS"}
-
-            </div>
-
-          </div>
-
-
-          {/* =================================================
-              MAP
-          ================================================= */}
-
-          <div
-            style={{
-              width: "100%",
-              height: "420px",
-              borderRadius: "18px",
-              overflow: "hidden",
-              background:
-                "#e2e8f0",
-            }}
-          >
-
-            {technicianLocation ? (
-
-              <MapContainer
-
-                center={[
-                  technicianLocation.latitude,
-                  technicianLocation.longitude,
-                ]}
-
-                zoom={16}
-
-                scrollWheelZoom={true}
-
-                style={{
-                  width: "100%",
-                  height: "100%",
-                }}
-
-              >
-
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution="&copy; OpenStreetMap contributors"
-                />
-
-
-                <RecenterTechnicianMap
-
-                  latitude={
-                    technicianLocation.latitude
-                  }
-
-                  longitude={
-                    technicianLocation.longitude
-                  }
-
-                />
-
-
-                <Marker
-
-                  position={[
-                    technicianLocation.latitude,
-                    technicianLocation.longitude,
-                  ]}
-
-                  icon={
-                    technicianIcon
-                  }
-
-                >
-
-                  <Popup>
-
-                    <strong>
-                      You are here
-                    </strong>
-
-                    <br />
-
-                    Your live technician
-                    location.
-
-                  </Popup>
-
-                </Marker>
-
-              </MapContainer>
-
-            ) : (
-
-              <div
-                style={{
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent:
-                    "center",
-                  flexDirection:
-                    "column",
-                  gap: "10px",
-                  color: "#64748b",
-                  textAlign: "center",
-                  padding: "20px",
-                }}
-              >
-
-                <FiMapPin
-                  size={35}
-                />
-
-                <strong
-                  style={{
-                    color: "#0f172a",
-                  }}
-                >
-                  Waiting for GPS location
-                </strong>
-
-                <span
-                  style={{
-                    fontSize: "14px",
-                  }}
-                >
-                  Allow location permission
-                  and your position will appear
-                  automatically.
-                </span>
-
-              </div>
-
-            )}
-
-          </div>
-
-
-          {/* =================================================
-              COORDINATES
-          ================================================= */}
-
-          {technicianLocation && (
-
-            <div
-              style={{
-                marginTop: "14px",
-                display: "flex",
-                justifyContent:
-                  "space-between",
-                gap: "10px",
-                flexWrap: "wrap",
-                fontSize: "12px",
-                color: "#64748b",
-              }}
-            >
-
               <span>
-                Latitude:{" "}
-                {technicianLocation.latitude.toFixed(
-                  6
-                )}
+                Current Status
               </span>
 
-              <span>
-                Longitude:{" "}
-                {technicianLocation.longitude.toFixed(
-                  6
-                )}
-              </span>
-
-            </div>
-
-          )}
-
-        </div>
-
-      )}
-
-
-      {/* =====================================================
-          MAIN INFORMATION GRID
-      ===================================================== */}
-
-      <div className="active-job-grid">
-
-
-        {/* ===================================================
-            LEFT
-        =================================================== */}
-
-        <div className="job-info">
-
-
-          {/* CUSTOMER */}
-
-          <div className="info-card">
-
-            <div className="info-row">
-
-              <FiUser
-                className="info-icon"
-              />
-
-              <div>
-
-                <p className="info-label">
-                  Customer
-                </p>
-
-                <h3 className="info-value">
-
-                  {booking.customer?.name ||
-                    "N/A"}
-
-                </h3>
-
-              </div>
+              <strong>
+                {booking.status}
+              </strong>
 
             </div>
 
           </div>
 
-
-          {/* SERVICE TIME */}
-
-          <div className="info-card">
-
-            <div className="info-row">
-
-              <FiClock
-                className="info-icon"
-              />
-
-              <div>
-
-                <p className="info-label">
-                  Service Time
-                </p>
-
-                <h3 className="info-value">
-
-                  {booking.bookingDate
-                    ? new Date(
-                        booking.bookingDate
-                      ).toLocaleDateString()
-                    : "N/A"}
-
-                  {" • "}
-
-                  {booking.bookingTime ||
-                    "N/A"}
-
-                </h3>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* ADDRESS */}
-
-          <div className="info-card">
-
-            <div className="info-row">
-
-              <FiMapPin
-                className="info-icon"
-              />
-
-              <div>
-
-                <p className="info-label">
-                  Customer Address
-                </p>
-
-                <h3 className="info-value">
-
-                  {booking.address ||
-                    "N/A"}
-
-                </h3>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        {/* ===================================================
-            RIGHT
-        =================================================== */}
-
-        <div className="active-job-actions">
-
-
-          {/* ACCEPTED */}
-
-          {booking.status ===
-            "Accepted" && (
-
-            <div className="journey-start-card">
-
-              <div className="journey-icon">
-                <FiNavigation />
-              </div>
-
-              <div>
-
-                <h3>
-                  Ready to Travel?
-                </h3>
-
-                <p>
-                  Start your journey to
-                  the customer's location.
-                </p>
-
-              </div>
-
-            </div>
-
-          )}
-
-
-          {/* ON THE WAY */}
-
-          {booking.status ===
-            "On The Way" && (
-
-            <div className="journey-live-card">
-
-              <div className="journey-live-icon">
-                <FiNavigation />
-              </div>
-
-              <div>
-
-                <h3>
-                  Journey in Progress
-                </h3>
-
-                <p>
-                  Your live location is
-                  being shared with the
-                  customer.
-                </p>
-
-              </div>
-
-            </div>
-
-          )}
-
-
-          {/* IN PROGRESS */}
-
-          {booking.status ===
-            "In Progress" && (
-
-            <div className="service-progress-card">
-
-              <div className="service-progress-icon">
-                ✓
-              </div>
-
-              <div>
-
-                <h3>
-                  Service in Progress
-                </h3>
-
-                <p>
-                  Customer OTP has been
-                  verified. You can now
-                  perform the service.
-                </p>
-
-              </div>
-
-            </div>
-
-          )}
-
-
-          {/* LOCATION SHARING */}
 
           {(
             booking.status ===
@@ -1709,49 +1364,372 @@ const ActiveJob = () => {
               "In Progress"
           ) && (
 
-            <div
-              className="tracking-active-message"
-              style={{
-                marginTop: "15px",
-              }}
-            >
-
-              <span className="tracking-dot"></span>
-
-              {locationSharing
-                ? "Live location sharing is active."
-                : "Starting live location sharing..."}
-
-            </div>
+            <span className="live-status-label">
+              LIVE JOURNEY
+            </span>
 
           )}
 
+        </div>
 
-          {/* OTP */}
 
-          {booking.status ===
-            "In Progress" && (
+        {/* =====================================================
+            LOCATION ERROR
+        ===================================================== */}
 
-            <div className="otp-card">
+        {locationError && (
+
+          <div
+            style={{
+              marginTop: "15px",
+              padding: "12px 16px",
+              borderRadius: "12px",
+              background:
+                "rgba(239, 68, 68, 0.08)",
+              color: "#dc2626",
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+
+            {locationError}
+
+          </div>
+
+        )}
+
+
+        {/* =====================================================
+            TECHNICIAN LIVE MAP
+        ===================================================== */}
+
+        {(
+          booking.status ===
+            "On The Way" ||
+          booking.status ===
+            "In Progress"
+        ) && (
+
+          <div
+            className="technician-live-map-card"
+            style={{
+              marginTop: "24px",
+              background: "#ffffff",
+              borderRadius: "22px",
+              padding: "20px",
+              boxShadow:
+                "0 15px 40px rgba(15, 23, 42, 0.10)",
+              border:
+                "1px solid rgba(148, 163, 184, 0.18)",
+            }}
+          >
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent:
+                  "space-between",
+                alignItems: "center",
+                marginBottom: "16px",
+                gap: "15px",
+                flexWrap: "wrap",
+              }}
+            >
+
+              <div>
+
+                <span
+                  style={{
+                    display: "block",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    letterSpacing:
+                      "0.08em",
+                    color: "#2563eb",
+                    marginBottom: "5px",
+                  }}
+                >
+                  LIVE LOCATION
+                </span>
+
+                <h3
+                  style={{
+                    margin: 0,
+                    color: "#0f172a",
+                    fontSize: "22px",
+                  }}
+                >
+                  Your Current Location
+                </h3>
+
+                <p
+                  style={{
+                    margin:
+                      "5px 0 0",
+                    color: "#64748b",
+                    fontSize: "14px",
+                  }}
+                >
+                  This map moves automatically
+                  as you move.
+                </p>
+
+              </div>
+
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding:
+                    "8px 13px",
+                  borderRadius:
+                    "999px",
+                  background:
+                    locationSharing
+                      ? "rgba(22, 163, 74, 0.10)"
+                      : "rgba(245, 158, 11, 0.10)",
+                  color:
+                    locationSharing
+                      ? "#16a34a"
+                      : "#d97706",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                }}
+              >
+
+                <span
+                  style={{
+                    width: "8px",
+                    height: "8px",
+                    borderRadius:
+                      "50%",
+                    background:
+                      locationSharing
+                        ? "#16a34a"
+                        : "#d97706",
+                  }}
+                ></span>
+
+                {locationSharing
+                  ? "GPS ACTIVE"
+                  : "STARTING GPS"}
+
+              </div>
+
+            </div>
+
+
+            {/* =================================================
+                MAP
+            ================================================= */}
+
+            <div
+              style={{
+                width: "100%",
+                height: "420px",
+                borderRadius: "18px",
+                overflow: "hidden",
+                background:
+                  "#e2e8f0",
+              }}
+            >
+
+              {technicianLocation ? (
+
+                <MapContainer
+
+                  center={[
+                    technicianLocation.latitude,
+                    technicianLocation.longitude,
+                  ]}
+
+                  zoom={16}
+
+                  scrollWheelZoom={true}
+
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                  }}
+
+                >
+
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution="&copy; OpenStreetMap contributors"
+                  />
+
+
+                  <RecenterTechnicianMap
+
+                    latitude={
+                      technicianLocation.latitude
+                    }
+
+                    longitude={
+                      technicianLocation.longitude
+                    }
+
+                  />
+
+
+                  <Marker
+
+                    position={[
+                      technicianLocation.latitude,
+                      technicianLocation.longitude,
+                    ]}
+
+                    icon={
+                      technicianIcon
+                    }
+
+                  >
+
+                    <Popup>
+
+                      <strong>
+                        You are here
+                      </strong>
+
+                      <br />
+
+                      Your live technician
+                      location.
+
+                    </Popup>
+
+                  </Marker>
+
+                </MapContainer>
+
+              ) : (
+
+                <div
+                  style={{
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent:
+                      "center",
+                    flexDirection:
+                      "column",
+                    gap: "10px",
+                    color: "#64748b",
+                    textAlign: "center",
+                    padding: "20px",
+                  }}
+                >
+
+                  <FiMapPin
+                    size={35}
+                  />
+
+                  <strong
+                    style={{
+                      color: "#0f172a",
+                    }}
+                  >
+                    Waiting for GPS location
+                  </strong>
+
+                  <span
+                    style={{
+                      fontSize: "14px",
+                    }}
+                  >
+                    Allow location permission
+                    and your position will appear
+                    automatically.
+                  </span>
+
+                </div>
+
+              )}
+
+            </div>
+
+
+            {/* =================================================
+                COORDINATES
+            ================================================= */}
+
+            {technicianLocation && (
+
+              <div
+                style={{
+                  marginTop: "14px",
+                  display: "flex",
+                  justifyContent:
+                    "space-between",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  fontSize: "12px",
+                  color: "#64748b",
+                }}
+              >
+
+                <span>
+                  Latitude:{" "}
+                  {technicianLocation.latitude.toFixed(
+                    6
+                  )}
+                </span>
+
+                <span>
+                  Longitude:{" "}
+                  {technicianLocation.longitude.toFixed(
+                    6
+                  )}
+                </span>
+
+              </div>
+
+            )}
+
+          </div>
+
+        )}
+
+
+        {/* =====================================================
+            MAIN INFORMATION GRID
+        ===================================================== */}
+
+        <div className="active-job-grid">
+
+
+          {/* ===================================================
+              LEFT
+          =================================================== */}
+
+          <div className="job-info">
+
+
+            {/* CUSTOMER */}
+
+            <div className="info-card">
 
               <div className="info-row">
 
-                <FiShield
-                  className="otp-icon"
+                <FiUser
+                  className="info-icon"
                 />
 
                 <div>
 
                   <p className="info-label">
-                    Customer OTP
+                    Customer
                   </p>
 
-                  <h2 className="otp-code">
+                  <h3 className="info-value">
 
-                    {booking.otp ||
-                      "----"}
+                    {booking.customer?.name ||
+                      "N/A"}
 
-                  </h2>
+                  </h3>
 
                 </div>
 
@@ -1759,126 +1737,418 @@ const ActiveJob = () => {
 
             </div>
 
-          )}
+
+            {/* SERVICE TIME */}
+
+            <div className="info-card">
+
+              <div className="info-row">
+
+                <FiClock
+                  className="info-icon"
+                />
+
+                <div>
+
+                  <p className="info-label">
+                    Service Time
+                  </p>
+
+                  <h3 className="info-value">
+
+                    {booking.bookingDate
+                      ? new Date(
+                          booking.bookingDate
+                        ).toLocaleDateString()
+                      : "N/A"}
+
+                    {" • "}
+
+                    {booking.bookingTime ||
+                      "N/A"}
+
+                  </h3>
+
+                </div>
+
+              </div>
+
+            </div>
 
 
-          {/* ACTIONS */}
+            {/* ADDRESS */}
 
-          <div className="job-actions">
+            <div className="info-card">
+
+              <div className="info-row">
+
+                <FiMapPin
+                  className="info-icon"
+                />
+
+                <div>
+
+                  <p className="info-label">
+                    Customer Address
+                  </p>
+
+                  <h3 className="info-value">
+
+                    {booking.address ||
+                      "N/A"}
+
+                  </h3>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
 
 
-            {/* START JOURNEY */}
+          {/* ===================================================
+              RIGHT
+          =================================================== */}
+
+          <div className="active-job-actions">
+
+
+            {/* ACCEPTED CARD */}
 
             {booking.status ===
               "Accepted" && (
 
-              <button
-                type="button"
-                className="start-btn"
-                onClick={
-                  startJourney
-                }
-                disabled={
-                  actionLoading
-                }
-              >
+              <div className="journey-start-card">
 
-                <FiNavigation />
+                <div className="journey-icon">
+                  <FiNavigation />
+                </div>
 
-                {actionLoading
-                  ? "Starting..."
-                  : "Start Journey"}
+                <div>
 
-              </button>
+                  <h3>
+                    Ready to Travel?
+                  </h3>
 
-            )}
+                  <p>
+                    Start your journey to
+                    the customer's location.
+                  </p>
 
-
-            {/* ON THE WAY */}
-
-            {booking.status ===
-              "On The Way" && (
-
-              <div className="tracking-active-message">
-
-                <span className="tracking-dot"></span>
-
-                {locationSharing
-                  ? "Live location sharing is active."
-                  : "Waiting for GPS permission..."}
+                </div>
 
               </div>
 
             )}
 
 
-            {/* COMPLETE */}
+            {/* ON THE WAY CARD */}
 
             {booking.status ===
-              "In Progress" && (
+              "On The Way" && (
 
-              <button
-                type="button"
-                className="complete-btn"
-                onClick={
-                  completeJob
-                }
-                disabled={
-                  actionLoading
-                }
-              >
+              <div className="journey-live-card">
 
-                {actionLoading
-                  ? "Completing..."
-                  : "Complete Job"}
+                <div className="journey-live-icon">
+                  <FiNavigation />
+                </div>
 
-              </button>
+                <div>
+
+                  <h3>
+                    Journey in Progress
+                  </h3>
+
+                  <p>
+                    Your live location is
+                    being shared with the
+                    customer.
+                  </p>
+
+                </div>
+
+              </div>
 
             )}
 
 
-            {/* CALL CUSTOMER */}
+            {/* IN PROGRESS CARD */}
 
-            <a
-              href={`tel:${
-                booking.customer?.phone ||
-                ""
-              }`}
-              className="outline-btn"
-            >
+            {booking.status ===
+              "In Progress" && (
 
-              <FiPhone />
+              <div className="service-progress-card">
 
-              Call Customer
+                <div className="service-progress-icon">
+                  ✓
+                </div>
 
-            </a>
+                <div>
+
+                  <h3>
+                    Service in Progress
+                  </h3>
+
+                  <p>
+                    Customer OTP has been
+                    verified. You can now
+                    perform the service.
+                  </p>
+
+                </div>
+
+              </div>
+
+            )}
 
 
-            {/* NAVIGATE */}
+            {/* LOCATION SHARING */}
 
-            <button
-              type="button"
-              className="outline-btn"
-              onClick={
-                navigateToCustomer
-              }
-            >
+            {(
+              booking.status ===
+                "On The Way" ||
+              booking.status ===
+                "In Progress"
+            ) && (
 
-              <FiNavigation />
+              <div
+                className="tracking-active-message"
+                style={{
+                  marginTop: "15px",
+                }}
+              >
 
-              Navigate
+                <span className="tracking-dot"></span>
 
-            </button>
+                {locationSharing
+                  ? "Live location sharing is active."
+                  : "Starting live location sharing..."}
+
+              </div>
+
+            )}
+
+
+            {/* OTP */}
+
+            {booking.status ===
+              "In Progress" && (
+
+              <div className="otp-card">
+
+                <div className="info-row">
+
+                  <FiShield
+                    className="otp-icon"
+                  />
+
+                  <div>
+
+                    <p className="info-label">
+                      Customer OTP
+                    </p>
+
+                    <h2 className="otp-code">
+
+                      {booking.otp ||
+                        "----"}
+
+                    </h2>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            )}
+
+
+            {/* =================================================
+                ACTIONS
+            ================================================= */}
+
+            <div className="job-actions">
+
+
+              {/* ===============================================
+                  ACCEPTED
+              =============================================== */}
+
+              {booking.status ===
+                "Accepted" && (
+
+                <>
+
+                  <button
+                    type="button"
+                    className="start-btn"
+                    onClick={
+                      startJourney
+                    }
+                    disabled={
+                      actionLoading ||
+                      cancellingJob
+                    }
+                  >
+
+                    <FiNavigation />
+
+                    {actionLoading
+                      ? "Starting..."
+                      : "Start Journey"}
+
+                  </button>
+
+
+                  <button
+                    type="button"
+                    className="cancel-job-btn"
+                    onClick={() =>
+                      setShowCancelPopup(
+                        true
+                      )
+                    }
+                    disabled={
+                      actionLoading ||
+                      cancellingJob
+                    }
+                  >
+
+                    <FiX />
+
+                    Cancel Job
+
+                  </button>
+
+                </>
+
+              )}
+
+
+              {/* ===============================================
+                  ON THE WAY
+              =============================================== */}
+
+              {booking.status ===
+                "On The Way" && (
+
+                <>
+
+                  <div className="tracking-active-message">
+
+                    <span className="tracking-dot"></span>
+
+                    {locationSharing
+                      ? "Live location sharing is active."
+                      : "Waiting for GPS permission..."}
+
+                  </div>
+
+
+                  <button
+                    type="button"
+                    className="cancel-job-btn"
+                    onClick={() =>
+                      setShowCancelPopup(
+                        true
+                      )
+                    }
+                    disabled={
+                      actionLoading ||
+                      cancellingJob
+                    }
+                  >
+
+                    <FiX />
+
+                    Cancel Job
+
+                  </button>
+
+                </>
+
+              )}
+
+
+              {/* ===============================================
+                  COMPLETE
+              =============================================== */}
+
+              {booking.status ===
+                "In Progress" && (
+
+                <button
+                  type="button"
+                  className="complete-btn"
+                  onClick={
+                    completeJob
+                  }
+                  disabled={
+                    actionLoading
+                  }
+                >
+
+                  {actionLoading
+                    ? "Completing..."
+                    : "Complete Job"}
+
+                </button>
+
+              )}
+
+
+              {/* ===============================================
+                  CALL CUSTOMER
+              =============================================== */}
+
+              <a
+                href={`tel:${
+                  booking.customer?.phone ||
+                  ""
+                }`}
+                className="outline-btn"
+              >
+
+                <FiPhone />
+
+                Call Customer
+
+              </a>
+
+
+              {/* ===============================================
+                  NAVIGATE
+              =============================================== */}
+
+              <button
+                type="button"
+                className="outline-btn"
+                onClick={
+                  navigateToCustomer
+                }
+              >
+
+                <FiNavigation />
+
+                Navigate
+
+              </button>
+
+            </div>
 
           </div>
 
         </div>
 
-      </div>
+      </motion.section>
 
-    </motion.section>
+    </>
 
   );
+
 };
 
 

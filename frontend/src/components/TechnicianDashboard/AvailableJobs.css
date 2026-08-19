@@ -1055,3 +1055,351 @@ font-size:30px;
     font-size: 22px;
   }
 }
+/* =========================================================
+   JOB ACTION BUTTONS
+========================================================= */
+
+.job-action-buttons {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    margin-top: 16px;
+    width: 100%;
+}
+
+
+/* =========================================================
+   CANCEL JOB BUTTON
+========================================================= */
+
+.cancel-job-btn {
+    flex: 0 0 42%;
+
+    min-height: 48px;
+
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+
+    background: #ffffff;
+    color: #dc2626;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 0.25s ease,
+        color 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.cancel-job-btn:hover:not(:disabled) {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 18px
+        rgba(220, 38, 38, 0.12);
+}
+
+.cancel-job-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   ACCEPT BUTTON
+========================================================= */
+
+.job-action-buttons .accept-btn {
+    flex: 1;
+    width: auto;
+    margin-top: 0;
+}
+
+
+/* =========================================================
+   CANCEL CONFIRMATION POPUP
+========================================================= */
+
+.job-cancel-popup-overlay {
+    position: fixed;
+    inset: 0;
+
+    z-index: 10000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(15, 23, 42, 0.65);
+
+    backdrop-filter: blur(6px);
+}
+
+
+.job-cancel-popup {
+    position: relative;
+
+    width: 100%;
+    max-width: 430px;
+
+    padding: 32px;
+
+    border-radius: 22px;
+
+    background: #ffffff;
+
+    text-align: center;
+
+    box-shadow:
+        0 30px 80px
+        rgba(15, 23, 42, 0.28);
+}
+
+
+/* =========================================================
+   POPUP CLOSE
+========================================================= */
+
+.job-cancel-popup-close {
+    position: absolute;
+
+    top: 14px;
+    right: 14px;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #f1f5f9;
+    color: #64748b;
+
+    font-size: 22px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.job-cancel-popup-close:hover:not(:disabled) {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+
+/* =========================================================
+   POPUP ICON
+========================================================= */
+
+.job-cancel-popup-icon {
+    width: 62px;
+    height: 62px;
+
+    margin:
+        0 auto 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fff7ed;
+
+    color: #ea580c;
+
+    font-size: 28px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   POPUP TITLE
+========================================================= */
+
+.job-cancel-popup h2 {
+    margin:
+        0 0 8px;
+
+    color: #0f172a;
+
+    font-size: 24px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   SERVICE
+========================================================= */
+
+.job-cancel-popup-service {
+    margin:
+        0 0 16px;
+
+    color: #2563eb;
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+.job-cancel-popup-message {
+    margin:
+        0 0 10px;
+
+    color: #334155;
+
+    font-size: 15px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   NOTE
+========================================================= */
+
+.job-cancel-popup-note {
+    margin:
+        0 0 24px;
+
+    padding: 13px;
+
+    border-radius: 12px;
+
+    background: #f8fafc;
+
+    color: #64748b;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   POPUP ACTIONS
+========================================================= */
+
+.job-cancel-popup-actions {
+    display: flex;
+
+    gap: 10px;
+
+    width: 100%;
+}
+
+
+/* KEEP JOB */
+
+.job-cancel-keep-btn,
+.job-cancel-confirm-btn {
+    flex: 1;
+
+    min-height: 46px;
+
+    border-radius: 11px;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.25s;
+}
+
+
+.job-cancel-keep-btn {
+    border:
+        1px solid #cbd5e1;
+
+    background: #ffffff;
+
+    color: #475569;
+}
+
+.job-cancel-keep-btn:hover:not(:disabled) {
+    background: #f8fafc;
+
+    border-color: #94a3b8;
+}
+
+
+/* CONFIRM */
+
+.job-cancel-confirm-btn {
+    border: none;
+
+    background: #dc2626;
+
+    color: #ffffff;
+}
+
+.job-cancel-confirm-btn:hover:not(:disabled) {
+    background: #b91c1c;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 8px 18px
+        rgba(220, 38, 38, 0.2);
+}
+
+
+.job-cancel-keep-btn:disabled,
+.job-cancel-confirm-btn:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .job-action-buttons {
+        flex-direction: column;
+    }
+
+    .cancel-job-btn {
+        flex: 1;
+        width: 100%;
+    }
+
+    .job-action-buttons .accept-btn {
+        width: 100%;
+    }
+
+    .job-cancel-popup {
+        padding: 28px 20px;
+    }
+
+    .job-cancel-popup-actions {
+        flex-direction: column;
+    }
+
+}

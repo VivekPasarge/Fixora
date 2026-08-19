@@ -287,3 +287,122 @@ font-weight:600;
 cursor:not-allowed;
 opacity:.95;
 }
+
+
+
+/* ==========================================
+   CUSTOMER BOOKING HISTORY
+========================================== */
+
+.history-button-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.history-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    padding: 12px 20px;
+
+    border-radius: 13px;
+
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+
+    color: #2563eb;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    transition: 0.3s ease;
+}
+
+.history-button:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 25px rgba(37, 99, 235, 0.2);
+}
+
+
+/* ==========================================
+   REMOVE FROM MY BOOKINGS
+========================================== */
+
+.remove-history-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 12px 20px;
+
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+
+    background: #fef2f2;
+    color: #dc2626;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+}
+
+.remove-history-btn:hover:not(:disabled) {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 25px rgba(220, 38, 38, 0.2);
+}
+
+.remove-history-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 768px) {
+
+    .history-button-wrapper {
+        justify-content: center;
+    }
+
+    .history-button {
+        width: 100%;
+        max-width: 220px;
+    }
+
+    .booking-footer {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .remove-history-btn,
+    .review-btn,
+    .details-btn {
+        min-width: 150px;
+    }
+
+}

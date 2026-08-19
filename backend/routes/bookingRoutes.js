@@ -36,19 +36,25 @@ const {
   getActiveBooking,
   getTechnicianAvailability,
   updateTechnicianAvailability,
+
+  // Technician cancellation
   technicianCancelJob,
 
-  // NEW
+  // Technician pre-acceptance decline
   declineAvailableJob,
 
-  // Existing
+  // Technician completed job removal
   removeCompletedJob,
+
+  // Customer booking history
+  removeBookingFromMyBookings,
+  getMyBookingHistory,
 
 } = require("../controllers/bookingController");
 
 
 // ==========================================
-// Customer Routes
+// CUSTOMER ROUTES
 // ==========================================
 
 
@@ -77,6 +83,51 @@ router.get(
 
 
 // ==========================================
+// Customer Booking History
+// ==========================================
+//
+// Shows bookings that the customer
+// removed from My Bookings.
+//
+// IMPORTANT:
+// These bookings are NOT deleted
+// from MongoDB.
+//
+// ==========================================
+
+router.get(
+  "/my-history",
+  protect,
+  authorizeRoles("customer"),
+  getMyBookingHistory
+);
+
+
+// ==========================================
+// Remove Booking From My Bookings
+// ==========================================
+//
+// CUSTOMER ONLY
+//
+// Allowed only for:
+// - Completed
+// - Cancelled
+//
+// This is a SOFT DELETE.
+//
+// The booking remains in MongoDB.
+//
+// ==========================================
+
+router.put(
+  "/:id/remove-from-my-bookings",
+  protect,
+  authorizeRoles("customer"),
+  removeBookingFromMyBookings
+);
+
+
+// ==========================================
 // Customer Cancel Booking
 // ==========================================
 
@@ -101,7 +152,7 @@ router.put(
 
 
 // ==========================================
-// Technician Routes
+// TECHNICIAN ROUTES
 // ==========================================
 
 
@@ -118,24 +169,19 @@ router.get(
 
 
 // ==========================================
-// PRE-ACCEPTANCE CANCEL / DECLINE
+// Technician Pre-Acceptance Decline
 // ==========================================
 //
 // Technician sees:
 //
 // [ Cancel Job ] [ Accept Job ]
 //
-// This is NOT a customer cancellation.
-//
-// Booking remains:
-//
-// status = Pending
-// technician = null
-//
-// Only this technician stops seeing
-// the booking.
-//
-// Other technicians can still see it.
+// Cancel Job:
+// - Booking remains Pending
+// - Customer booking is NOT cancelled
+// - Only this technician is removed
+//   from the available job
+// - Other technicians can still see it
 //
 // ==========================================
 
@@ -208,33 +254,10 @@ router.put(
 
 
 // ==========================================
-// REMOVE COMPLETED JOB
+// Technician Cancel After Accepting
 // ==========================================
 //
-// This does NOT permanently delete
-// the booking.
-//
-// It only removes it from the
-// technician's assigned-jobs view.
-//
-// Customer history, admin records,
-// payment and earnings remain safe.
-//
-// ==========================================
-
-router.put(
-  "/:id/remove-completed",
-  protect,
-  authorizeRoles("technician"),
-  removeCompletedJob
-);
-
-
-// ==========================================
-// TECHNICIAN CANCEL AFTER ACCEPTING
-// ==========================================
-//
-// This is DIFFERENT from /decline.
+// This is different from /decline.
 //
 // /decline
 //     ↓
@@ -243,14 +266,6 @@ router.put(
 // /technician-cancel
 //     ↓
 // After accepting
-//
-// Accepted / On The Way
-//          ↓
-// Technician cancels
-//          ↓
-// Booking returns to Pending
-//          ↓
-// Customer receives Socket.IO notification
 //
 // ==========================================
 
@@ -263,7 +278,26 @@ router.put(
 
 
 // ==========================================
-// Common Routes
+// Remove Completed Job
+// ==========================================
+//
+// TECHNICIAN ONLY
+//
+// This is separate from customer
+// booking history.
+//
+// ==========================================
+
+router.put(
+  "/:id/remove-completed",
+  protect,
+  authorizeRoles("technician"),
+  removeCompletedJob
+);
+
+
+// ==========================================
+// COMMON ROUTES
 // ==========================================
 
 
@@ -279,11 +313,11 @@ router.get(
 
 
 // ==========================================
-// Technician Availability
+// TECHNICIAN AVAILABILITY
 // ==========================================
 
 
-// Get Online / Offline status
+// Get Online / Offline Status
 
 router.get(
   "/technician/availability",
@@ -293,7 +327,7 @@ router.get(
 );
 
 
-// Change Online / Offline status
+// Change Online / Offline Status
 
 router.put(
   "/technician/availability",
@@ -304,7 +338,15 @@ router.put(
 
 
 // ==========================================
-// Single Booking
+// SINGLE BOOKING
+// ==========================================
+//
+// Keep this route AFTER specific routes
+// such as /my-history.
+//
+// Otherwise "my-history" could be treated
+// as a booking ID.
+//
 // ==========================================
 
 router.get(
@@ -315,7 +357,7 @@ router.get(
 
 
 // ==========================================
-// Admin / Testing
+// ADMIN / TESTING
 // ==========================================
 
 router.get(
@@ -325,7 +367,7 @@ router.get(
 
 
 // ==========================================
-// Customer Payment History
+// CUSTOMER PAYMENT HISTORY
 // ==========================================
 
 router.get(
@@ -337,7 +379,7 @@ router.get(
 
 
 // ==========================================
-// Technician Stats
+// TECHNICIAN STATS
 // ==========================================
 
 router.get(
@@ -349,7 +391,7 @@ router.get(
 
 
 // ==========================================
-// Technician Earnings
+// TECHNICIAN EARNINGS
 // ==========================================
 
 router.get(
@@ -361,7 +403,7 @@ router.get(
 
 
 // ==========================================
-// Export Router
+// EXPORT
 // ==========================================
 
 module.exports = router;

@@ -37,6 +37,9 @@ import TechnicianWallet from "./pages/TechnicianWallet";
 import socket from "./socket";
 import TechnicianReviews from "./pages/TechnicianReviews";
 
+import BookingHistory from "./pages/BookingHistory";
+
+
 function App() {
 
   // ==========================================
@@ -181,6 +184,10 @@ function App() {
         path="/my-bookings"
         element={<MyBookings />}
       />
+      <Route
+  path="/booking-history"
+  element={<BookingHistory />}
+/>
 
 
       {/* ======================================
