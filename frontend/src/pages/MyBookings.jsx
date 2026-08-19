@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
@@ -20,69 +20,29 @@ import Navbar from "../components/Navbar/Navbar";
 
 import "./MyBookings.css";
 
-
-// =========================================================
-// MY BOOKINGS
-// =========================================================
-
 const MyBookings = () => {
+  // =========================================================
+  // STATE
+  // =========================================================
 
-  // =======================================================
-  // BOOKINGS
-  // =======================================================
+  const [bookings, setBookings] = useState([]);
 
-  const [bookings, setBookings] =
-    useState([]);
+  const [reviewedBookings, setReviewedBookings] = useState([]);
 
+  const [loading, setLoading] = useState(true);
 
-  // =======================================================
-  // REVIEWED BOOKINGS
-  // =======================================================
+  // Current selected tab
+  const [activeTab, setActiveTab] = useState("Upcoming");
 
-  const [reviewedBookings, setReviewedBookings] =
-    useState([]);
-
-
-  // =======================================================
-  // LOADING
-  // =======================================================
-
-  const [loading, setLoading] =
-    useState(true);
-
-
-  // =======================================================
-  // ACTIVE TAB
-  // =======================================================
-  //
-  // Upcoming
-  // Active
-  // Completed
-  // Cancelled
-  //
-  // =======================================================
-
-  const [activeTab, setActiveTab] =
-    useState("Upcoming");
-
-
-  // =======================================================
-  // REMOVING BOOKING
-  // =======================================================
-
+  // Remove booking loading state
   const [removingBookingId, setRemovingBookingId] =
     useState(null);
 
-
-  // =======================================================
-  // TECHNICIAN CANCELLATION POPUP
-  // =======================================================
-
+  // Technician cancellation popup
   const [
     technicianCancelledBooking,
     setTechnicianCancelledBooking,
   ] = useState(null);
-
 
   const [
     showTechnicianCancelPopup,
@@ -90,166 +50,86 @@ const MyBookings = () => {
   ] = useState(false);
 
 
-  // =======================================================
-  // FETCH BOOKINGS
-  // =======================================================
+  // =========================================================
+  // FETCH BOOKINGS WHEN PAGE LOADS
+  // =========================================================
 
   useEffect(() => {
-
     fetchBookings();
-
   }, []);
 
 
-  // =======================================================
-  // CUSTOMER JOINS BOOKING SOCKET ROOMS
-  // =======================================================
+  // =========================================================
+  // SOCKET.IO
+  //
+  // Technician cancellation should appear immediately.
+  // The customer does NOT need to refresh My Bookings.
+  // =========================================================
 
   useEffect(() => {
 
-    if (
-      !bookings ||
-      bookings.length === 0
-    ) {
-      return;
-    }
+    const handleTechnicianCancellation = (data) => {
+
+      console.log(
+        "Technician cancellation received:",
+        data
+      );
 
 
-    bookings.forEach(
-      (booking) => {
+      // -----------------------------------------------------
+      // Create temporary booking information for popup
+      // -----------------------------------------------------
 
-        if (
-          booking &&
-          booking._id
-        ) {
+      const cancelledBooking = {
+        _id: data.bookingId,
 
-          socket.emit(
-            "join-booking",
-            booking._id
-          );
+        bookingId:
+          data.bookingNumber ||
+          data.bookingId,
 
+        service: {
+          name:
+            data.service ||
+            "Home Service",
+        },
 
-          console.log(
-            "📦 Customer joined booking room:",
-            booking._id
-          );
+        bookingDate:
+          data.bookingDate ||
+          null,
 
-        }
+        status: "Pending",
 
-      }
-    );
-
-  }, [bookings]);
-
-
-  // =======================================================
-  // REAL-TIME TECHNICIAN CANCELLATION
-  // =======================================================
-
-  useEffect(() => {
-
-    const handleTechnicianCancellation =
-      (data) => {
-
-        console.log(
-          "🔔 Technician cancellation received:",
-          data
-        );
-
-
-        // -----------------------------------------------
-        // Safety check
-        // -----------------------------------------------
-
-        if (
-          !data ||
-          !data.bookingId
-        ) {
-
-          console.log(
-            "Invalid technician cancellation data"
-          );
-
-          return;
-
-        }
-
-
-        // -----------------------------------------------
-        // Create popup booking information
-        // -----------------------------------------------
-
-        const cancelledBooking = {
-
-          _id:
-            data.bookingId,
-
-          bookingId:
-            data.bookingNumber ||
-            "",
-
-          service: {
-
-            name:
-              data.service ||
-              "Home Service",
-
-          },
-
-          bookingDate:
-            data.bookingDate ||
-            null,
-
-          status:
-            "Pending",
-
-          technicianCancelled:
-            true,
-
-        };
-
-
-        // -----------------------------------------------
-        // Save popup data
-        // -----------------------------------------------
-
-        setTechnicianCancelledBooking(
-          cancelledBooking
-        );
-
-
-        // -----------------------------------------------
-        // Show popup immediately
-        // -----------------------------------------------
-
-        setShowTechnicianCancelPopup(
-          true
-        );
-
-
-        // -----------------------------------------------
-        // Refresh booking list
-        // -----------------------------------------------
-
-        fetchBookings();
-
+        technicianCancelled: true,
       };
 
 
-    // -----------------------------------------------
-    // Socket listener
-    // -----------------------------------------------
+      setTechnicianCancelledBooking(
+        cancelledBooking
+      );
 
+
+      setShowTechnicianCancelPopup(
+        true
+      );
+
+
+      // -----------------------------------------------------
+      // Refresh bookings in background
+      // -----------------------------------------------------
+
+      fetchBookings();
+
+    };
+
+
+    // Listen for technician cancellation
     socket.on(
       "technician-job-cancelled",
       handleTechnicianCancellation
     );
 
 
-    // -----------------------------------------------
-    // Cleanup
-    // -----------------------------------------------
-
+    // Cleanup listener
     return () => {
 
       socket.off(
@@ -262,18 +142,31 @@ const MyBookings = () => {
   }, []);
 
 
-  // =======================================================
+  // =========================================================
   // FETCH CUSTOMER BOOKINGS
-  // =======================================================
+  // =========================================================
 
   const fetchBookings = async () => {
 
     try {
 
+      setLoading(true);
+
+
       const token =
-        localStorage.getItem(
-          "token"
+        localStorage.getItem("token");
+
+
+      if (!token) {
+
+        console.error(
+          "No authentication token found."
         );
+
+        setBookings([]);
+
+        return;
+      }
 
 
       const response =
@@ -281,10 +174,8 @@ const MyBookings = () => {
           "/bookings/my-bookings",
           {
             headers: {
-
               Authorization:
                 `Bearer ${token}`,
-
             },
           }
         );
@@ -294,18 +185,20 @@ const MyBookings = () => {
         response.data.bookings || [];
 
 
-      // -----------------------------------------------
-      // Store bookings
-      // -----------------------------------------------
+      console.log(
+        "Customer bookings:",
+        bookingsData
+      );
+
 
       setBookings(
         bookingsData
       );
 
 
-      // =================================================
+      // =====================================================
       // CHECK REVIEWS
-      // =================================================
+      // =====================================================
 
       const completedPaidBookings =
         bookingsData.filter(
@@ -335,10 +228,8 @@ const MyBookings = () => {
                       `/reviews/check/${booking._id}`,
                       {
                         headers: {
-
                           Authorization:
                             `Bearer ${token}`,
-
                         },
                       }
                     );
@@ -349,7 +240,6 @@ const MyBookings = () => {
                     .reviewed
                     ? booking._id
                     : null;
-
 
                 } catch (error) {
 
@@ -369,20 +259,14 @@ const MyBookings = () => {
 
 
         setReviewedBookings(
-          reviewResults.filter(
-            Boolean
-          )
+          reviewResults.filter(Boolean)
         );
-
 
       } else {
 
-        setReviewedBookings(
-          []
-        );
+        setReviewedBookings([]);
 
       }
-
 
     } catch (error) {
 
@@ -400,168 +284,124 @@ const MyBookings = () => {
   };
 
 
-  // =======================================================
-  // TAB CLICK FUNCTION
-  // =======================================================
-  //
-  // This is the function that makes:
-  //
-  // Upcoming
-  // Active
-  // Completed
-  // Cancelled
-  //
-  // clickable.
-  //
-  // =======================================================
+  // =========================================================
+  // TAB CLICK FUNCTIONS
+  // =========================================================
 
-  const handleTabChange =
-    (tab) => {
+  const handleUpcomingClick = () => {
 
-      console.log(
-        "Booking tab changed to:",
-        tab
+    setActiveTab("Upcoming");
+
+  };
+
+
+  const handleActiveClick = () => {
+
+    setActiveTab("Active");
+
+  };
+
+
+  const handleCompletedClick = () => {
+
+    setActiveTab("Completed");
+
+  };
+
+
+  const handleCancelledClick = () => {
+
+    setActiveTab("Cancelled");
+
+  };
+
+
+  // =========================================================
+  // FILTER BOOKINGS BASED ON ACTIVE TAB
+  // =========================================================
+
+  const filteredBookings = useMemo(() => {
+
+    if (activeTab === "Upcoming") {
+
+      return bookings.filter(
+        (booking) =>
+          booking.status ===
+          "Pending"
       );
 
-
-      setActiveTab(
-        tab
-      );
-
-    };
+    }
 
 
-  // =======================================================
-  // FILTER BOOKINGS
-  // =======================================================
-  //
-  // Upcoming:
-  // Pending
-  //
-  // Active:
-  // Accepted
-  // On The Way
-  // In Progress
-  //
-  // Completed:
-  // Completed
-  //
-  // Cancelled:
-  // Cancelled
-  //
-  // =======================================================
+    if (activeTab === "Active") {
 
-  const filteredBookings =
-    bookings.filter(
-      (booking) => {
-
-        // -----------------------------------------------
-        // UPCOMING
-        // -----------------------------------------------
-
-        if (
-          activeTab ===
-          "Upcoming"
-        ) {
-
-          return (
-            booking.status ===
-            "Pending"
-          );
-
-        }
-
-
-        // -----------------------------------------------
-        // ACTIVE
-        // -----------------------------------------------
-
-        if (
-          activeTab ===
-          "Active"
-        ) {
-
-          return [
+      return bookings.filter(
+        (booking) =>
+          [
             "Accepted",
             "On The Way",
             "In Progress",
           ].includes(
             booking.status
-          );
+          )
+      );
 
-        }
+    }
 
 
-        // -----------------------------------------------
-        // COMPLETED
-        // -----------------------------------------------
+    if (activeTab === "Completed") {
 
-        if (
-          activeTab ===
+      return bookings.filter(
+        (booking) =>
+          booking.status ===
           "Completed"
-        ) {
+      );
 
-          return (
-            booking.status ===
-            "Completed"
-          );
-
-        }
+    }
 
 
-        // -----------------------------------------------
-        // CANCELLED
-        // -----------------------------------------------
+    if (activeTab === "Cancelled") {
 
-        if (
-          activeTab ===
+      return bookings.filter(
+        (booking) =>
+          booking.status ===
           "Cancelled"
-        ) {
+      );
 
-          return (
-            booking.status ===
-            "Cancelled"
-          );
-
-        }
+    }
 
 
-        return true;
+    return bookings;
 
-      }
-    );
+  }, [
+    bookings,
+    activeTab,
+  ]);
 
 
-  // =======================================================
+  // =========================================================
   // REMOVE BOOKING FROM MY BOOKINGS
-  // =======================================================
+  //
+  // IMPORTANT:
   //
   // This is a SOFT DELETE.
   //
-  // The booking remains in MongoDB.
+  // The booking is NOT permanently deleted.
   //
-  // It disappears from My Bookings.
-  //
-  // It can remain available in Booking History.
-  //
-  // =======================================================
+  // It should remain available in Booking History.
+  // =========================================================
 
   const removeFromMyBookings =
     async (booking) => {
 
-      // -----------------------------------------------
-      // Only completed/cancelled bookings
-      // -----------------------------------------------
+      // -----------------------------------------------------
+      // Safety check
+      // -----------------------------------------------------
 
-      if (
-        booking.status !==
-          "Completed" &&
-        booking.status !==
-          "Cancelled"
-      ) {
+      if (!booking?._id) {
 
         alert(
-          "Only completed or cancelled bookings can be removed from My Bookings."
+          "Invalid booking."
         );
 
         return;
@@ -569,9 +409,9 @@ const MyBookings = () => {
       }
 
 
-      // -----------------------------------------------
+      // -----------------------------------------------------
       // Confirmation
-      // -----------------------------------------------
+      // -----------------------------------------------------
 
       const confirmed =
         window.confirm(
@@ -588,10 +428,6 @@ const MyBookings = () => {
 
       try {
 
-        // ---------------------------------------------
-        // Loading state
-        // ---------------------------------------------
-
         setRemovingBookingId(
           booking._id
         );
@@ -603,9 +439,20 @@ const MyBookings = () => {
           );
 
 
-        // ---------------------------------------------
-        // Backend soft-delete request
-        // ---------------------------------------------
+        if (!token) {
+
+          alert(
+            "Please login again."
+          );
+
+          return;
+
+        }
+
+
+        // ---------------------------------------------------
+        // SOFT DELETE API
+        // ---------------------------------------------------
 
         await api.put(
 
@@ -615,19 +462,17 @@ const MyBookings = () => {
 
           {
             headers: {
-
               Authorization:
                 `Bearer ${token}`,
-
             },
           }
 
         );
 
 
-        // ---------------------------------------------
-        // Remove from current UI
-        // ---------------------------------------------
+        // ---------------------------------------------------
+        // Immediately remove from current UI
+        // ---------------------------------------------------
 
         setBookings(
           (previousBookings) =>
@@ -639,9 +484,9 @@ const MyBookings = () => {
         );
 
 
-        // ---------------------------------------------
-        // Remove from review list
-        // ---------------------------------------------
+        // ---------------------------------------------------
+        // Remove from review tracking too
+        // ---------------------------------------------------
 
         setReviewedBookings(
           (previousReviewed) =>
@@ -649,6 +494,12 @@ const MyBookings = () => {
               (id) =>
                 id !== booking._id
             )
+        );
+
+
+        console.log(
+          "Booking removed from My Bookings:",
+          booking._id
         );
 
 
@@ -661,10 +512,9 @@ const MyBookings = () => {
 
 
         alert(
-          error.response?.data?.message ||
+          error?.response?.data?.message ||
           "Failed to remove booking from My Bookings."
         );
-
 
       } finally {
 
@@ -677,9 +527,9 @@ const MyBookings = () => {
     };
 
 
-  // =======================================================
+  // =========================================================
   // CLOSE TECHNICIAN CANCEL POPUP
-  // =======================================================
+  // =========================================================
 
   const closeTechnicianCancelPopup =
     () => {
@@ -695,16 +545,111 @@ const MyBookings = () => {
     };
 
 
-  // =======================================================
-  // LOADING
-  // =======================================================
+  // =========================================================
+  // FORMAT DATE
+  // =========================================================
+
+  const formatDate = (date) => {
+
+    if (!date) {
+
+      return "Date not available";
+
+    }
+
+
+    try {
+
+      return new Date(
+        date
+      ).toLocaleDateString(
+        "en-IN",
+        {
+          day: "numeric",
+          month: "numeric",
+          year: "numeric",
+        }
+      );
+
+    } catch {
+
+      return "Date not available";
+
+    }
+
+  };
+
+
+  // =========================================================
+  // EMPTY TAB MESSAGE
+  // =========================================================
+
+  const getEmptyMessage = () => {
+
+    if (
+      activeTab ===
+      "Upcoming"
+    ) {
+
+      return {
+        title:
+          "No Upcoming Bookings",
+        text:
+          "You don't have any pending bookings right now.",
+      };
+
+    }
+
+
+    if (
+      activeTab ===
+      "Active"
+    ) {
+
+      return {
+        title:
+          "No Active Bookings",
+        text:
+          "You don't have any active service bookings right now.",
+      };
+
+    }
+
+
+    if (
+      activeTab ===
+      "Completed"
+    ) {
+
+      return {
+        title:
+          "No Completed Bookings",
+        text:
+          "You don't have any completed bookings yet.",
+      };
+
+    }
+
+
+    return {
+      title:
+        "No Cancelled Bookings",
+      text:
+        "You don't have any cancelled bookings.",
+    };
+
+  };
+
+
+  // =========================================================
+  // LOADING SCREEN
+  // =========================================================
 
   if (loading) {
 
     return (
 
       <>
-
         <Navbar />
 
         <main className="bookings-page">
@@ -713,9 +658,7 @@ const MyBookings = () => {
 
             <div className="bookings-loading">
 
-              <div
-                className="loading-spinner"
-              ></div>
+              <div className="loading-spinner"></div>
 
               <h2>
                 Loading your bookings...
@@ -739,9 +682,17 @@ const MyBookings = () => {
   }
 
 
-  // =======================================================
+  // =========================================================
+  // EMPTY MESSAGE
+  // =========================================================
+
+  const emptyMessage =
+    getEmptyMessage();
+
+
+  // =========================================================
   // MAIN UI
-  // =======================================================
+  // =========================================================
 
   return (
 
@@ -750,9 +701,9 @@ const MyBookings = () => {
       <Navbar />
 
 
-      {/* =================================================
-          TECHNICIAN CANCELLED POPUP
-      ================================================= */}
+      {/* ===================================================
+          TECHNICIAN CANCELLATION POPUP
+      =================================================== */}
 
       {showTechnicianCancelPopup &&
         technicianCancelledBooking && (
@@ -772,13 +723,11 @@ const MyBookings = () => {
             initial={{
               opacity: 0,
               scale: 0.9,
-              y: 20,
             }}
 
             animate={{
               opacity: 1,
               scale: 1,
-              y: 0,
             }}
 
             transition={{
@@ -788,11 +737,10 @@ const MyBookings = () => {
             onClick={(event) =>
               event.stopPropagation()
             }
+
           >
 
-            {/* -----------------------------------------
-                CLOSE
-            ----------------------------------------- */}
+            {/* Close */}
 
             <button
               type="button"
@@ -802,6 +750,7 @@ const MyBookings = () => {
               onClick={
                 closeTechnicianCancelPopup
               }
+
             >
 
               <FiX />
@@ -809,136 +758,83 @@ const MyBookings = () => {
             </button>
 
 
-            {/* -----------------------------------------
-                WARNING ICON
-            ----------------------------------------- */}
+            {/* Icon */}
 
-            <div
-              className="technician-cancel-icon"
-            >
+            <div className="technician-cancel-icon">
 
               <FiAlertTriangle />
 
             </div>
 
 
-            {/* -----------------------------------------
-                TITLE
-            ----------------------------------------- */}
+            {/* Heading */}
 
             <h2>
               Technician Cancelled
             </h2>
 
 
-            {/* -----------------------------------------
-                MESSAGE
-            ----------------------------------------- */}
+            <p className="technician-cancel-service">
 
-            <p>
-
-              The assigned technician has
-              cancelled this booking.
+              {
+                technicianCancelledBooking
+                  .service?.name ||
+                "Home Service"
+              }
 
             </p>
 
 
-            {/* -----------------------------------------
-                SEARCHING
-            ----------------------------------------- */}
+            {/* Message */}
 
-            <div
-              className="technician-searching-box"
-            >
+            <p className="technician-cancel-message">
 
-              <div
-                className="searching-dot"
-              ></div>
+              The assigned technician
+              cancelled this request.
+
+            </p>
 
 
-              <div>
+            <div className="technician-cancel-info">
 
-                <strong>
-                  Finding another technician
-                </strong>
-
-                <span>
-
-                  Don't worry. Fixora is trying
-                  to find another available
-                  technician for you.
-
-                </span>
-
-              </div>
+              We are trying to find
+              another technician for you.
 
             </div>
 
 
-            {/* -----------------------------------------
-                BOOKING DETAILS
-            ----------------------------------------- */}
+            {/* Booking */}
 
-            <div
-              className="cancelled-booking-info"
-            >
+            {technicianCancelledBooking.bookingId && (
 
-              <div>
+              <p className="technician-cancel-booking-id">
 
-                <span>
-                  Service
-                </span>
+                Booking ID:{" "}
 
                 <strong>
-
                   {
                     technicianCancelledBooking
-                      .service?.name ||
-                    "Home Service"
+                      .bookingId
                   }
-
                 </strong>
 
-              </div>
+              </p>
+
+            )}
 
 
-              {technicianCancelledBooking
-                .bookingDate && (
-
-                <div>
-
-                  <span>
-                    Service Date
-                  </span>
-
-                  <strong>
-
-                    {new Date(
-                      technicianCancelledBooking
-                        .bookingDate
-                    ).toLocaleDateString()}
-
-                  </strong>
-
-                </div>
-
-              )}
-
-            </div>
-
-
-            {/* -----------------------------------------
-                OK
-            ----------------------------------------- */}
+            {/* Button */}
 
             <button
+
               type="button"
 
-              className="technician-cancel-ok-btn"
+              className="technician-cancel-ok"
 
               onClick={
                 closeTechnicianCancelPopup
               }
+
             >
 
               Okay
@@ -952,9 +848,9 @@ const MyBookings = () => {
       )}
 
 
-      {/* =================================================
-          BOOKINGS PAGE
-      ================================================= */}
+      {/* ===================================================
+          PAGE
+      =================================================== */}
 
       <main className="bookings-page">
 
@@ -982,11 +878,13 @@ const MyBookings = () => {
             transition={{
               duration: 0.5,
             }}
+
           >
 
             <h1>
               My Bookings
             </h1>
+
 
             <p>
               View and manage all your
@@ -997,15 +895,13 @@ const MyBookings = () => {
 
 
           {/* =================================================
-              CLICKABLE TABS
+              TABS
           ================================================= */}
 
           <div className="booking-tabs">
 
 
-            {/* -----------------------------------------------
-                UPCOMING
-            ----------------------------------------------- */}
+            {/* UPCOMING */}
 
             <button
 
@@ -1018,11 +914,10 @@ const MyBookings = () => {
                   : ""
               }
 
-              onClick={() =>
-                handleTabChange(
-                  "Upcoming"
-                )
+              onClick={
+                handleUpcomingClick
               }
+
             >
 
               Upcoming
@@ -1030,9 +925,7 @@ const MyBookings = () => {
             </button>
 
 
-            {/* -----------------------------------------------
-                ACTIVE
-            ----------------------------------------------- */}
+            {/* ACTIVE */}
 
             <button
 
@@ -1045,11 +938,10 @@ const MyBookings = () => {
                   : ""
               }
 
-              onClick={() =>
-                handleTabChange(
-                  "Active"
-                )
+              onClick={
+                handleActiveClick
               }
+
             >
 
               Active
@@ -1057,9 +949,7 @@ const MyBookings = () => {
             </button>
 
 
-            {/* -----------------------------------------------
-                COMPLETED
-            ----------------------------------------------- */}
+            {/* COMPLETED */}
 
             <button
 
@@ -1072,11 +962,10 @@ const MyBookings = () => {
                   : ""
               }
 
-              onClick={() =>
-                handleTabChange(
-                  "Completed"
-                )
+              onClick={
+                handleCompletedClick
               }
+
             >
 
               Completed
@@ -1084,9 +973,7 @@ const MyBookings = () => {
             </button>
 
 
-            {/* -----------------------------------------------
-                CANCELLED
-            ----------------------------------------------- */}
+            {/* CANCELLED */}
 
             <button
 
@@ -1099,11 +986,10 @@ const MyBookings = () => {
                   : ""
               }
 
-              onClick={() =>
-                handleTabChange(
-                  "Cancelled"
-                )
+              onClick={
+                handleCancelledClick
               }
+
             >
 
               Cancelled
@@ -1121,35 +1007,48 @@ const MyBookings = () => {
           <div className="bookings-list">
 
 
+            {/* =================================================
+                NO BOOKINGS
+            ================================================= */}
+
             {filteredBookings.length === 0 ? (
 
-              <div
+              <motion.div
+
                 className="no-bookings"
+
+                initial={{
+                  opacity: 0,
+                  y: 20,
+                }}
+
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+
               >
 
                 <h2>
-
-                  No {activeTab} Bookings
-
+                  {emptyMessage.title}
                 </h2>
 
+
                 <p>
-
-                  You don't have any{" "}
-                  {activeTab.toLowerCase()}{" "}
-                  bookings.
-
+                  {emptyMessage.text}
                 </p>
 
-              </div>
+              </motion.div>
 
             ) : (
 
+
+              /* =================================================
+                 BOOKINGS
+              ================================================= */
+
               filteredBookings.map(
-                (
-                  booking,
-                  index
-                ) => (
+                (booking, index) => (
 
                   <motion.div
 
@@ -1171,26 +1070,24 @@ const MyBookings = () => {
 
                     transition={{
                       duration: 0.35,
-
                       delay:
                         Math.min(
-                          index *
-                            0.05,
+                          index * 0.05,
                           0.3
                         ),
                     }}
+
                   >
 
 
-                    {/* =========================================
+                    {/* =================================================
                         BOOKING HEADER
-                    ========================================= */}
+                    ================================================= */}
 
-                    <div
-                      className="booking-top"
-                    >
+                    <div className="booking-header-row">
 
-                      <div>
+
+                      <div className="booking-service">
 
                         <h2>
 
@@ -1204,149 +1101,166 @@ const MyBookings = () => {
                         </h2>
 
 
-                        <p
-                          className="booking-id"
-                        >
+                        <p>
 
-                          Booking ID :{" "}
+                          Booking ID:{" "}
 
-                          {
-                            booking
-                              .bookingId
-                          }
+                          <strong>
+                            {
+                              booking
+                                .bookingId ||
+                              booking._id
+                            }
+                          </strong>
 
                         </p>
 
                       </div>
 
 
-                      <span
+                      {/* STATUS */}
+
+                      <div
+
                         className={
-                          `status-badge ${
-                            booking.status
-                              .toLowerCase()
-                              .replace(
-                                /\s+/g,
-                                "-"
-                              )
-                          }`
+                          `booking-status status-${String(
+                            booking.status ||
+                            ""
+                          )
+                            .toLowerCase()
+                            .replace(
+                              /\s+/g,
+                              "-"
+                            )}`
                         }
+
                       >
 
                         {
-                          booking.status
+                          booking.status ||
+                          "Pending"
                         }
 
-                      </span>
+                      </div>
 
                     </div>
 
 
-                    {/* =========================================
-                        TECHNICIAN CANCELLED BANNER
-                    ========================================= */}
-
-                    {booking
-                      .technicianCancelled &&
-                      booking.status ===
-                        "Pending" && (
-
-                      <div
-                        className="technician-cancelled-banner"
-                      >
-
-                        <FiAlertTriangle />
-
-                        <div>
-
-                          <strong>
-                            Technician cancelled
-                          </strong>
-
-                          <span>
-
-                            We are trying to find
-                            another technician
-                            for you.
-
-                          </span>
-
-                        </div>
-
-                      </div>
-
-                    )}
-
-
-                    {/* =========================================
+                    {/* =================================================
                         BOOKING DETAILS
-                    ========================================= */}
+                    ================================================= */}
 
-                    <div
-                      className="booking-details"
-                    >
+                    <div className="booking-details-grid">
 
 
                       {/* DATE */}
 
-                      <div
-                        className="detail-item"
-                      >
+                      <div className="booking-detail-item">
 
                         <FiCalendar />
 
-                        <span>
+                        <div>
 
-                          {booking.bookingDate
-                            ? new Date(
-                                booking
-                                  .bookingDate
-                              ).toLocaleDateString()
-                            : "N/A"}
+                          <span>
+                            Date
+                          </span>
 
-                        </span>
+                          <strong>
+
+                            {
+                              formatDate(
+                                booking.bookingDate
+                              )
+                            }
+
+                          </strong>
+
+                        </div>
 
                       </div>
 
 
                       {/* TIME */}
 
-                      <div
-                        className="detail-item"
-                      >
+                      <div className="booking-detail-item">
 
                         <FiClock />
 
-                        <span>
+                        <div>
 
-                          {
-                            booking
-                              .bookingTime ||
-                            "N/A"
-                          }
+                          <span>
+                            Time
+                          </span>
 
-                        </span>
+                          <strong>
+
+                            {
+                              booking.bookingTime ||
+                              "Time not available"
+                            }
+
+                          </strong>
+
+                        </div>
 
                       </div>
 
 
                       {/* ADDRESS */}
 
-                      <div
-                        className="detail-item"
-                      >
+                      <div className="booking-detail-item">
 
                         <FiMapPin />
 
-                        <span>
+                        <div>
 
-                          {
-                            booking
-                              .address ||
-                            "N/A"
-                          }
+                          <span>
+                            Address
+                          </span>
 
-                        </span>
+                          <strong>
+
+                            {
+                              booking.address ||
+                              "Address not available"
+                            }
+
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+
+                      {/* PRICE */}
+
+                      <div className="booking-detail-item">
+
+                        <div className="price-symbol">
+                          ₹
+                        </div>
+
+                        <div>
+
+                          <span>
+                            Price
+                          </span>
+
+                          <strong>
+
+                            ₹
+                            {
+                              Number(
+                                booking.price ||
+                                0
+                              ).toLocaleString(
+                                "en-IN"
+                              )
+                            }
+
+                          </strong>
+
+                        </div>
 
                       </div>
 
@@ -1354,26 +1268,20 @@ const MyBookings = () => {
                     </div>
 
 
-                    {/* =========================================
-                        TECHNICIAN
-                    ========================================= */}
+                    {/* =================================================
+                        ASSIGNED TECHNICIAN
+                    ================================================= */}
 
                     {booking.technician && (
 
-                      <div
-                        className="technician-card"
-                      >
+                      <div className="technician-card">
 
                         <h3>
                           Assigned Professional
                         </h3>
 
 
-                        {/* NAME */}
-
-                        <div
-                          className="tech-info"
-                        >
+                        <div className="tech-info">
 
                           <FiUser />
 
@@ -1382,7 +1290,8 @@ const MyBookings = () => {
                             {
                               booking
                                 .technician
-                                .name
+                                .name ||
+                              "Technician"
                             }
 
                           </span>
@@ -1390,11 +1299,7 @@ const MyBookings = () => {
                         </div>
 
 
-                        {/* PHONE */}
-
-                        <div
-                          className="tech-info"
-                        >
+                        <div className="tech-info">
 
                           <FiPhone />
 
@@ -1403,7 +1308,8 @@ const MyBookings = () => {
                             {
                               booking
                                 .technician
-                                .phone
+                                .phone ||
+                              "Phone not available"
                             }
 
                           </span>
@@ -1411,11 +1317,7 @@ const MyBookings = () => {
                         </div>
 
 
-                        {/* PROFESSION */}
-
-                        <div
-                          className="tech-info"
-                        >
+                        <div className="tech-info">
 
                           <FiBriefcase />
 
@@ -1425,7 +1327,7 @@ const MyBookings = () => {
                               booking
                                 .technician
                                 .profession ||
-                              "Not Available"
+                              "Professional"
                             }
 
                           </span>
@@ -1437,18 +1339,17 @@ const MyBookings = () => {
                     )}
 
 
-                    {/* =========================================
+                    {/* =================================================
                         STATUS PROGRESS
-                    ========================================= */}
+                    ================================================= */}
 
-                    <div
-                      className="status-progress"
-                    >
+                    <div className="status-progress">
 
 
                       {/* PENDING */}
 
                       <div
+
                         className={
                           `step ${
                             booking.status !==
@@ -1457,6 +1358,7 @@ const MyBookings = () => {
                               : ""
                           }`
                         }
+
                       >
 
                         Pending
@@ -1467,6 +1369,7 @@ const MyBookings = () => {
                       {/* ACCEPTED */}
 
                       <div
+
                         className={
                           `step ${
                             [
@@ -1481,6 +1384,7 @@ const MyBookings = () => {
                               : ""
                           }`
                         }
+
                       >
 
                         Accepted
@@ -1491,6 +1395,7 @@ const MyBookings = () => {
                       {/* IN PROGRESS */}
 
                       <div
+
                         className={
                           `step ${
                             [
@@ -1503,6 +1408,7 @@ const MyBookings = () => {
                               : ""
                           }`
                         }
+
                       >
 
                         In Progress
@@ -1513,6 +1419,7 @@ const MyBookings = () => {
                       {/* COMPLETED */}
 
                       <div
+
                         className={
                           `step ${
                             booking.status ===
@@ -1521,6 +1428,7 @@ const MyBookings = () => {
                               : ""
                           }`
                         }
+
                       >
 
                         Completed
@@ -1531,18 +1439,16 @@ const MyBookings = () => {
                     </div>
 
 
-                    {/* =========================================
-                        FOOTER
-                    ========================================= */}
+                    {/* =================================================
+                        FOOTER BUTTONS
+                    ================================================= */}
 
-                    <div
-                      className="booking-footer"
-                    >
+                    <div className="booking-footer">
 
 
-                      {/* ---------------------------------------
+                      {/* =================================================
                           TRACK BOOKING
-                      --------------------------------------- */}
+                      ================================================= */}
 
                       <Link
 
@@ -1551,6 +1457,7 @@ const MyBookings = () => {
                         }
 
                         className="details-btn"
+
                       >
 
                         Track Booking
@@ -1558,9 +1465,9 @@ const MyBookings = () => {
                       </Link>
 
 
-                      {/* ---------------------------------------
+                      {/* =================================================
                           REVIEW
-                      --------------------------------------- */}
+                      ================================================= */}
 
                       {booking.status ===
                         "Completed" &&
@@ -1578,6 +1485,7 @@ const MyBookings = () => {
                             className="review-submitted-btn"
 
                             disabled
+
                           >
 
                             Review Submitted
@@ -1595,6 +1503,7 @@ const MyBookings = () => {
                             }}
 
                             className="review-btn"
+
                           >
 
                             Rate Service
@@ -1606,45 +1515,39 @@ const MyBookings = () => {
                       )}
 
 
-                      {/* ---------------------------------------
+                      {/* =================================================
                           REMOVE FROM MY BOOKINGS
-                      --------------------------------------- */}
+                      ================================================= */}
 
-                      {(booking.status ===
-                        "Completed" ||
-                        booking.status ===
-                          "Cancelled") && (
+                      <button
 
-                        <button
+                        type="button"
 
-                          type="button"
+                        className="remove-history-btn"
 
-                          className="remove-history-btn"
+                        disabled={
+                          removingBookingId ===
+                          booking._id
+                        }
 
-                          disabled={
-                            removingBookingId ===
-                            booking._id
-                          }
+                        onClick={() =>
+                          removeFromMyBookings(
+                            booking
+                          )
+                        }
 
-                          onClick={() =>
-                            removeFromMyBookings(
-                              booking
-                            )
-                          }
-                        >
+                      >
 
-                          <FiTrash2 />
+                        <FiTrash2 />
 
-                          {
-                            removingBookingId ===
-                            booking._id
-                              ? "Removing..."
-                              : "Remove"
-                          }
+                        {
+                          removingBookingId ===
+                          booking._id
+                            ? "Removing..."
+                            : "Remove"
+                        }
 
-                        </button>
-
-                      )}
+                      </button>
 
 
                     </div>
@@ -1667,8 +1570,13 @@ const MyBookings = () => {
     </>
 
   );
-
 };
 
+
+// =========================================================
+// IMPORTANT
+// This fixes:
+// "does not provide an export named 'default'"
+// =========================================================
 
 export default MyBookings;
