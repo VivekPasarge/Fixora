@@ -21,33 +21,62 @@ import Navbar from "../components/Navbar/Navbar";
 import "./MyBookings.css";
 
 
+// =========================================================
+// MY BOOKINGS
+// =========================================================
+
 const MyBookings = () => {
+
+  // =======================================================
+  // BOOKINGS
+  // =======================================================
 
   const [bookings, setBookings] =
     useState([]);
 
+
+  // =======================================================
+  // REVIEWED BOOKINGS
+  // =======================================================
+
   const [reviewedBookings, setReviewedBookings] =
     useState([]);
+
+
+  // =======================================================
+  // LOADING
+  // =======================================================
 
   const [loading, setLoading] =
     useState(true);
 
 
-  /*
-    =========================================================
-    CUSTOMER BOOKING HISTORY
-  =========================================================
-  */
+  // =======================================================
+  // ACTIVE TAB
+  // =======================================================
+  //
+  // Upcoming
+  // Active
+  // Completed
+  // Cancelled
+  //
+  // =======================================================
+
+  const [activeTab, setActiveTab] =
+    useState("Upcoming");
+
+
+  // =======================================================
+  // REMOVING BOOKING
+  // =======================================================
 
   const [removingBookingId, setRemovingBookingId] =
     useState(null);
 
 
-  /*
-    =========================================================
-    TECHNICIAN CANCELLATION POPUP
-  =========================================================
-  */
+  // =======================================================
+  // TECHNICIAN CANCELLATION POPUP
+  // =======================================================
 
   const [
     technicianCancelledBooking,
@@ -61,11 +90,9 @@ const MyBookings = () => {
   ] = useState(false);
 
 
-  /*
-    =========================================================
-    INITIAL LOAD
-  =========================================================
-  */
+  // =======================================================
+  // FETCH BOOKINGS
+  // =======================================================
 
   useEffect(() => {
 
@@ -74,11 +101,9 @@ const MyBookings = () => {
   }, []);
 
 
-  /*
-    =========================================================
-    CUSTOMER JOINS BOOKING ROOMS
-  =========================================================
-  */
+  // =======================================================
+  // CUSTOMER JOINS BOOKING SOCKET ROOMS
+  // =======================================================
 
   useEffect(() => {
 
@@ -117,11 +142,9 @@ const MyBookings = () => {
   }, [bookings]);
 
 
-  /*
-    =========================================================
-    REAL-TIME TECHNICIAN CANCELLATION
-  =========================================================
-  */
+  // =======================================================
+  // REAL-TIME TECHNICIAN CANCELLATION
+  // =======================================================
 
   useEffect(() => {
 
@@ -133,6 +156,10 @@ const MyBookings = () => {
           data
         );
 
+
+        // -----------------------------------------------
+        // Safety check
+        // -----------------------------------------------
 
         if (
           !data ||
@@ -147,6 +174,10 @@ const MyBookings = () => {
 
         }
 
+
+        // -----------------------------------------------
+        // Create popup booking information
+        // -----------------------------------------------
 
         const cancelledBooking = {
 
@@ -178,26 +209,46 @@ const MyBookings = () => {
         };
 
 
+        // -----------------------------------------------
+        // Save popup data
+        // -----------------------------------------------
+
         setTechnicianCancelledBooking(
           cancelledBooking
         );
 
+
+        // -----------------------------------------------
+        // Show popup immediately
+        // -----------------------------------------------
 
         setShowTechnicianCancelPopup(
           true
         );
 
 
+        // -----------------------------------------------
+        // Refresh booking list
+        // -----------------------------------------------
+
         fetchBookings();
 
       };
 
+
+    // -----------------------------------------------
+    // Socket listener
+    // -----------------------------------------------
 
     socket.on(
       "technician-job-cancelled",
       handleTechnicianCancellation
     );
 
+
+    // -----------------------------------------------
+    // Cleanup
+    // -----------------------------------------------
 
     return () => {
 
@@ -211,11 +262,9 @@ const MyBookings = () => {
   }, []);
 
 
-  /*
-    =========================================================
-    FETCH BOOKINGS
-  =========================================================
-  */
+  // =======================================================
+  // FETCH CUSTOMER BOOKINGS
+  // =======================================================
 
   const fetchBookings = async () => {
 
@@ -232,8 +281,10 @@ const MyBookings = () => {
           "/bookings/my-bookings",
           {
             headers: {
+
               Authorization:
                 `Bearer ${token}`,
+
             },
           }
         );
@@ -243,16 +294,18 @@ const MyBookings = () => {
         response.data.bookings || [];
 
 
+      // -----------------------------------------------
+      // Store bookings
+      // -----------------------------------------------
+
       setBookings(
         bookingsData
       );
 
 
-      /*
-        =====================================================
-        REVIEW CHECKS
-        =====================================================
-      */
+      // =================================================
+      // CHECK REVIEWS
+      // =================================================
 
       const completedPaidBookings =
         bookingsData.filter(
@@ -282,8 +335,10 @@ const MyBookings = () => {
                       `/reviews/check/${booking._id}`,
                       {
                         headers: {
+
                           Authorization:
                             `Bearer ${token}`,
+
                         },
                       }
                     );
@@ -345,40 +400,178 @@ const MyBookings = () => {
   };
 
 
-  /*
-    =========================================================
-    REMOVE BOOKING FROM MY BOOKINGS
-    =========================================================
+  // =======================================================
+  // TAB CLICK FUNCTION
+  // =======================================================
+  //
+  // This is the function that makes:
+  //
+  // Upcoming
+  // Active
+  // Completed
+  // Cancelled
+  //
+  // clickable.
+  //
+  // =======================================================
 
-    SOFT DELETE
+  const handleTabChange =
+    (tab) => {
 
-    The booking is NOT permanently deleted.
+      console.log(
+        "Booking tab changed to:",
+        tab
+      );
 
-    It is only removed from the customer's
-    "My Bookings" list.
 
-    The booking remains available in
-    "Booking History".
+      setActiveTab(
+        tab
+      );
 
-    This works for:
+    };
 
-    Pending
-    Accepted
-    On The Way
-    In Progress
-    Completed
-    Cancelled
-  =========================================================
-  */
+
+  // =======================================================
+  // FILTER BOOKINGS
+  // =======================================================
+  //
+  // Upcoming:
+  // Pending
+  //
+  // Active:
+  // Accepted
+  // On The Way
+  // In Progress
+  //
+  // Completed:
+  // Completed
+  //
+  // Cancelled:
+  // Cancelled
+  //
+  // =======================================================
+
+  const filteredBookings =
+    bookings.filter(
+      (booking) => {
+
+        // -----------------------------------------------
+        // UPCOMING
+        // -----------------------------------------------
+
+        if (
+          activeTab ===
+          "Upcoming"
+        ) {
+
+          return (
+            booking.status ===
+            "Pending"
+          );
+
+        }
+
+
+        // -----------------------------------------------
+        // ACTIVE
+        // -----------------------------------------------
+
+        if (
+          activeTab ===
+          "Active"
+        ) {
+
+          return [
+            "Accepted",
+            "On The Way",
+            "In Progress",
+          ].includes(
+            booking.status
+          );
+
+        }
+
+
+        // -----------------------------------------------
+        // COMPLETED
+        // -----------------------------------------------
+
+        if (
+          activeTab ===
+          "Completed"
+        ) {
+
+          return (
+            booking.status ===
+            "Completed"
+          );
+
+        }
+
+
+        // -----------------------------------------------
+        // CANCELLED
+        // -----------------------------------------------
+
+        if (
+          activeTab ===
+          "Cancelled"
+        ) {
+
+          return (
+            booking.status ===
+            "Cancelled"
+          );
+
+        }
+
+
+        return true;
+
+      }
+    );
+
+
+  // =======================================================
+  // REMOVE BOOKING FROM MY BOOKINGS
+  // =======================================================
+  //
+  // This is a SOFT DELETE.
+  //
+  // The booking remains in MongoDB.
+  //
+  // It disappears from My Bookings.
+  //
+  // It can remain available in Booking History.
+  //
+  // =======================================================
 
   const removeFromMyBookings =
     async (booking) => {
 
-      /*
-        =====================================================
-        CONFIRMATION
-        =====================================================
-      */
+      // -----------------------------------------------
+      // Only completed/cancelled bookings
+      // -----------------------------------------------
+
+      if (
+        booking.status !==
+          "Completed" &&
+        booking.status !==
+          "Cancelled"
+      ) {
+
+        alert(
+          "Only completed or cancelled bookings can be removed from My Bookings."
+        );
+
+        return;
+
+      }
+
+
+      // -----------------------------------------------
+      // Confirmation
+      // -----------------------------------------------
 
       const confirmed =
         window.confirm(
@@ -395,9 +588,9 @@ const MyBookings = () => {
 
       try {
 
-        /*
-          Show loading state
-        */
+        // ---------------------------------------------
+        // Loading state
+        // ---------------------------------------------
 
         setRemovingBookingId(
           booking._id
@@ -410,29 +603,31 @@ const MyBookings = () => {
           );
 
 
-        /*
-          ===================================================
-          BACKEND SOFT DELETE
-          ===================================================
-        */
+        // ---------------------------------------------
+        // Backend soft-delete request
+        // ---------------------------------------------
 
         await api.put(
+
           `/bookings/${booking._id}/remove-from-my-bookings`,
+
           {},
+
           {
             headers: {
+
               Authorization:
                 `Bearer ${token}`,
+
             },
           }
+
         );
 
 
-        /*
-          ===================================================
-          IMMEDIATELY REMOVE FROM CURRENT UI
-          ===================================================
-        */
+        // ---------------------------------------------
+        // Remove from current UI
+        // ---------------------------------------------
 
         setBookings(
           (previousBookings) =>
@@ -444,11 +639,9 @@ const MyBookings = () => {
         );
 
 
-        /*
-          ===================================================
-          REMOVE FROM REVIEW CHECK LIST
-          ===================================================
-        */
+        // ---------------------------------------------
+        // Remove from review list
+        // ---------------------------------------------
 
         setReviewedBookings(
           (previousReviewed) =>
@@ -456,12 +649,6 @@ const MyBookings = () => {
               (id) =>
                 id !== booking._id
             )
-        );
-
-
-        console.log(
-          "Booking removed from My Bookings:",
-          booking._id
         );
 
 
@@ -490,11 +677,9 @@ const MyBookings = () => {
     };
 
 
-  /*
-    =========================================================
-    CLOSE TECHNICIAN CANCEL POPUP
-  =========================================================
-  */
+  // =======================================================
+  // CLOSE TECHNICIAN CANCEL POPUP
+  // =======================================================
 
   const closeTechnicianCancelPopup =
     () => {
@@ -510,17 +695,16 @@ const MyBookings = () => {
     };
 
 
-  /*
-    =========================================================
-    LOADING
-  =========================================================
-  */
+  // =======================================================
+  // LOADING
+  // =======================================================
 
   if (loading) {
 
     return (
 
       <>
+
         <Navbar />
 
         <main className="bookings-page">
@@ -529,7 +713,9 @@ const MyBookings = () => {
 
             <div className="bookings-loading">
 
-              <div className="loading-spinner"></div>
+              <div
+                className="loading-spinner"
+              ></div>
 
               <h2>
                 Loading your bookings...
@@ -553,11 +739,9 @@ const MyBookings = () => {
   }
 
 
-  /*
-    =========================================================
-    MAIN UI
-  =========================================================
-  */
+  // =======================================================
+  // MAIN UI
+  // =======================================================
 
   return (
 
@@ -566,9 +750,9 @@ const MyBookings = () => {
       <Navbar />
 
 
-      {/* =====================================================
+      {/* =================================================
           TECHNICIAN CANCELLED POPUP
-      ===================================================== */}
+      ================================================= */}
 
       {showTechnicianCancelPopup &&
         technicianCancelledBooking && (
@@ -606,13 +790,14 @@ const MyBookings = () => {
             }
           >
 
-            {/* CLOSE BUTTON */}
+            {/* -----------------------------------------
+                CLOSE
+            ----------------------------------------- */}
 
             <button
               type="button"
 
-              className=
-                "technician-cancel-close"
+              className="technician-cancel-close"
 
               onClick={
                 closeTechnicianCancelPopup
@@ -624,11 +809,12 @@ const MyBookings = () => {
             </button>
 
 
-            {/* WARNING ICON */}
+            {/* -----------------------------------------
+                WARNING ICON
+            ----------------------------------------- */}
 
             <div
-              className=
-                "technician-cancel-icon"
+              className="technician-cancel-icon"
             >
 
               <FiAlertTriangle />
@@ -636,14 +822,18 @@ const MyBookings = () => {
             </div>
 
 
-            {/* TITLE */}
+            {/* -----------------------------------------
+                TITLE
+            ----------------------------------------- */}
 
             <h2>
               Technician Cancelled
             </h2>
 
 
-            {/* MESSAGE */}
+            {/* -----------------------------------------
+                MESSAGE
+            ----------------------------------------- */}
 
             <p>
 
@@ -653,16 +843,16 @@ const MyBookings = () => {
             </p>
 
 
-            {/* SEARCHING MESSAGE */}
+            {/* -----------------------------------------
+                SEARCHING
+            ----------------------------------------- */}
 
             <div
-              className=
-                "technician-searching-box"
+              className="technician-searching-box"
             >
 
               <div
-                className=
-                  "searching-dot"
+                className="searching-dot"
               ></div>
 
 
@@ -671,7 +861,6 @@ const MyBookings = () => {
                 <strong>
                   Finding another technician
                 </strong>
-
 
                 <span>
 
@@ -686,11 +875,12 @@ const MyBookings = () => {
             </div>
 
 
-            {/* BOOKING INFORMATION */}
+            {/* -----------------------------------------
+                BOOKING DETAILS
+            ----------------------------------------- */}
 
             <div
-              className=
-                "cancelled-booking-info"
+              className="cancelled-booking-info"
             >
 
               <div>
@@ -699,13 +889,11 @@ const MyBookings = () => {
                   Service
                 </span>
 
-
                 <strong>
 
                   {
                     technicianCancelledBooking
-                      .service
-                      ?.name ||
+                      .service?.name ||
                     "Home Service"
                   }
 
@@ -723,15 +911,12 @@ const MyBookings = () => {
                     Service Date
                   </span>
 
-
                   <strong>
 
                     {new Date(
                       technicianCancelledBooking
                         .bookingDate
-                    ).toLocaleDateString(
-                      "en-IN"
-                    )}
+                    ).toLocaleDateString()}
 
                   </strong>
 
@@ -742,13 +927,14 @@ const MyBookings = () => {
             </div>
 
 
-            {/* OK BUTTON */}
+            {/* -----------------------------------------
+                OK
+            ----------------------------------------- */}
 
             <button
               type="button"
 
-              className=
-                "technician-cancel-ok-btn"
+              className="technician-cancel-ok-btn"
 
               onClick={
                 closeTechnicianCancelPopup
@@ -766,9 +952,9 @@ const MyBookings = () => {
       )}
 
 
-      {/* =====================================================
+      {/* =================================================
           BOOKINGS PAGE
-      ===================================================== */}
+      ================================================= */}
 
       <main className="bookings-page">
 
@@ -796,72 +982,134 @@ const MyBookings = () => {
             transition={{
               duration: 0.5,
             }}
-
           >
-
-            {/* ================================================
-                VIEW HISTORY BUTTON
-            ================================================ */}
-
-            <div
-              className="history-button-wrapper"
-            >
-
-              <Link
-                to="/booking-history"
-                className="history-button"
-              >
-
-                <FiClock />
-
-                View History
-
-              </Link>
-
-            </div>
-
 
             <h1>
               My Bookings
             </h1>
 
-
             <p>
-
               View and manage all your
               Fixora service bookings.
-
             </p>
 
           </motion.div>
 
 
           {/* =================================================
-              TABS
+              CLICKABLE TABS
           ================================================= */}
 
           <div className="booking-tabs">
 
+
+            {/* -----------------------------------------------
+                UPCOMING
+            ----------------------------------------------- */}
+
             <button
-              className="active-tab"
+
+              type="button"
+
+              className={
+                activeTab ===
+                "Upcoming"
+                  ? "active-tab"
+                  : ""
+              }
+
+              onClick={() =>
+                handleTabChange(
+                  "Upcoming"
+                )
+              }
             >
+
               Upcoming
+
             </button>
 
 
-            <button>
+            {/* -----------------------------------------------
+                ACTIVE
+            ----------------------------------------------- */}
+
+            <button
+
+              type="button"
+
+              className={
+                activeTab ===
+                "Active"
+                  ? "active-tab"
+                  : ""
+              }
+
+              onClick={() =>
+                handleTabChange(
+                  "Active"
+                )
+              }
+            >
+
               Active
+
             </button>
 
 
-            <button>
+            {/* -----------------------------------------------
+                COMPLETED
+            ----------------------------------------------- */}
+
+            <button
+
+              type="button"
+
+              className={
+                activeTab ===
+                "Completed"
+                  ? "active-tab"
+                  : ""
+              }
+
+              onClick={() =>
+                handleTabChange(
+                  "Completed"
+                )
+              }
+            >
+
               Completed
+
             </button>
 
 
-            <button>
+            {/* -----------------------------------------------
+                CANCELLED
+            ----------------------------------------------- */}
+
+            <button
+
+              type="button"
+
+              className={
+                activeTab ===
+                "Cancelled"
+                  ? "active-tab"
+                  : ""
+              }
+
+              onClick={() =>
+                handleTabChange(
+                  "Cancelled"
+                )
+              }
+            >
+
               Cancelled
+
             </button>
+
 
           </div>
 
@@ -872,21 +1120,24 @@ const MyBookings = () => {
 
           <div className="bookings-list">
 
-            {bookings.length === 0 ? (
+
+            {filteredBookings.length === 0 ? (
 
               <div
                 className="no-bookings"
               >
 
                 <h2>
-                  No Bookings Found
-                </h2>
 
+                  No {activeTab} Bookings
+
+                </h2>
 
                 <p>
 
-                  You haven't made any
-                  service bookings yet.
+                  You don't have any{" "}
+                  {activeTab.toLowerCase()}{" "}
+                  bookings.
 
                 </p>
 
@@ -894,7 +1145,7 @@ const MyBookings = () => {
 
             ) : (
 
-              bookings.map(
+              filteredBookings.map(
                 (
                   booking,
                   index
@@ -906,8 +1157,7 @@ const MyBookings = () => {
                       booking._id
                     }
 
-                    className=
-                      "booking-card"
+                    className="booking-card"
 
                     initial={{
                       opacity: 0,
@@ -929,7 +1179,6 @@ const MyBookings = () => {
                           0.3
                         ),
                     }}
-
                   >
 
 
@@ -938,8 +1187,7 @@ const MyBookings = () => {
                     ========================================= */}
 
                     <div
-                      className=
-                        "booking-top"
+                      className="booking-top"
                     >
 
                       <div>
@@ -949,21 +1197,22 @@ const MyBookings = () => {
                           {
                             booking
                               .service
-                              ?.name
+                              ?.name ||
+                            "Home Service"
                           }
 
                         </h2>
 
 
                         <p
-                          className=
-                            "booking-id"
+                          className="booking-id"
                         >
 
                           Booking ID :{" "}
 
                           {
-                            booking.bookingId
+                            booking
+                              .bookingId
                           }
 
                         </p>
@@ -1003,34 +1252,21 @@ const MyBookings = () => {
                         "Pending" && (
 
                       <div
-                        className=
-                          "technician-cancelled-banner"
+                        className="technician-cancelled-banner"
                       >
 
-                        <div
-                          className=
-                            "technician-cancelled-banner-icon"
-                        >
-
-                          <FiAlertTriangle />
-
-                        </div>
-
+                        <FiAlertTriangle />
 
                         <div>
 
                           <strong>
-
                             Technician cancelled
-                            this booking
-
                           </strong>
-
 
                           <span>
 
-                            Fixora is trying to
-                            find another technician
+                            We are trying to find
+                            another technician
                             for you.
 
                           </span>
@@ -1047,27 +1283,26 @@ const MyBookings = () => {
                     ========================================= */}
 
                     <div
-                      className=
-                        "booking-details"
+                      className="booking-details"
                     >
+
 
                       {/* DATE */}
 
                       <div
-                        className=
-                          "detail-item"
+                        className="detail-item"
                       >
 
                         <FiCalendar />
 
                         <span>
 
-                          {new Date(
-                            booking
-                              .bookingDate
-                          ).toLocaleDateString(
-                            "en-IN"
-                          )}
+                          {booking.bookingDate
+                            ? new Date(
+                                booking
+                                  .bookingDate
+                              ).toLocaleDateString()
+                            : "N/A"}
 
                         </span>
 
@@ -1077,8 +1312,7 @@ const MyBookings = () => {
                       {/* TIME */}
 
                       <div
-                        className=
-                          "detail-item"
+                        className="detail-item"
                       >
 
                         <FiClock />
@@ -1087,7 +1321,8 @@ const MyBookings = () => {
 
                           {
                             booking
-                              .bookingTime
+                              .bookingTime ||
+                            "N/A"
                           }
 
                         </span>
@@ -1098,8 +1333,7 @@ const MyBookings = () => {
                       {/* ADDRESS */}
 
                       <div
-                        className=
-                          "detail-item"
+                        className="detail-item"
                       >
 
                         <FiMapPin />
@@ -1108,12 +1342,14 @@ const MyBookings = () => {
 
                           {
                             booking
-                              .address
+                              .address ||
+                            "N/A"
                           }
 
                         </span>
 
                       </div>
+
 
                     </div>
 
@@ -1122,12 +1358,10 @@ const MyBookings = () => {
                         TECHNICIAN
                     ========================================= */}
 
-                    {booking
-                      .technician && (
+                    {booking.technician && (
 
                       <div
-                        className=
-                          "technician-card"
+                        className="technician-card"
                       >
 
                         <h3>
@@ -1135,9 +1369,10 @@ const MyBookings = () => {
                         </h3>
 
 
+                        {/* NAME */}
+
                         <div
-                          className=
-                            "tech-info"
+                          className="tech-info"
                         >
 
                           <FiUser />
@@ -1155,9 +1390,10 @@ const MyBookings = () => {
                         </div>
 
 
+                        {/* PHONE */}
+
                         <div
-                          className=
-                            "tech-info"
+                          className="tech-info"
                         >
 
                           <FiPhone />
@@ -1175,9 +1411,10 @@ const MyBookings = () => {
                         </div>
 
 
+                        {/* PROFESSION */}
+
                         <div
-                          className=
-                            "tech-info"
+                          className="tech-info"
                         >
 
                           <FiBriefcase />
@@ -1205,9 +1442,11 @@ const MyBookings = () => {
                     ========================================= */}
 
                     <div
-                      className=
-                        "status-progress"
+                      className="status-progress"
                     >
+
+
+                      {/* PENDING */}
 
                       <div
                         className={
@@ -1219,9 +1458,13 @@ const MyBookings = () => {
                           }`
                         }
                       >
+
                         Pending
+
                       </div>
 
+
+                      {/* ACCEPTED */}
 
                       <div
                         className={
@@ -1239,9 +1482,13 @@ const MyBookings = () => {
                           }`
                         }
                       >
+
                         Accepted
+
                       </div>
 
+
+                      {/* IN PROGRESS */}
 
                       <div
                         className={
@@ -1257,9 +1504,13 @@ const MyBookings = () => {
                           }`
                         }
                       >
+
                         In Progress
+
                       </div>
 
+
+                      {/* COMPLETED */}
 
                       <div
                         className={
@@ -1271,8 +1522,11 @@ const MyBookings = () => {
                           }`
                         }
                       >
+
                         Completed
+
                       </div>
+
 
                     </div>
 
@@ -1282,22 +1536,21 @@ const MyBookings = () => {
                     ========================================= */}
 
                     <div
-                      className=
-                        "booking-footer"
+                      className="booking-footer"
                     >
 
 
-                      {/* =======================================
+                      {/* ---------------------------------------
                           TRACK BOOKING
-                      ======================================= */}
+                      --------------------------------------- */}
 
                       <Link
+
                         to={
                           `/track-booking/${booking._id}`
                         }
 
-                        className=
-                          "details-btn"
+                        className="details-btn"
                       >
 
                         Track Booking
@@ -1305,9 +1558,9 @@ const MyBookings = () => {
                       </Link>
 
 
-                      {/* =======================================
+                      {/* ---------------------------------------
                           REVIEW
-                      ======================================= */}
+                      --------------------------------------- */}
 
                       {booking.status ===
                         "Completed" &&
@@ -1319,8 +1572,10 @@ const MyBookings = () => {
                         ) ? (
 
                           <button
-                            className=
-                              "review-submitted-btn"
+
+                            type="button"
+
+                            className="review-submitted-btn"
 
                             disabled
                           >
@@ -1332,14 +1587,14 @@ const MyBookings = () => {
                         ) : (
 
                           <Link
+
                             to="/review"
 
                             state={{
                               booking,
                             }}
 
-                            className=
-                              "review-btn"
+                            className="review-btn"
                           >
 
                             Rate Service
@@ -1351,40 +1606,49 @@ const MyBookings = () => {
                       )}
 
 
-                      {/* =======================================
+                      {/* ---------------------------------------
                           REMOVE FROM MY BOOKINGS
-                      ======================================= */}
+                      --------------------------------------- */}
 
-                      <button
-                        type="button"
+                      {(booking.status ===
+                        "Completed" ||
+                        booking.status ===
+                          "Cancelled") && (
 
-                        className=
-                          "remove-history-btn"
+                        <button
 
-                        disabled={
-                          removingBookingId ===
-                          booking._id
-                        }
+                          type="button"
 
-                        onClick={() =>
-                          removeFromMyBookings(
-                            booking
-                          )
-                        }
-                      >
+                          className="remove-history-btn"
 
-                        <FiTrash2 />
+                          disabled={
+                            removingBookingId ===
+                            booking._id
+                          }
 
-                        {
-                          removingBookingId ===
-                          booking._id
-                            ? "Removing..."
-                            : "Remove"
-                        }
+                          onClick={() =>
+                            removeFromMyBookings(
+                              booking
+                            )
+                          }
+                        >
 
-                      </button>
+                          <FiTrash2 />
+
+                          {
+                            removingBookingId ===
+                            booking._id
+                              ? "Removing..."
+                              : "Remove"
+                          }
+
+                        </button>
+
+                      )}
+
 
                     </div>
+
 
                   </motion.div>
 
@@ -1403,6 +1667,7 @@ const MyBookings = () => {
     </>
 
   );
+
 };
 
 
