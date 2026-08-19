@@ -302,15 +302,30 @@ const getAllBookings = async (req, res) => {
 // ==========================================
 // Get My Bookings
 // ==========================================
+// ==========================================
+// Get My Bookings
+// ==========================================
 const getMyBookings = async (req, res) => {
   try {
     const bookings =
       await Booking.find({
         customer: req.user.id,
       })
-        .populate("service")
-        .populate("technician")
-        .sort({ createdAt: -1 });
+        .select(
+          "bookingId service technician address bookingDate bookingTime status paymentStatus price createdAt"
+        )
+        .populate(
+          "service",
+          "name category price image"
+        )
+        .populate(
+          "technician",
+          "name phone profession profilePhoto"
+        )
+        .sort({
+          createdAt: -1,
+        })
+        .lean();
 
     res.status(200).json({
       success: true,
@@ -318,7 +333,10 @@ const getMyBookings = async (req, res) => {
       bookings,
     });
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Get My Bookings Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -326,7 +344,6 @@ const getMyBookings = async (req, res) => {
     });
   }
 };
-
 // ==========================================
 // Technician Dashboard Statistics
 // ==========================================

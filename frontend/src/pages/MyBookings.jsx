@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+
 import {
   FiCalendar,
   FiClock,
   FiMapPin,
-  FiArrowRight,
   FiUser,
   FiPhone,
   FiBriefcase,
@@ -13,6 +13,7 @@ import {
 
 import api from "../api/axios";
 import Navbar from "../components/Navbar/Navbar";
+
 import "./MyBookings.css";
 
 const MyBookings = () => {
@@ -23,35 +24,14 @@ const MyBookings = () => {
   useEffect(() => {
     fetchBookings();
   }, []);
-const checkReview = async (bookingId) => {
 
-  try {
-
-    const token = localStorage.getItem("token");
-
-    const response = await api.get(
-      `/reviews/check/${bookingId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return response.data.reviewed;
-
-  } catch (error) {
-
-    console.log(error);
-
-    return false;
-
-  }
-
-};
   const fetchBookings = async () => {
     try {
       const token = localStorage.getItem("token");
+
+      // ==========================================
+      // Get all bookings
+      // ==========================================
 
       const response = await api.get(
         "/bookings/my-bookings",
@@ -62,57 +42,109 @@ const checkReview = async (bookingId) => {
         }
       );
 
-      const bookingsData = response.data.bookings;
+      const bookingsData =
+        response.data.bookings || [];
 
-setBookings(bookingsData);
+      setBookings(bookingsData);
 
-const reviewed = [];
+      // ==========================================
+      // Check reviews in parallel
+      // ==========================================
+      //
+      // OLD:
+      //
+      // for (...) {
+      //   await checkReview()
+      // }
+      //
+      // This was making requests one by one.
+      //
+      // NEW:
+      // Promise.all() sends them together.
+      //
 
-for (const booking of bookingsData) {
+      const completedPaidBookings =
+        bookingsData.filter(
+          (booking) =>
+            booking.status === "Completed" &&
+            booking.paymentStatus === "Paid"
+        );
 
-  const exists = await checkReview(
-    booking._id
-  );
+      if (
+        completedPaidBookings.length > 0
+      ) {
+        const reviewResults =
+          await Promise.all(
+            completedPaidBookings.map(
+              async (booking) => {
+                try {
+                  const reviewResponse =
+                    await api.get(
+                      `/reviews/check/${booking._id}`,
+                      {
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                        },
+                      }
+                    );
 
-  if (exists) {
-    reviewed.push(booking._id);
-  }
+                  return reviewResponse.data.reviewed
+                    ? booking._id
+                    : null;
+                } catch (error) {
+                  console.log(
+                    "Review check failed:",
+                    error
+                  );
 
-}
+                  return null;
+                }
+              }
+            )
+          );
 
-setReviewedBookings(reviewed);
-//       console.log(response.data.bookings);
-//       console.table(
-//   response.data.bookings.map((b) => ({
-//     id: b._id,
-//     bookingId: b.bookingId,
-//     status: b.status,
-//     paymentStatus: b.paymentStatus,
-//     technician: b.technician?.name || "Not Assigned",
-//   }))
-// );
-
+        setReviewedBookings(
+          reviewResults.filter(Boolean)
+        );
+      } else {
+        setReviewedBookings([]);
+      }
     } catch (error) {
-
-      console.log(error);
-
+      console.error(
+        "Failed to fetch bookings:",
+        error
+      );
     } finally {
-
       setLoading(false);
-
     }
   };
 
+  // ==========================================
+  // Loading
+  // ==========================================
+
   if (loading) {
     return (
-      <h2
-        style={{
-          textAlign: "center",
-          marginTop: "120px",
-        }}
-      >
-        Loading...
-      </h2>
+      <>
+        <Navbar />
+
+        <main className="bookings-page">
+          <div className="bookings-container">
+            <div className="bookings-loading">
+              <div className="loading-spinner"></div>
+
+              <h2>
+                Loading your bookings...
+              </h2>
+
+              <p>
+                Please wait while we fetch
+                your booking details.
+              </p>
+            </div>
+          </div>
+        </main>
+      </>
     );
   }
 
@@ -124,21 +156,35 @@ setReviewedBookings(reviewed);
 
         <div className="bookings-container">
 
+          {/* ==========================================
+              Header
+          ========================================== */}
+
           <motion.div
             className="bookings-header"
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            initial={{
+              opacity: 0,
+              y: 25,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.5,
+            }}
           >
-
             <h1>My Bookings</h1>
 
             <p>
               View and manage all your
               Fixora service bookings.
             </p>
-
           </motion.div>
+
+          {/* ==========================================
+              Tabs
+          ========================================== */}
 
           <div className="booking-tabs">
 
@@ -160,225 +206,302 @@ setReviewedBookings(reviewed);
 
           </div>
 
+          {/* ==========================================
+              Bookings
+          ========================================== */}
+
           <div className="bookings-list">
 
             {bookings.length === 0 ? (
 
-              <h2>No Bookings Found</h2>
+              <div className="no-bookings">
+                <h2>
+                  No Bookings Found
+                </h2>
+
+                <p>
+                  You haven't made any
+                  service bookings yet.
+                </p>
+              </div>
 
             ) : (
 
-              bookings.map((booking, index) => (
-                <motion.div
-  key={booking._id}
-  className="booking-card"
-  initial={{ opacity: 0, y: 25 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{
-    duration: 0.4,
-    delay: index * 0.15,
-  }}
->
+              bookings.map(
+                (booking, index) => (
 
-  <div className="booking-top">
+                  <motion.div
+                    key={booking._id}
+                    className="booking-card"
 
-    <div>
+                    initial={{
+                      opacity: 0,
+                      y: 25,
+                    }}
 
-      <h2>{booking.service?.name}</h2>
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                    }}
 
-      <p className="booking-id">
-        Booking ID : {booking.bookingId}
-      </p>
+                    transition={{
+                      duration: 0.35,
+                      delay:
+                        Math.min(
+                          index * 0.05,
+                          0.3
+                        ),
+                    }}
+                  >
 
-    </div>
+                    {/* ==========================================
+                        Booking Header
+                    ========================================== */}
 
-    <span
-      className={`status-badge ${booking.status
-        .toLowerCase()
-        .replace(" ", "-")}`}
-    >
-      {booking.status}
-    </span>
+                    <div className="booking-top">
 
-  </div>
+                      <div>
 
-  <div className="booking-details">
+                        <h2>
+                          {booking.service?.name}
+                        </h2>
 
-    <div className="detail-item">
+                        <p className="booking-id">
+                          Booking ID :{" "}
+                          {booking.bookingId}
+                        </p>
 
-      <FiCalendar />
+                      </div>
 
-      <span>
-        {new Date(
-          booking.bookingDate
-        ).toLocaleDateString()}
-      </span>
+                      <span
+                        className={`status-badge ${
+                          booking.status
+                            .toLowerCase()
+                            .replace(
+                              " ",
+                              "-"
+                            )
+                        }`}
+                      >
+                        {booking.status}
+                      </span>
 
-    </div>
+                    </div>
 
-    <div className="detail-item">
+                    {/* ==========================================
+                        Booking Details
+                    ========================================== */}
 
-      <FiClock />
+                    <div className="booking-details">
 
-      <span>{booking.bookingTime}</span>
+                      <div className="detail-item">
 
-    </div>
+                        <FiCalendar />
 
-    <div className="detail-item">
+                        <span>
+                          {new Date(
+                            booking.bookingDate
+                          ).toLocaleDateString()}
+                        </span>
 
-      <FiMapPin />
+                      </div>
 
-      <span>{booking.address}</span>
+                      <div className="detail-item">
 
-    </div>
+                        <FiClock />
 
-  </div>
+                        <span>
+                          {booking.bookingTime}
+                        </span>
 
-  {booking.technician && (
+                      </div>
 
-    <div className="technician-card">
+                      <div className="detail-item">
 
-      <h3>Assigned Professional</h3>
+                        <FiMapPin />
 
-      <div className="tech-info">
+                        <span>
+                          {booking.address}
+                        </span>
 
-        <FiUser />
+                      </div>
 
-        <span>
-          {booking.technician.name}
-        </span>
+                    </div>
 
-      </div>
+                    {/* ==========================================
+                        Technician
+                    ========================================== */}
 
-      <div className="tech-info">
+                    {booking.technician && (
 
-        <FiPhone />
+                      <div className="technician-card">
 
-        <span>
-          {booking.technician.phone}
-        </span>
+                        <h3>
+                          Assigned Professional
+                        </h3>
 
-      </div>
+                        <div className="tech-info">
 
-      <div className="tech-info">
+                          <FiUser />
 
-        <FiBriefcase />
+                          <span>
+                            {
+                              booking
+                                .technician
+                                .name
+                            }
+                          </span>
 
-        <span>
-          {booking.technician.profession ||
-            "Not Available"}
-        </span>
+                        </div>
 
-      </div>
+                        <div className="tech-info">
 
-    </div>
+                          <FiPhone />
 
-  )}
+                          <span>
+                            {
+                              booking
+                                .technician
+                                .phone
+                            }
+                          </span>
 
-  <div className="status-progress">
+                        </div>
 
-    <div
-      className={`step ${
-        booking.status !== "Cancelled"
-          ? "active"
-          : ""
-      }`}
-    >
-      Pending
-    </div>
+                        <div className="tech-info">
 
-    <div
-      className={`step ${
-        [
-          "Accepted",
-          "In Progress",
-          "Completed",
-        ].includes(booking.status)
-          ? "active"
-          : ""
-      }`}
-    >
-      Accepted
-    </div>
+                          <FiBriefcase />
 
-    <div
-      className={`step ${
-        [
-          "In Progress",
-          "Completed",
-        ].includes(booking.status)
-          ? "active"
-          : ""
-      }`}
-    >
-      In Progress
-    </div>
+                          <span>
+                            {
+                              booking
+                                .technician
+                                .profession ||
+                              "Not Available"
+                            }
+                          </span>
 
-    <div
-      className={`step ${
-        booking.status === "Completed"
-          ? "active"
-          : ""
-      }`}
-    >
-      Completed
-    </div>
+                        </div>
 
-  </div>
+                      </div>
 
-  <div className="booking-footer">
+                    )}
 
-    {/* <Link
-      to={`/track-booking/${booking._id}`}
-      className="details-btn"
-    >
-      Track Booking
+                    {/* ==========================================
+                        Status Progress
+                    ========================================== */}
 
-      <FiArrowRight />
+                    <div className="status-progress">
 
-    </Link> */}
+                      <div
+                        className={`step ${
+                          booking.status !==
+                          "Cancelled"
+                            ? "active"
+                            : ""
+                        }`}
+                      >
+                        Pending
+                      </div>
 
-    <div className="booking-footer">
+                      <div
+                        className={`step ${
+                          [
+                            "Accepted",
+                            "In Progress",
+                            "Completed",
+                          ].includes(
+                            booking.status
+                          )
+                            ? "active"
+                            : ""
+                        }`}
+                      >
+                        Accepted
+                      </div>
 
-  <Link
-    to={`/track-booking/${booking._id}`}
-    className="details-btn"
-  >
-    Track Booking
-  </Link>
+                      <div
+                        className={`step ${
+                          [
+                            "In Progress",
+                            "Completed",
+                          ].includes(
+                            booking.status
+                          )
+                            ? "active"
+                            : ""
+                        }`}
+                      >
+                        In Progress
+                      </div>
 
- {booking.status === "Completed" &&
- booking.paymentStatus === "Paid" && (
+                      <div
+                        className={`step ${
+                          booking.status ===
+                          "Completed"
+                            ? "active"
+                            : ""
+                        }`}
+                      >
+                        Completed
+                      </div>
 
-  reviewedBookings.includes(booking._id) ? (
+                    </div>
 
-    <button
-      className="review-submitted-btn"
-      disabled
-    >
-      ✅ Review Submitted
-    </button>
+                    {/* ==========================================
+                        Footer
+                    ========================================== */}
 
-  ) : (
+                    <div className="booking-footer">
 
-    <Link
-      to="/review"
-      state={{ booking }}
-      className="review-btn"
-    >
-      ⭐ Rate Service
-    </Link>
+                      <Link
+                        to={`/track-booking/${booking._id}`}
+                        className="details-btn"
+                      >
+                        Track Booking
+                      </Link>
 
-  )
+                      {/* ==========================================
+                          Review
+                      ========================================== */}
 
-)}
+                      {booking.status ===
+                        "Completed" &&
+                        booking.paymentStatus ===
+                          "Paid" && (
 
-</div>
+                          reviewedBookings.includes(
+                            booking._id
+                          ) ? (
 
-  </div>
+                            <button
+                              className="review-submitted-btn"
+                              disabled
+                            >
+                              Review Submitted
+                            </button>
 
-</motion.div>
-              ))
+                          ) : (
+
+                            <Link
+                              to="/review"
+                              state={{
+                                booking,
+                              }}
+                              className="review-btn"
+                            >
+                              Rate Service
+                            </Link>
+
+                          )
+                        )}
+
+                    </div>
+
+                  </motion.div>
+
+                )
+              )
             )}
 
           </div>
@@ -386,7 +509,6 @@ setReviewedBookings(reviewed);
         </div>
 
       </main>
-
     </>
   );
 };
