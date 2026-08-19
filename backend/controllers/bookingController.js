@@ -18,6 +18,10 @@ const createBooking = async (req, res) => {
 
     const customer = req.user.id;
 
+    // ==========================================
+    // Validate Required Fields
+    // ==========================================
+
     if (
       !customer ||
       !service ||
@@ -30,6 +34,146 @@ const createBooking = async (req, res) => {
         message: "Please fill all required fields",
       });
     }
+
+    // ==========================================
+    // Validate Booking Date
+    // ==========================================
+
+    const selectedDate = new Date(bookingDate);
+
+    if (isNaN(selectedDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking date",
+      });
+    }
+
+    /*
+     * Fixora uses India time.
+     *
+     * Get today's date according to
+     * Asia/Kolkata timezone.
+     */
+    const todayString = new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }
+    ).format(new Date());
+
+    /*
+     * bookingDate comes from the HTML date input
+     * in YYYY-MM-DD format.
+     *
+     * Example:
+     *
+     * Today       = 2026-08-19
+     * Yesterday   = 2026-08-18
+     * Tomorrow    = 2026-08-20
+     */
+
+    if (bookingDate < todayString) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Booking date cannot be in the past",
+      });
+    }
+
+    // ==========================================
+    // Validate Booking Time
+    // ==========================================
+
+    const validTimeSlots = [
+      "09:00 AM",
+      "10:00 AM",
+      "11:00 AM",
+      "12:00 PM",
+      "02:00 PM",
+      "04:00 PM",
+      "06:00 PM",
+    ];
+
+    if (!validTimeSlots.includes(bookingTime)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking time",
+      });
+    }
+
+    // ==========================================
+    // Prevent Past Time For Today's Booking
+    // ==========================================
+
+    if (bookingDate === todayString) {
+      const now = new Date();
+
+      let [timePart, modifier] =
+        bookingTime.split(" ");
+
+      let [hours, minutes] =
+        timePart.split(":").map(Number);
+
+      if (
+        modifier === "PM" &&
+        hours !== 12
+      ) {
+        hours += 12;
+      }
+
+      if (
+        modifier === "AM" &&
+        hours === 12
+      ) {
+        hours = 0;
+      }
+
+      const bookingMinutes =
+        hours * 60 + minutes;
+
+      /*
+       * Convert current India time to minutes.
+       *
+       * Intl is used so the check does not depend
+       * on the deployment server timezone.
+       */
+      const indiaTimeParts =
+        new Intl.DateTimeFormat(
+          "en-US",
+          {
+            timeZone: "Asia/Kolkata",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }
+        )
+          .formatToParts(now)
+          .reduce((acc, part) => {
+            acc[part.type] = part.value;
+            return acc;
+          }, {});
+
+      const currentMinutes =
+        Number(indiaTimeParts.hour) * 60 +
+        Number(indiaTimeParts.minute);
+
+      if (
+        bookingMinutes <= currentMinutes
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "The selected booking time has already passed. Please select a future time.",
+        });
+      }
+    }
+
+    // ==========================================
+    // Find Service
+    // ==========================================
 
     const serviceData =
       await Service.findById(service);
@@ -96,6 +240,10 @@ const createBooking = async (req, res) => {
         otp,
       });
 
+    // ==========================================
+    // Success Response
+    // ==========================================
+
     res.status(201).json({
       success: true,
       message:
@@ -104,7 +252,10 @@ const createBooking = async (req, res) => {
       otp,
     });
   } catch (error) {
-    console.error(error);
+    console.error(
+      "Create Booking Error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -325,7 +476,9 @@ const getBookingById = async (
 ) => {
   try {
     const booking =
-      await Booking.findById(req.params.id)
+      await Booking.findById(
+        req.params.id
+      )
         .populate(
           "customer",
           "name phone email"
@@ -363,15 +516,11 @@ const getBookingById = async (
 // ==========================================
 // Accept Booking
 // ==========================================
-// ==========================================
-// Accept Booking
-// ==========================================
 const acceptBooking = async (
   req,
   res
 ) => {
   try {
-
     // ==========================================
     // Find Technician
     // ==========================================
@@ -453,9 +602,7 @@ const acceptBooking = async (
         "Booking accepted successfully",
       booking,
     });
-
   } catch (error) {
-
     console.error(
       "Accept Booking Error:",
       error
@@ -543,7 +690,6 @@ const updateBookingStatus = async (
       }
 
       booking.status = "On The Way";
-
       booking.trackingActive = true;
     }
 
@@ -1163,7 +1309,6 @@ const getTechnicianAvailability = async (
   res
 ) => {
   try {
-
     const technician =
       await User.findById(
         req.user.id
@@ -1187,9 +1332,7 @@ const getTechnicianAvailability = async (
         technician.availability ===
         "Available",
     });
-
   } catch (error) {
-
     console.error(
       "Get Availability Error:",
       error
@@ -1203,7 +1346,6 @@ const getTechnicianAvailability = async (
   }
 };
 
-
 // ==========================================
 // Update Technician Availability
 // PUT /api/bookings/technician/availability
@@ -1213,7 +1355,6 @@ const updateTechnicianAvailability = async (
   res
 ) => {
   try {
-
     const { isOnline } =
       req.body;
 
@@ -1278,9 +1419,7 @@ const updateTechnicianAvailability = async (
         technician.availability ===
         "Available",
     });
-
   } catch (error) {
-
     console.error(
       "Update Availability Error:",
       error
@@ -1393,7 +1532,6 @@ const removeCompletedJob = async (
       message:
         "Completed job removed successfully",
     });
-
   } catch (error) {
     console.error(
       "Remove Completed Job Error:",
