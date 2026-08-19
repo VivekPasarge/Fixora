@@ -367,127 +367,156 @@ const getMyBookings = async (req, res) => {
 };
 
 
-// ==========================================
-// Remove Booking From My Bookings
-// ==========================================
-//
-// CUSTOMER ONLY
+// =========================================================
+// REMOVE BOOKING FROM CUSTOMER'S MY BOOKINGS
+// =========================================================
 //
 // This is a SOFT DELETE.
 //
-// Completed / Cancelled booking
-//          ↓
-// customerRemoved = true
-//          ↓
-// Hidden from My Bookings
-//          ↓
-// Still exists in MongoDB
-//          ↓
-// Appears in My History
+// The booking is NOT deleted from MongoDB.
 //
-// ==========================================
-const removeBookingFromMyBookings =
-  async (req, res) => {
+// It is only hidden from the customer's
+// "My Bookings" page.
+//
+// The booking remains available in
+// "Booking History".
+//
+// Works for ALL booking statuses:
+// Pending
+// Accepted
+// On The Way
+// In Progress
+// Completed
+// Cancelled
+// =========================================================
 
-    try {
+const removeBookingFromMyBookings = async (
+  req,
+  res
+) => {
 
-      const booking =
-        await Booking.findById(
-          req.params.id
-        );
+  try {
 
-      // ==========================================
-      // Booking Not Found
-      // ==========================================
+    // =====================================================
+    // GET BOOKING ID
+    // =====================================================
 
-      if (!booking) {
-        return res.status(404).json({
-          success: false,
-          message: "Booking not found",
-        });
-      }
+    const { id } = req.params;
 
-      // ==========================================
-      // Customer Ownership Check
-      // ==========================================
 
-      if (
-        booking.customer.toString() !==
-        req.user.id.toString()
-      ) {
-        return res.status(403).json({
-          success: false,
-          message:
-            "You are not authorized to remove this booking",
-        });
-      }
+    // =====================================================
+    // FIND BOOKING
+    // =====================================================
 
-      // ==========================================
-      // Only Completed / Cancelled
-      // ==========================================
+    const booking =
+      await Booking.findById(id);
 
-      if (
-        booking.status !== "Completed" &&
-        booking.status !== "Cancelled"
-      ) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Only completed or cancelled bookings can be removed from My Bookings",
-        });
-      }
 
-      // ==========================================
-      // Already Removed
-      // ==========================================
+    // =====================================================
+    // BOOKING NOT FOUND
+    // =====================================================
 
-      if (booking.customerRemoved === true) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Booking is already removed from My Bookings",
-        });
-      }
+    if (!booking) {
 
-      // ==========================================
-      // Soft Delete
-      // ==========================================
-
-      booking.customerRemoved = true;
-
-      booking.customerRemovedAt =
-        new Date();
-
-      await booking.save();
-
-      // ==========================================
-      // Success
-      // ==========================================
-
-      return res.status(200).json({
-        success: true,
-
-        message:
-          "Booking removed from My Bookings",
-
-        bookingId:
-          booking._id,
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
       });
 
-    } catch (error) {
+    }
 
-      console.error(
-        "Remove Customer Booking Error:",
-        error
-      );
 
-      return res.status(500).json({
+    // =====================================================
+    // CHECK CUSTOMER OWNERSHIP
+    // =====================================================
+    //
+    // Only the customer who created the booking
+    // can remove it from their My Bookings page.
+    //
+    // =====================================================
+
+    if (
+      booking.customer.toString() !==
+      req.user._id.toString()
+    ) {
+
+      return res.status(403).json({
         success: false,
         message:
-          "Failed to remove booking",
+          "You are not authorized to remove this booking.",
       });
+
     }
-  };
+
+
+    // =====================================================
+    // SOFT DELETE
+    // =====================================================
+    //
+    // DO NOT use:
+    //
+    // Booking.deleteOne()
+    // findByIdAndDelete()
+    // findOneAndDelete()
+    //
+    // We want the booking to remain in the database.
+    //
+    // =====================================================
+
+    booking.customerRemoved =
+      true;
+
+
+    booking.customerRemovedAt =
+      new Date();
+
+
+    await booking.save();
+
+
+    // =====================================================
+    // RESPONSE
+    // =====================================================
+
+    return res.status(200).json({
+
+      success: true,
+
+      message:
+        "Booking removed from My Bookings successfully.",
+
+      bookingId:
+        booking._id,
+
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      "Remove Booking From My Bookings Error:",
+      error
+    );
+
+
+    return res.status(500).json({
+
+      success: false,
+
+      message:
+        "Failed to remove booking from My Bookings.",
+
+      error:
+        process.env.NODE_ENV ===
+        "development"
+          ? error.message
+          : undefined,
+
+    });
+
+  }
+
+};
 
 
 // ==========================================
