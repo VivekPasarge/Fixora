@@ -11,7 +11,6 @@ import {
   FiBriefcase,
   FiX,
   FiAlertTriangle,
-  // FiHistory,
   FiTrash2,
 } from "react-icons/fi";
 
@@ -32,6 +31,7 @@ const MyBookings = () => {
 
   const [loading, setLoading] =
     useState(true);
+
 
   /*
     =========================================================
@@ -214,7 +214,7 @@ const MyBookings = () => {
   /*
     =========================================================
     FETCH BOOKINGS
-    =========================================================
+  =========================================================
   */
 
   const fetchBookings = async () => {
@@ -350,16 +350,24 @@ const MyBookings = () => {
     REMOVE BOOKING FROM MY BOOKINGS
     =========================================================
 
-    This is a SOFT DELETE.
+    SOFT DELETE
 
-    It does NOT delete the booking
-    from MongoDB.
+    The booking is NOT permanently deleted.
 
-    It only hides the booking from
-    My Bookings.
+    It is only removed from the customer's
+    "My Bookings" list.
 
-    The customer can still see it
-    inside Booking History.
+    The booking remains available in
+    "Booking History".
+
+    This works for:
+
+    Pending
+    Accepted
+    On The Way
+    In Progress
+    Completed
+    Cancelled
   =========================================================
   */
 
@@ -367,28 +375,9 @@ const MyBookings = () => {
     async (booking) => {
 
       /*
-        Only Completed or Cancelled
-        bookings can be removed.
-      */
-
-      if (
-        booking.status !==
-          "Completed" &&
-        booking.status !==
-          "Cancelled"
-      ) {
-
-        alert(
-          "Only completed or cancelled bookings can be removed from My Bookings."
-        );
-
-        return;
-
-      }
-
-
-      /*
-        Confirmation
+        =====================================================
+        CONFIRMATION
+        =====================================================
       */
 
       const confirmed =
@@ -398,11 +387,17 @@ const MyBookings = () => {
 
 
       if (!confirmed) {
+
         return;
+
       }
 
 
       try {
+
+        /*
+          Show loading state
+        */
 
         setRemovingBookingId(
           booking._id
@@ -416,7 +411,9 @@ const MyBookings = () => {
 
 
         /*
-          Backend soft-delete request.
+          ===================================================
+          BACKEND SOFT DELETE
+          ===================================================
         */
 
         await api.put(
@@ -432,8 +429,9 @@ const MyBookings = () => {
 
 
         /*
-          Immediately remove it
-          from the current UI.
+          ===================================================
+          IMMEDIATELY REMOVE FROM CURRENT UI
+          ===================================================
         */
 
         setBookings(
@@ -447,8 +445,9 @@ const MyBookings = () => {
 
 
         /*
-          Also remove it from the
-          local review list.
+          ===================================================
+          REMOVE FROM REVIEW CHECK LIST
+          ===================================================
         */
 
         setReviewedBookings(
@@ -457,6 +456,12 @@ const MyBookings = () => {
               (id) =>
                 id !== booking._id
             )
+        );
+
+
+        console.log(
+          "Booking removed from My Bookings:",
+          booking._id
         );
 
 
@@ -473,6 +478,7 @@ const MyBookings = () => {
           "Failed to remove booking from My Bookings."
         );
 
+
       } finally {
 
         setRemovingBookingId(
@@ -487,7 +493,7 @@ const MyBookings = () => {
   /*
     =========================================================
     CLOSE TECHNICIAN CANCEL POPUP
-    =========================================================
+  =========================================================
   */
 
   const closeTechnicianCancelPopup =
@@ -507,7 +513,7 @@ const MyBookings = () => {
   /*
     =========================================================
     LOADING
-    =========================================================
+  =========================================================
   */
 
   if (loading) {
@@ -550,7 +556,7 @@ const MyBookings = () => {
   /*
     =========================================================
     MAIN UI
-    =========================================================
+  =========================================================
   */
 
   return (
@@ -805,8 +811,6 @@ const MyBookings = () => {
                 to="/booking-history"
                 className="history-button"
               >
-
-                {/* <FiHistory /> */}
 
                 <FiClock />
 
@@ -1351,24 +1355,35 @@ const MyBookings = () => {
                           REMOVE FROM MY BOOKINGS
                       ======================================= */}
 
-<button
-  type="button"
-  className="remove-history-btn"
-  disabled={
-    removingBookingId === booking._id
-  }
-  onClick={() =>
-    removeFromMyBookings(booking)
-  }
->
-  <FiTrash2 />
+                      <button
+                        type="button"
 
-  {
-    removingBookingId === booking._id
-      ? "Removing..."
-      : "Remove"
-  }
-</button>
+                        className=
+                          "remove-history-btn"
+
+                        disabled={
+                          removingBookingId ===
+                          booking._id
+                        }
+
+                        onClick={() =>
+                          removeFromMyBookings(
+                            booking
+                          )
+                        }
+                      >
+
+                        <FiTrash2 />
+
+                        {
+                          removingBookingId ===
+                          booking._id
+                            ? "Removing..."
+                            : "Remove"
+                        }
+
+                      </button>
+
                     </div>
 
                   </motion.div>
