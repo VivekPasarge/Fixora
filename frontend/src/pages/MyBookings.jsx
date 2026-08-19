@@ -1351,44 +1351,24 @@ const MyBookings = () => {
                           REMOVE FROM MY BOOKINGS
                       ======================================= */}
 
-                      {(
-                        booking.status ===
-                          "Completed" ||
-                        booking.status ===
-                          "Cancelled"
-                      ) && (
+<button
+  type="button"
+  className="remove-history-btn"
+  disabled={
+    removingBookingId === booking._id
+  }
+  onClick={() =>
+    removeFromMyBookings(booking)
+  }
+>
+  <FiTrash2 />
 
-                        <button
-                          type="button"
-
-                          className=
-                            "remove-history-btn"
-
-                          disabled={
-                            removingBookingId ===
-                            booking._id
-                          }
-
-                          onClick={() =>
-                            removeFromMyBookings(
-                              booking
-                            )
-                          }
-                        >
-
-                          <FiTrash2 />
-
-                          {
-                            removingBookingId ===
-                            booking._id
-                              ? "Removing..."
-                              : "Remove"
-                          }
-
-                        </button>
-
-                      )}
-
+  {
+    removingBookingId === booking._id
+      ? "Removing..."
+      : "Remove"
+  }
+</button>
                     </div>
 
                   </motion.div>
