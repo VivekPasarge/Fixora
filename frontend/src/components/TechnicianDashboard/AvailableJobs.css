@@ -732,3 +732,326 @@ font-size:30px;
   }
 
 }
+
+/* ==========================================
+   Acceptance Status
+========================================== */
+
+.acceptance-status {
+  margin-top: 18px;
+  padding: 12px 14px;
+
+  border-radius: 12px;
+
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+
+  color: #9a3412;
+
+  font-size: 13px;
+  line-height: 1.5;
+
+  text-align: center;
+}
+
+/* ==========================================
+   Disabled Accept Button
+========================================== */
+
+.accept-btn-disabled {
+  background: #cbd5e1 !important;
+  color: #64748b !important;
+
+  cursor: not-allowed !important;
+
+  box-shadow: none !important;
+
+  transform: none !important;
+}
+
+/* ==========================================
+   Why Can't I Accept Button
+========================================== */
+
+.why-accept-disabled-btn {
+  width: 100%;
+
+  margin-top: 10px;
+
+  padding: 11px 16px;
+
+  border: 1px solid #cbd5e1;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #475569;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.25s;
+}
+
+.why-accept-disabled-btn:hover {
+  background: #f8fafc;
+
+  border-color: #94a3b8;
+
+  color: #1e293b;
+}
+
+/* ==========================================
+   Acceptance Popup
+========================================== */
+
+.acceptance-popup-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 10000;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(15, 23, 42, 0.58);
+
+  backdrop-filter: blur(5px);
+}
+
+.acceptance-popup {
+  width: 100%;
+
+  max-width: 470px;
+
+  padding: 32px;
+
+  border-radius: 24px;
+
+  background: #ffffff;
+
+  text-align: center;
+
+  box-shadow:
+    0 25px 70px
+    rgba(15, 23, 42, 0.28);
+
+  animation:
+    acceptancePopupIn
+    0.25s
+    ease;
+}
+
+@keyframes acceptancePopupIn {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(20px)
+      scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+/* ==========================================
+   Popup Icon
+========================================== */
+
+.acceptance-popup-icon {
+  width: 58px;
+  height: 58px;
+
+  margin: 0 auto 18px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #fef3c7;
+
+  color: #d97706;
+
+  font-size: 28px;
+
+  font-weight: 800;
+}
+
+/* ==========================================
+   Popup Heading
+========================================== */
+
+.acceptance-popup h2 {
+  margin: 0 0 8px;
+
+  color: #0f172a;
+
+  font-size: 25px;
+
+  font-weight: 800;
+}
+
+.acceptance-popup-service {
+  margin: 0 0 20px;
+
+  color: #2563eb;
+
+  font-size: 16px;
+
+  font-weight: 700;
+}
+
+/* ==========================================
+   Service Date
+========================================== */
+
+.acceptance-popup-date {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+
+  margin-bottom: 20px;
+
+  padding: 14px;
+
+  border-radius: 12px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e2e8f0;
+}
+
+.acceptance-popup-date span {
+  color: #64748b;
+
+  font-size: 12px;
+
+  text-transform: uppercase;
+
+  font-weight: 700;
+
+  letter-spacing: 0.5px;
+}
+
+.acceptance-popup-date strong {
+  color: #0f172a;
+
+  font-size: 17px;
+}
+
+/* ==========================================
+   Popup Text
+========================================== */
+
+.acceptance-popup > p {
+  margin: 10px 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+}
+
+/* ==========================================
+   Popup Information
+========================================== */
+
+.acceptance-popup-info {
+  margin-top: 18px;
+
+  padding: 14px 16px;
+
+  border-radius: 12px;
+
+  background: #eff6ff;
+
+  border: 1px solid #bfdbfe;
+
+  color: #1e40af;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+}
+
+.acceptance-popup-info strong {
+  color: #1d4ed8;
+}
+
+/* ==========================================
+   Popup Close
+========================================== */
+
+.acceptance-popup-close {
+  width: 100%;
+
+  margin-top: 22px;
+
+  padding: 14px 20px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background: #2563eb;
+
+  color: #ffffff;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.25s;
+}
+
+.acceptance-popup-close:hover {
+  background: #1d4ed8;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 25px
+    rgba(37, 99, 235, 0.25);
+}
+
+/* ==========================================
+   Mobile
+========================================== */
+
+@media (max-width: 600px) {
+  .acceptance-popup {
+    padding: 25px 20px;
+
+    border-radius: 20px;
+  }
+
+  .acceptance-popup h2 {
+    font-size: 22px;
+  }
+}

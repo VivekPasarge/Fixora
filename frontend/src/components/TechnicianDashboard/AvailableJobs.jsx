@@ -12,13 +12,25 @@ const AvailableJobs = () => {
   const [acceptingJobId, setAcceptingJobId] =
     useState(null);
 
-  /* =========================================================
-     LOAD TECHNICIAN AVAILABILITY
-  ========================================================= */
+  // ==========================================
+  // Acceptance Information Popup
+  // ==========================================
+
+  const [showAcceptancePopup, setShowAcceptancePopup] =
+    useState(false);
+
+  const [selectedJob, setSelectedJob] =
+    useState(null);
+
+  // ==========================================
+  // LOAD TECHNICIAN AVAILABILITY
+  // ==========================================
 
   useEffect(() => {
     const savedStatus =
-      localStorage.getItem("technicianOnline");
+      localStorage.getItem(
+        "technicianOnline"
+      );
 
     if (savedStatus !== null) {
       setIsOnline(
@@ -27,9 +39,9 @@ const AvailableJobs = () => {
     }
   }, []);
 
-  /* =========================================================
-     LISTEN FOR AVAILABILITY CHANGES
-  ========================================================= */
+  // ==========================================
+  // LISTEN FOR AVAILABILITY CHANGES
+  // ==========================================
 
   useEffect(() => {
     const handleAvailabilityChange = (
@@ -39,11 +51,6 @@ const AvailableJobs = () => {
         event.detail?.isOnline;
 
       setIsOnline(online);
-
-      /*
-        If technician goes offline,
-        immediately clear the jobs.
-      */
 
       if (!online) {
         setJobs([]);
@@ -63,9 +70,9 @@ const AvailableJobs = () => {
     };
   }, []);
 
-  /* =========================================================
-     FETCH AVAILABLE JOBS
-  ========================================================= */
+  // ==========================================
+  // FETCH AVAILABLE JOBS
+  // ==========================================
 
   useEffect(() => {
     if (!isOnline) {
@@ -75,20 +82,7 @@ const AvailableJobs = () => {
       return;
     }
 
-    /*
-      Fetch immediately when technician
-      becomes online.
-    */
-
     fetchJobs();
-
-    /*
-      Automatically check for new jobs
-      every 5 seconds.
-
-      This removes the need to refresh
-      the technician page manually.
-    */
 
     const interval = setInterval(() => {
       fetchJobs(true);
@@ -99,29 +93,26 @@ const AvailableJobs = () => {
     };
   }, [isOnline]);
 
-  /* =========================================================
-     FETCH JOBS
-  ========================================================= */
+  // ==========================================
+  // FETCH JOBS
+  // ==========================================
 
   const fetchJobs = async (
     silent = false
   ) => {
     try {
-      /*
-        Don't show the loading screen
-        during automatic background refresh.
-      */
-
       if (!silent) {
         setLoading(true);
       }
 
       const token =
-        localStorage.getItem("token");
+        localStorage.getItem(
+          "token"
+        );
 
       if (!token) {
         console.log(
-          "❌ No technician token found"
+          "No technician token found"
         );
 
         setJobs([]);
@@ -129,34 +120,30 @@ const AvailableJobs = () => {
         return;
       }
 
-      const response = await api.get(
-        "/bookings/available",
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
-        }
-      );
+      const response =
+        await api.get(
+          "/bookings/available",
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
 
       console.log(
-        "📦 Available Jobs:",
+        "Available Jobs:",
         response.data
       );
 
       const availableJobs =
-        response.data?.bookings || [];
-
-      /*
-        Update jobs.
-
-        If a booking has already been
-        accepted elsewhere, the backend
-        should no longer return it.
-      */
+        response.data?.bookings ||
+        [];
 
       setJobs(
-        Array.isArray(availableJobs)
+        Array.isArray(
+          availableJobs
+        )
           ? availableJobs
           : []
       );
@@ -165,13 +152,6 @@ const AvailableJobs = () => {
         "Available Jobs Error:",
         error
       );
-
-      /*
-        During an automatic refresh,
-        don't unnecessarily destroy
-        the existing job list because
-        of a temporary network error.
-      */
 
       if (!silent) {
         setJobs([]);
@@ -183,20 +163,323 @@ const AvailableJobs = () => {
     }
   };
 
-  /* =========================================================
-     ACCEPT JOB
-  ========================================================= */
+  // ==========================================
+  // GET TODAY'S DATE
+  // ==========================================
+
+  const getTodayDate = () => {
+    const today =
+      new Date();
+
+    const year =
+      today.getFullYear();
+
+    const month =
+      String(
+        today.getMonth() + 1
+      ).padStart(2, "0");
+
+    const day =
+      String(
+        today.getDate()
+      ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  // ==========================================
+  // GET DATE AFTER N DAYS
+  // ==========================================
+
+  const getDateAfterDays = (
+    days
+  ) => {
+    const date =
+      new Date();
+
+    date.setDate(
+      date.getDate() + days
+    );
+
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(
+        date.getMonth() + 1
+      ).padStart(2, "0");
+
+    const day =
+      String(
+        date.getDate()
+      ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  // ==========================================
+  // CONVERT BOOKING DATE
+  // ==========================================
+
+  const getBookingDateString = (
+    bookingDate
+  ) => {
+    if (!bookingDate) {
+      return null;
+    }
+
+    /*
+     * If the backend returns YYYY-MM-DD,
+     * use it directly.
+     */
+
+    if (
+      /^\d{4}-\d{2}-\d{2}$/.test(
+        bookingDate
+      )
+    ) {
+      return bookingDate;
+    }
+
+    /*
+     * If MongoDB returns an ISO date,
+     * convert it to local calendar date.
+     */
+
+    const date =
+      new Date(
+        bookingDate
+      );
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+      return null;
+    }
+
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(
+        date.getMonth() + 1
+      ).padStart(2, "0");
+
+    const day =
+      String(
+        date.getDate()
+      ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  // ==========================================
+  // CHECK ACCEPTANCE WINDOW
+  // ==========================================
+
+  const isWithinAcceptanceWindow = (
+    bookingDate
+  ) => {
+    const dateString =
+      getBookingDateString(
+        bookingDate
+      );
+
+    if (!dateString) {
+      return false;
+    }
+
+    const today =
+      getTodayDate();
+
+    const lastAllowedDate =
+      getDateAfterDays(3);
+
+    return (
+      dateString >= today &&
+      dateString <=
+        lastAllowedDate
+    );
+  };
+
+  // ==========================================
+  // GET ACCEPTANCE AVAILABLE DATE
+  // ==========================================
+
+  const getAcceptanceAvailableDate = (
+    bookingDate
+  ) => {
+    const dateString =
+      getBookingDateString(
+        bookingDate
+      );
+
+    if (!dateString) {
+      return "";
+    }
+
+    const bookingDateObject =
+      new Date(
+        `${dateString}T00:00:00`
+      );
+
+    const availableDate =
+      new Date(
+        bookingDateObject
+      );
+
+    /*
+     * Technician can accept from
+     * 3 days before the service date.
+     */
+
+    availableDate.setDate(
+      availableDate.getDate() - 3
+    );
+
+    /*
+     * If the calculated date is
+     * before today, use today.
+     */
+
+    const todayObject =
+      new Date();
+
+    todayObject.setHours(
+      0,
+      0,
+      0,
+      0
+    );
+
+    if (
+      availableDate <
+      todayObject
+    ) {
+      return todayObject.toLocaleDateString(
+        "en-IN",
+        {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }
+      );
+    }
+
+    return availableDate.toLocaleDateString(
+      "en-IN",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }
+    );
+  };
+
+  // ==========================================
+  // FORMAT SERVICE DATE
+  // ==========================================
+
+  const formatServiceDate = (
+    bookingDate
+  ) => {
+    const dateString =
+      getBookingDateString(
+        bookingDate
+      );
+
+    if (!dateString) {
+      return "Date not available";
+    }
+
+    const date =
+      new Date(
+        `${dateString}T00:00:00`
+      );
+
+    return date.toLocaleDateString(
+      "en-IN",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }
+    );
+  };
+
+  // ==========================================
+  // OPEN ACCEPTANCE POPUP
+  // ==========================================
+
+  const openAcceptancePopup = (
+    job
+  ) => {
+    setSelectedJob(job);
+
+    setShowAcceptancePopup(
+      true
+    );
+  };
+
+  // ==========================================
+  // CLOSE ACCEPTANCE POPUP
+  // ==========================================
+
+  const closeAcceptancePopup = () => {
+    setShowAcceptancePopup(
+      false
+    );
+
+    setSelectedJob(null);
+  };
+
+  // ==========================================
+  // ACCEPT JOB
+  // ==========================================
 
   const handleAccept = async (
     bookingId
   ) => {
     /*
-      Technician must be online.
-    */
+     * Technician must be online.
+     */
 
     if (!isOnline) {
       alert(
         "Please go Online before accepting a job."
+      );
+
+      return;
+    }
+
+    /*
+     * Find selected job.
+     */
+
+    const job =
+      jobs.find(
+        (item) =>
+          item._id ===
+          bookingId
+      );
+
+    /*
+     * Frontend date protection.
+     *
+     * Backend will also enforce
+     * the same rule.
+     */
+
+    if (
+      job &&
+      !isWithinAcceptanceWindow(
+        job.bookingDate
+      )
+    ) {
+      openAcceptancePopup(
+        job
       );
 
       return;
@@ -208,7 +491,9 @@ const AvailableJobs = () => {
       );
 
       const token =
-        localStorage.getItem("token");
+        localStorage.getItem(
+          "token"
+        );
 
       if (!token) {
         alert(
@@ -219,38 +504,39 @@ const AvailableJobs = () => {
       }
 
       console.log(
-        "🚀 Accepting booking:",
+        "Accepting booking:",
         bookingId
       );
 
-      const response = await api.put(
-        `/bookings/${bookingId}/accept`,
-        {},
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
-        }
-      );
+      const response =
+        await api.put(
+          `/bookings/${bookingId}/accept`,
+          {},
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
 
       console.log(
-        "✅ Accept Job Response:",
+        "Accept Job Response:",
         response.data
       );
 
       /*
-        Remove the accepted job
-        immediately from the UI.
+       * Remove accepted job
+       * immediately.
+       */
 
-        No page refresh required.
-      */
-
-      setJobs((currentJobs) =>
-        currentJobs.filter(
-          (job) =>
-            job._id !== bookingId
-        )
+      setJobs(
+        (currentJobs) =>
+          currentJobs.filter(
+            (job) =>
+              job._id !==
+              bookingId
+          )
       );
 
       alert(
@@ -259,23 +545,15 @@ const AvailableJobs = () => {
       );
 
       /*
-        Fetch again in the background
-        to make sure the UI matches
-        the server.
-      */
+       * Refresh in background.
+       */
 
       fetchJobs(true);
 
       /*
-        Notify other technician
-        dashboard components that
-        the technician has a new
-        active job.
-
-        This allows components such
-        as ActiveJob to refresh their
-        data without a page reload.
-      */
+       * Notify other technician
+       * dashboard components.
+       */
 
       window.dispatchEvent(
         new CustomEvent(
@@ -283,7 +561,8 @@ const AvailableJobs = () => {
           {
             detail: {
               bookingId,
-              status: "Accepted",
+              status:
+                "Accepted",
             },
           }
         )
@@ -294,8 +573,29 @@ const AvailableJobs = () => {
         error
       );
 
+      /*
+       * Backend date restriction.
+       *
+       * If backend rejects because
+       * booking is too far away,
+       * show the same popup.
+       */
+
+      if (
+        error.response?.data
+          ?.acceptanceBlocked &&
+        job
+      ) {
+        openAcceptancePopup(
+          job
+        );
+
+        return;
+      }
+
       alert(
-        error.response?.data?.message ||
+        error.response?.data
+          ?.message ||
           "Failed to accept booking"
       );
     } finally {
@@ -305,9 +605,9 @@ const AvailableJobs = () => {
     }
   };
 
-  /* =========================================================
-     OFFLINE UI
-  ========================================================= */
+  // ==========================================
+  // OFFLINE UI
+  // ==========================================
 
   if (!isOnline) {
     return (
@@ -326,8 +626,8 @@ const AvailableJobs = () => {
             </h2>
 
             <p>
-              New service requests will appear
-              when you are online.
+              New service requests will
+              appear when you are online.
             </p>
 
           </div>
@@ -345,9 +645,10 @@ const AvailableJobs = () => {
           </h3>
 
           <p>
-            Go Online from your Availability
-            card to receive and accept new
-            service requests.
+            Go Online from your
+            Availability card to receive
+            and accept new service
+            requests.
           </p>
 
         </div>
@@ -356,16 +657,98 @@ const AvailableJobs = () => {
     );
   }
 
-  /* =========================================================
-     PAGE
-  ========================================================= */
+  // ==========================================
+  // PAGE
+  // ==========================================
 
   return (
     <section className="available-jobs-section">
 
-      {/* =====================================================
+      {/* ==========================================
+          ACCEPTANCE POPUP
+      ========================================== */}
+
+      {showAcceptancePopup &&
+        selectedJob && (
+
+          <div className="acceptance-popup-overlay">
+
+            <div className="acceptance-popup">
+
+              <div className="acceptance-popup-icon">
+                !
+              </div>
+
+              <h2>
+                Booking Not Ready
+              </h2>
+
+              <p className="acceptance-popup-service">
+                {selectedJob.service?.name ||
+                  "Home Service"}
+              </p>
+
+              <div className="acceptance-popup-date">
+
+                <span>
+                  Service Date
+                </span>
+
+                <strong>
+                  {formatServiceDate(
+                    selectedJob.bookingDate
+                  )}
+                </strong>
+
+              </div>
+
+              <p>
+                This booking is scheduled
+                more than 3 days in advance.
+              </p>
+
+              <p>
+                You cannot accept it yet.
+                The booking will become
+                available for acceptance
+                closer to the service date.
+              </p>
+
+              <div className="acceptance-popup-info">
+
+                You can accept this booking
+                from{" "}
+
+                <strong>
+                  {
+                    getAcceptanceAvailableDate(
+                      selectedJob.bookingDate
+                    )
+                  }
+                </strong>
+
+                .
+
+              </div>
+
+              <button
+                type="button"
+                className="acceptance-popup-close"
+                onClick={
+                  closeAcceptancePopup
+                }
+              >
+                Got it
+              </button>
+
+            </div>
+
+          </div>
+        )}
+
+      {/* ==========================================
           HEADER
-      ===================================================== */}
+      ========================================== */}
 
       <div className="available-jobs-header">
 
@@ -380,8 +763,8 @@ const AvailableJobs = () => {
           </h2>
 
           <p>
-            Service requests available for
-            you to accept.
+            Service requests available
+            for you to accept.
           </p>
 
         </div>
@@ -396,29 +779,29 @@ const AvailableJobs = () => {
 
       </div>
 
-
-      {/* =====================================================
-          AUTO REFRESH INDICATOR
-      ===================================================== */}
+      {/* ==========================================
+          AUTO REFRESH
+      ========================================== */}
 
       <div
         style={{
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent:
+            "flex-end",
           marginBottom: "15px",
           fontSize: "12px",
           color: "#64748b",
         }}
       >
         <span>
-          Automatically checking for new jobs
+          Automatically checking for
+          new jobs
         </span>
       </div>
 
-
-      {/* =====================================================
+      {/* ==========================================
           LOADING
-      ===================================================== */}
+      ========================================== */}
 
       {loading ? (
 
@@ -427,10 +810,6 @@ const AvailableJobs = () => {
         </div>
 
       ) : jobs.length === 0 ? (
-
-        /* ===================================================
-           NO JOBS
-        =================================================== */
 
         <div className="no-jobs">
 
@@ -443,154 +822,231 @@ const AvailableJobs = () => {
           </h3>
 
           <p>
-            There are no new service requests
-            available right now.
+            There are no new service
+            requests available right now.
           </p>
 
         </div>
 
       ) : (
 
-        /* ===================================================
-           JOBS
-        =================================================== */
-
         <div className="jobs-grid">
 
-          {jobs.map((job) => (
+          {jobs.map((job) => {
 
-            <div
-              className="job-card"
-              key={job._id}
-            >
+            const canAccept =
+              isWithinAcceptanceWindow(
+                job.bookingDate
+              );
 
-              {/* ==========================================
-                  SERVICE
-              ========================================== */}
+            return (
+              <div
+                className="job-card"
+                key={job._id}
+              >
 
-              <div className="job-card-header">
+                {/* ==========================================
+                    SERVICE
+                ========================================== */}
 
-                <div>
+                <div className="job-card-header">
 
-                  <span className="job-service-label">
-                    SERVICE REQUEST
+                  <div>
+
+                    <span className="job-service-label">
+                      SERVICE REQUEST
+                    </span>
+
+                    <h3 className="job-service">
+
+                      {job.service?.name ||
+                        "Home Service"}
+
+                    </h3>
+
+                  </div>
+
+                  <span className="new-job-badge">
+                    NEW
                   </span>
-
-                  <h3 className="job-service">
-
-                    {job.service?.name ||
-                      "Home Service"}
-
-                  </h3>
 
                 </div>
 
-                <span className="new-job-badge">
-                  NEW
-                </span>
+                {/* ==========================================
+                    CUSTOMER
+                ========================================== */}
 
-              </div>
+                <div className="job-info">
 
+                  <span className="job-label">
+                    Customer
+                  </span>
 
-              {/* ==========================================
-                  CUSTOMER
-              ========================================== */}
+                  <span>
+                    {job.customer?.name ||
+                      "N/A"}
+                  </span>
 
-              <div className="job-info">
+                </div>
 
-                <span className="job-label">
-                  Customer
-                </span>
+                {/* ==========================================
+                    PHONE
+                ========================================== */}
 
-                <span>
-                  {job.customer?.name ||
-                    "N/A"}
-                </span>
+                <div className="job-info">
 
-              </div>
+                  <span className="job-label">
+                    Phone
+                  </span>
 
+                  <span>
+                    {job.customer?.phone ||
+                      "N/A"}
+                  </span>
 
-              {/* ==========================================
-                  PHONE
-              ========================================== */}
+                </div>
 
-              <div className="job-info">
+                {/* ==========================================
+                    ADDRESS
+                ========================================== */}
 
-                <span className="job-label">
-                  Phone
-                </span>
+                <div className="job-info">
 
-                <span>
-                  {job.customer?.phone ||
-                    "N/A"}
-                </span>
+                  <span className="job-label">
+                    Address
+                  </span>
 
-              </div>
+                  <span>
+                    {job.address ||
+                      "N/A"}
+                  </span>
 
+                </div>
 
-              {/* ==========================================
-                  ADDRESS
-              ========================================== */}
+                {/* ==========================================
+                    SERVICE DATE
+                ========================================== */}
 
-              <div className="job-info">
+                <div className="job-info">
 
-                <span className="job-label">
-                  Address
-                </span>
+                  <span className="job-label">
+                    Service Date
+                  </span>
 
-                <span>
-                  {job.address ||
-                    "N/A"}
-                </span>
+                  <span>
+                    {formatServiceDate(
+                      job.bookingDate
+                    )}
+                  </span>
 
-              </div>
+                </div>
 
+                {/* ==========================================
+                    SERVICE TIME
+                ========================================== */}
 
-              {/* ==========================================
-                  PRICE
-              ========================================== */}
+                <div className="job-info">
 
-              <div className="job-price">
+                  <span className="job-label">
+                    Service Time
+                  </span>
 
-                <span>
-                  Service Amount
-                </span>
+                  <span>
+                    {job.bookingTime ||
+                      "N/A"}
+                  </span>
 
-                <strong>
-                  ₹{job.price}
-                </strong>
+                </div>
 
-              </div>
+                {/* ==========================================
+                    PRICE
+                ========================================== */}
 
+                <div className="job-price">
 
-              {/* ==========================================
-                  ACCEPT
-              ========================================== */}
+                  <span>
+                    Service Amount
+                  </span>
 
-              <button
-                type="button"
-                className="accept-btn"
-                disabled={
-                  acceptingJobId ===
+                  <strong>
+                    ₹{job.price}
+                  </strong>
+
+                </div>
+
+                {/* ==========================================
+                    ACCEPTANCE STATUS
+                ========================================== */}
+
+                {!canAccept && (
+
+                  <div className="acceptance-status">
+
+                    <span>
+                      Acceptance available
+                      within 3 days of the
+                      service date.
+                    </span>
+
+                  </div>
+
+                )}
+
+                {/* ==========================================
+                    ACCEPT BUTTON
+                ========================================== */}
+
+                <button
+                  type="button"
+                  className={`accept-btn ${
+                    !canAccept
+                      ? "accept-btn-disabled"
+                      : ""
+                  }`}
+                  disabled={
+                    acceptingJobId ===
+                      job._id ||
+                    !canAccept
+                  }
+                  onClick={() =>
+                    handleAccept(
+                      job._id
+                    )
+                  }
+                >
+
+                  {acceptingJobId ===
                   job._id
-                }
-                onClick={() =>
-                  handleAccept(
-                    job._id
-                  )
-                }
-              >
+                    ? "Accepting..."
+                    : !canAccept
+                    ? "Not Ready to Accept"
+                    : "Accept Job"}
 
-                {acceptingJobId ===
-                job._id
-                  ? "Accepting..."
-                  : "Accept Job"}
+                </button>
 
-              </button>
+                {/* ==========================================
+                    WHY BUTTON
+                ========================================== */}
 
-            </div>
+                {!canAccept && (
 
-          ))}
+                  <button
+                    type="button"
+                    className="why-accept-disabled-btn"
+                    onClick={() =>
+                      openAcceptancePopup(
+                        job
+                      )
+                    }
+                  >
+                    Why can't I accept?
+                  </button>
+
+                )}
+
+              </div>
+            );
+          })}
 
         </div>
 
