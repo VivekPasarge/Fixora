@@ -35,9 +35,13 @@ const {
   getTechnicianEarnings,
   getActiveBooking,
   getTechnicianAvailability,
-updateTechnicianAvailability,
+  updateTechnicianAvailability,
+  technicianCancelJob,
 
   // NEW
+  declineAvailableJob,
+
+  // Existing
   removeCompletedJob,
 
 } = require("../controllers/bookingController");
@@ -48,7 +52,9 @@ updateTechnicianAvailability,
 // ==========================================
 
 
+// ==========================================
 // Create Booking
+// ==========================================
 
 router.post(
   "/",
@@ -58,7 +64,9 @@ router.post(
 );
 
 
+// ==========================================
 // My Bookings
+// ==========================================
 
 router.get(
   "/my-bookings",
@@ -68,7 +76,9 @@ router.get(
 );
 
 
-// Cancel Booking
+// ==========================================
+// Customer Cancel Booking
+// ==========================================
 
 router.put(
   "/:id/cancel",
@@ -78,7 +88,9 @@ router.put(
 );
 
 
-// Pay For Booking
+// ==========================================
+// Customer Payment
+// ==========================================
 
 router.put(
   "/:id/pay",
@@ -93,7 +105,9 @@ router.put(
 // ==========================================
 
 
+// ==========================================
 // Available Jobs
+// ==========================================
 
 router.get(
   "/available",
@@ -103,7 +117,39 @@ router.get(
 );
 
 
+// ==========================================
+// PRE-ACCEPTANCE CANCEL / DECLINE
+// ==========================================
+//
+// Technician sees:
+//
+// [ Cancel Job ] [ Accept Job ]
+//
+// This is NOT a customer cancellation.
+//
+// Booking remains:
+//
+// status = Pending
+// technician = null
+//
+// Only this technician stops seeing
+// the booking.
+//
+// Other technicians can still see it.
+//
+// ==========================================
+
+router.put(
+  "/:id/decline",
+  protect,
+  authorizeRoles("technician"),
+  declineAvailableJob
+);
+
+
+// ==========================================
 // Assigned Jobs
+// ==========================================
 
 router.get(
   "/technician/assigned",
@@ -113,7 +159,9 @@ router.get(
 );
 
 
+// ==========================================
 // Pending Jobs
+// ==========================================
 
 router.get(
   "/pending",
@@ -123,7 +171,9 @@ router.get(
 );
 
 
+// ==========================================
 // Accept Booking
+// ==========================================
 
 router.put(
   "/:id/accept",
@@ -133,7 +183,9 @@ router.put(
 );
 
 
+// ==========================================
 // Update Booking Status
+// ==========================================
 
 router.put(
   "/:id/status",
@@ -143,7 +195,9 @@ router.put(
 );
 
 
+// ==========================================
 // Verify Customer OTP
+// ==========================================
 
 router.put(
   "/:id/verify-otp",
@@ -157,13 +211,16 @@ router.put(
 // REMOVE COMPLETED JOB
 // ==========================================
 //
-// This does NOT permanently delete the booking.
-// It only removes it from the technician's
-// assigned-jobs view.
+// This does NOT permanently delete
+// the booking.
 //
-// Customer history, admin records and earnings
-// remain safe.
+// It only removes it from the
+// technician's assigned-jobs view.
 //
+// Customer history, admin records,
+// payment and earnings remain safe.
+//
+// ==========================================
 
 router.put(
   "/:id/remove-completed",
@@ -174,11 +231,45 @@ router.put(
 
 
 // ==========================================
+// TECHNICIAN CANCEL AFTER ACCEPTING
+// ==========================================
+//
+// This is DIFFERENT from /decline.
+//
+// /decline
+//     ↓
+// Before accepting
+//
+// /technician-cancel
+//     ↓
+// After accepting
+//
+// Accepted / On The Way
+//          ↓
+// Technician cancels
+//          ↓
+// Booking returns to Pending
+//          ↓
+// Customer receives Socket.IO notification
+//
+// ==========================================
+
+router.put(
+  "/:id/technician-cancel",
+  protect,
+  authorizeRoles("technician"),
+  technicianCancelJob
+);
+
+
+// ==========================================
 // Common Routes
 // ==========================================
 
 
+// ==========================================
 // Active Booking
+// ==========================================
 
 router.get(
   "/active",
@@ -191,7 +282,9 @@ router.get(
 // Technician Availability
 // ==========================================
 
+
 // Get Online / Offline status
+
 router.get(
   "/technician/availability",
   protect,
@@ -201,13 +294,18 @@ router.get(
 
 
 // Change Online / Offline status
+
 router.put(
   "/technician/availability",
   protect,
   authorizeRoles("technician"),
   updateTechnicianAvailability
 );
+
+
+// ==========================================
 // Single Booking
+// ==========================================
 
 router.get(
   "/:id",
@@ -261,5 +359,9 @@ router.get(
   getTechnicianEarnings
 );
 
+
+// ==========================================
+// Export Router
+// ==========================================
 
 module.exports = router;

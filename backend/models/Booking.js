@@ -28,6 +28,55 @@ const bookingSchema = new mongoose.Schema(
     },
 
     // ===============================
+    // Technicians Who Declined
+    // ===============================
+    // Used when a technician clicks
+    // "Cancel Job" BEFORE accepting.
+    //
+    // This does NOT cancel the customer's
+    // booking.
+    //
+    // It only prevents that particular
+    // technician from seeing the same
+    // available job again.
+
+    declinedTechnicians: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    // ===============================
+    // Previous Technician Cancellation
+    // ===============================
+    // Used when a technician had already
+    // ACCEPTED the job and then cancelled it.
+
+    technicianCancelled: {
+      type: Boolean,
+      default: false,
+    },
+
+    technicianCancellation: {
+      technician: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+
+      cancelledAt: {
+        type: Date,
+        default: null,
+      },
+
+      reason: {
+        type: String,
+        default: "",
+      },
+    },
+
+    // ===============================
     // Service
     // ===============================
 
@@ -153,6 +202,11 @@ const bookingSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+
+// =========================================================
+// MODEL
+// =========================================================
 
 module.exports = mongoose.model(
   "Booking",
