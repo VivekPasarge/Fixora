@@ -230,6 +230,9 @@ const Booking = () => {
       const today =
         getTodayDate();
 
+      const maxDate =
+        getDateAfterDays(30);
+
       // ------------------------------------------
       // Prevent Past Dates
       // ------------------------------------------
@@ -237,6 +240,18 @@ const Booking = () => {
       if (value < today) {
         alert(
           "Please select today or a future date."
+        );
+
+        return;
+      }
+
+      // ------------------------------------------
+      // Prevent Dates More Than 30 Days Away
+      // ------------------------------------------
+
+      if (value > maxDate) {
+        alert(
+          "You can book a service only up to 30 days from today."
         );
 
         return;
@@ -286,7 +301,7 @@ const Booking = () => {
       });
 
       // ------------------------------------------
-      // Show 3-Day Warning
+      // Existing Technician Window
       // ------------------------------------------
 
       if (
@@ -374,6 +389,9 @@ const Booking = () => {
     const today =
       getTodayDate();
 
+    const maxDate =
+      getDateAfterDays(30);
+
     // ------------------------------------------
     // Date Required
     // ------------------------------------------
@@ -396,6 +414,21 @@ const Booking = () => {
     ) {
       alert(
         "Booking date cannot be in the past."
+      );
+
+      return false;
+    }
+
+    // ------------------------------------------
+    // Maximum 30-Day Booking Window
+    // ------------------------------------------
+
+    if (
+      bookingData.date >
+      maxDate
+    ) {
+      alert(
+        "You can book a service only up to 30 days from today."
       );
 
       return false;
@@ -873,6 +906,9 @@ const Booking = () => {
                       min={
                         getTodayDate()
                       }
+                      max={
+                        getDateAfterDays(30)
+                      }
                       onChange={
                         handleChange
                       }
@@ -888,8 +924,8 @@ const Booking = () => {
                           "#64748b",
                       }}
                     >
-                      You can book from
-                      today onwards.
+                      You can book from today
+                      up to 30 days in advance.
                     </small>
 
                     <small

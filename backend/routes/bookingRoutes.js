@@ -50,6 +50,9 @@ const {
   removeBookingFromMyBookings,
   getMyBookingHistory,
 
+  // NEW
+  getBookedTimeSlots,
+
 } = require("../controllers/bookingController");
 
 
@@ -67,6 +70,35 @@ router.post(
   protect,
   authorizeRoles("customer"),
   createBooking
+);
+
+
+// ==========================================
+// Check Booked Time Slots
+// ==========================================
+//
+// Customer selects:
+//
+// Service + Date
+//
+// Backend returns the time slots
+// that are already booked.
+//
+// Example:
+//
+// {
+//   success: true,
+//   bookedSlots: [
+//     "10:00 AM",
+//     "02:00 PM"
+//   ]
+// }
+//
+// ==========================================
+
+router.get(
+  "/availability",
+  getBookedTimeSlots
 );
 
 
@@ -90,6 +122,7 @@ router.get(
 // removed from My Bookings.
 //
 // IMPORTANT:
+//
 // These bookings are NOT deleted
 // from MongoDB.
 //
@@ -110,6 +143,7 @@ router.get(
 // CUSTOMER ONLY
 //
 // Allowed only for:
+//
 // - Completed
 // - Cancelled
 //
@@ -177,6 +211,7 @@ router.get(
 // [ Cancel Job ] [ Accept Job ]
 //
 // Cancel Job:
+//
 // - Booking remains Pending
 // - Customer booking is NOT cancelled
 // - Only this technician is removed
@@ -342,10 +377,14 @@ router.put(
 // ==========================================
 //
 // Keep this route AFTER specific routes
-// such as /my-history.
+// such as:
 //
-// Otherwise "my-history" could be treated
-// as a booking ID.
+// /availability
+// /my-history
+// /my-bookings
+//
+// Otherwise those paths could be
+// treated as a booking ID.
 //
 // ==========================================
 
