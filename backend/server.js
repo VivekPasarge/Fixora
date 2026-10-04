@@ -50,6 +50,7 @@ connectDB();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://fixora-4cdg.vercel.app",
+  "https://fixora-3u5c.vercel.app",
 ];
 
 const isAllowedOrigin = (origin) => {
