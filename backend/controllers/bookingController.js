@@ -1393,6 +1393,10 @@ const verifyBookingOTP =
 // Pay For Booking
 // ==========================================
 
+// ==========================================
+// Pay For Booking
+// ==========================================
+
 const payForBooking = async (req, res) => {
   try {
     const { paymentMethod } = req.body;
@@ -1406,7 +1410,10 @@ const payForBooking = async (req, res) => {
       });
     }
 
-    // Customer ownership check
+    // ==========================================
+    // Customer Ownership Check
+    // ==========================================
+
     if (
       booking.customer.toString() !==
       req.user.id.toString()
@@ -1417,7 +1424,10 @@ const payForBooking = async (req, res) => {
       });
     }
 
-    // Validate payment method
+    // ==========================================
+    // Validate Payment Method
+    // ==========================================
+
     const validPaymentMethods = [
       "Cash on Service",
       "UPI",
@@ -1431,7 +1441,10 @@ const payForBooking = async (req, res) => {
       });
     }
 
-    // Payment should only happen for an accepted/active/completed booking
+    // ==========================================
+    // Payment Allowed Status
+    // ==========================================
+
     const allowedStatuses = [
       "Accepted",
       "On The Way",
@@ -1447,7 +1460,10 @@ const payForBooking = async (req, res) => {
       });
     }
 
-    // Prevent duplicate payment
+    // ==========================================
+    // Prevent Duplicate Payment
+    // ==========================================
+
     if (booking.paymentStatus === "Paid") {
       return res.status(400).json({
         success: false,
@@ -1455,27 +1471,51 @@ const payForBooking = async (req, res) => {
       });
     }
 
-    // Save payment method
-    booking.paymentMethod = paymentMethod;
+    // ==========================================
+    // CASH ON SERVICE ONLY
+    // ==========================================
 
-    // Cash on Service remains pending
-    // UPI/Card are treated as successful demo payments
     if (paymentMethod === "Cash on Service") {
+      booking.paymentMethod = "Cash on Service";
+
+      // Cash is NOT paid yet
       booking.paymentStatus = "Pending";
-    } else {
-      booking.paymentStatus = "Paid";
+
+      await booking.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Cash on Service selected successfully",
+        booking,
+      });
     }
 
-    await booking.save();
+    // ==========================================
+    // IMPORTANT
+    // ==========================================
+    //
+    // UPI/Card must NOT be marked Paid here.
+    //
+    // Razorpay handles UPI/Card payment.
+    //
+    // Payment becomes Paid only after:
+    //
+    // create-order
+    //      ↓
+    // Razorpay Checkout
+    //      ↓
+    // Successful Payment
+    //      ↓
+    // /payment/verify
+    //
+    // ==========================================
 
-    return res.status(200).json({
-      success: true,
+    return res.status(400).json({
+      success: false,
       message:
-        paymentMethod === "Cash on Service"
-          ? "Cash on Service selected successfully"
-          : "Payment Successful",
-      booking,
+        "Online payments must be processed through Razorpay.",
     });
+
   } catch (error) {
     console.error(
       "Pay For Booking Error:",
