@@ -28,6 +28,9 @@ const adminCustomerRoutes = require("./routes/adminCustomerRoutes");
 const adminTechnicianRoutes = require("./routes/adminTechnicianRoutes");
 const adminBookingRoutes = require("./routes/adminBookingRoutes");
 
+// Razorpay Payment Routes
+const paymentRoutes = require("./routes/paymentRoutes");
+
 // =========================
 // App
 // =========================
@@ -50,17 +53,18 @@ const allowedOrigins = [
 ];
 
 const isAllowedOrigin = (origin) => {
-
+  // Allow requests without an origin
+  // such as Postman/server-to-server requests.
   if (!origin) {
     return true;
   }
 
-  if (
-    allowedOrigins.includes(origin)
-  ) {
+  // Exact allowed origins
+  if (allowedOrigins.includes(origin)) {
     return true;
   }
 
+  // Allow Vercel preview deployments
   if (
     /^https:\/\/fixora-4cdg-[a-z0-9-]+\.vercel\.app$/i.test(
       origin
@@ -78,32 +82,19 @@ const isAllowedOrigin = (origin) => {
 
 app.use(
   cors({
-    origin: function (
-      origin,
-      callback
-    ) {
-
-      if (
-        isAllowedOrigin(origin)
-      ) {
-
+    origin: function (origin, callback) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
-
       } else {
-
         console.log(
           "❌ CORS blocked origin:",
           origin
         );
 
         callback(
-          new Error(
-            "Not allowed by CORS"
-          )
+          new Error("Not allowed by CORS")
         );
-
       }
-
     },
 
     credentials: true,
@@ -128,9 +119,7 @@ app.use(
 // JSON
 // =========================
 
-app.use(
-  express.json()
-);
+app.use(express.json());
 
 // =========================
 // Routes
@@ -181,6 +170,15 @@ app.use(
   adminBookingRoutes
 );
 
+// =========================================================
+// RAZORPAY PAYMENT ROUTES
+// =========================================================
+
+app.use(
+  "/api/payment",
+  paymentRoutes
+);
+
 // =========================
 // Home
 // =========================
@@ -188,11 +186,9 @@ app.use(
 app.get(
   "/",
   (req, res) => {
-
     res.send(
       "Welcome to Fixora Backend"
     );
-
   }
 );
 
@@ -211,23 +207,18 @@ const io = new Server(
   server,
   {
     cors: {
-
       origin: function (
         origin,
         callback
       ) {
-
         if (
           isAllowedOrigin(origin)
         ) {
-
           callback(
             null,
             true
           );
-
         } else {
-
           console.log(
             "❌ Socket.IO CORS blocked origin:",
             origin
@@ -238,9 +229,7 @@ const io = new Server(
               "Not allowed by CORS"
             )
           );
-
         }
-
       },
 
       methods: [
@@ -249,11 +238,9 @@ const io = new Server(
       ],
 
       credentials: true,
-
     },
   }
 );
-
 
 // =========================================================
 // SOCKET CONNECTION
@@ -262,12 +249,10 @@ const io = new Server(
 io.on(
   "connection",
   (socket) => {
-
     console.log(
       "🟢 User Connected:",
       socket.id
     );
-
 
     // =======================================================
     // JOIN BOOKING ROOM
@@ -276,18 +261,14 @@ io.on(
     socket.on(
       "join-booking",
       async (bookingId) => {
-
         try {
-
           if (!bookingId) {
-
             console.log(
               "❌ No booking ID provided"
             );
 
             return;
           }
-
 
           // -----------------------------------------------
           // Join room
@@ -297,11 +278,9 @@ io.on(
             bookingId
           );
 
-
           console.log(
             `📦 Socket ${socket.id} joined booking room: ${bookingId}`
           );
-
 
           // -----------------------------------------------
           // Room users
@@ -317,11 +296,9 @@ io.on(
               ? room.size
               : 0;
 
-
           console.log(
             `👥 Users in booking room ${bookingId}: ${roomSize}`
           );
-
 
           // -----------------------------------------------
           // Get booking
@@ -333,7 +310,6 @@ io.on(
             ).select(
               "technicianLocation trackingActive status"
             );
-
 
           // -----------------------------------------------
           // Send previous location
@@ -349,11 +325,9 @@ io.on(
               .technicianLocation
               .longitude !== null
           ) {
-
             socket.emit(
               "receive-location",
               {
-
                 bookingId,
 
                 latitude:
@@ -377,36 +351,26 @@ io.on(
 
                 status:
                   booking.status,
-
               }
             );
-
 
             console.log(
               "📤 Sent saved location to newly joined socket:",
               bookingId
             );
-
           } else {
-
             console.log(
               "⏳ No technician location available yet."
             );
-
           }
-
         } catch (error) {
-
           console.error(
             "❌ Join Booking Error:",
             error.message
           );
-
         }
-
       }
     );
-
 
     // =======================================================
     // TECHNICIAN SENDS LOCATION
@@ -415,14 +379,11 @@ io.on(
     socket.on(
       "send-location",
       async (data) => {
-
         try {
-
           console.log(
             "📍 Received From Technician:",
             data
           );
-
 
           if (
             !data ||
@@ -430,22 +391,18 @@ io.on(
             data.latitude === undefined ||
             data.longitude === undefined
           ) {
-
             console.log(
               "❌ Invalid location data"
             );
 
             return;
-
           }
-
 
           const {
             bookingId,
             latitude,
             longitude,
           } = data;
-
 
           // -----------------------------------------------
           // Find booking
@@ -456,25 +413,20 @@ io.on(
               bookingId
             );
 
-
           if (!booking) {
-
             console.log(
               "❌ Booking not found:",
               bookingId
             );
 
             return;
-
           }
-
 
           // -----------------------------------------------
           // Save location
           // -----------------------------------------------
 
           booking.technicianLocation = {
-
             latitude:
               Number(latitude),
 
@@ -483,40 +435,31 @@ io.on(
 
             updatedAt:
               new Date(),
-
           };
-
 
           booking.trackingActive =
             true;
-
 
           if (
             booking.status ===
             "On The Way"
           ) {
-
             booking.trackingActive =
               true;
-
           }
 
-
           await booking.save();
-
 
           console.log(
             "💾 Technician location saved:",
             bookingId
           );
 
-
           // -----------------------------------------------
           // Send location to customer
           // -----------------------------------------------
 
           const locationData = {
-
             bookingId,
 
             latitude:
@@ -533,9 +476,7 @@ io.on(
 
             status:
               booking.status,
-
           };
-
 
           io.to(
             bookingId
@@ -544,12 +485,10 @@ io.on(
             locationData
           );
 
-
           console.log(
             "📤 Sent location to booking room:",
             bookingId
           );
-
 
           // -----------------------------------------------
           // Room users
@@ -565,23 +504,17 @@ io.on(
               ? room.size
               : 0;
 
-
           console.log(
             `👥 Booking room ${bookingId} currently has ${roomSize} socket(s)`
           );
-
         } catch (error) {
-
           console.error(
             "❌ Send Location Error:",
             error
           );
-
         }
-
       }
     );
-
 
     // =======================================================
     // STOP LIVE TRACKING
@@ -590,13 +523,10 @@ io.on(
     socket.on(
       "stop-location",
       async (bookingId) => {
-
         try {
-
           if (!bookingId) {
             return;
           }
-
 
           await Booking.findByIdAndUpdate(
             bookingId,
@@ -605,7 +535,6 @@ io.on(
                 false,
             }
           );
-
 
           io.to(
             bookingId
@@ -616,24 +545,18 @@ io.on(
             }
           );
 
-
           console.log(
             "🛑 Tracking stopped:",
             bookingId
           );
-
         } catch (error) {
-
           console.error(
             "❌ Stop Tracking Error:",
             error.message
           );
-
         }
-
       }
     );
-
 
     // =======================================================
     // DISCONNECT
@@ -642,18 +565,14 @@ io.on(
     socket.on(
       "disconnect",
       () => {
-
         console.log(
           "🔴 User Disconnected:",
           socket.id
         );
-
       }
     );
-
   }
 );
-
 
 // =========================================================
 // SERVER
@@ -665,10 +584,8 @@ const PORT =
 server.listen(
   PORT,
   () => {
-
     console.log(
       `🚀 Server running on port ${PORT}`
     );
-
   }
 );

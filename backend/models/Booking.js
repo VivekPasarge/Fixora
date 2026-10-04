@@ -30,15 +30,6 @@ const bookingSchema = new mongoose.Schema(
     // ===============================
     // Technicians Who Declined
     // ===============================
-    // Used when a technician clicks
-    // "Cancel Job" BEFORE accepting.
-    //
-    // This does NOT cancel the customer's
-    // booking.
-    //
-    // It only prevents that particular
-    // technician from seeing the same
-    // available job again.
 
     declinedTechnicians: [
       {
@@ -50,8 +41,6 @@ const bookingSchema = new mongoose.Schema(
     // ===============================
     // Previous Technician Cancellation
     // ===============================
-    // Used when a technician had already
-    // ACCEPTED the job and then cancelled it.
 
     technicianCancelled: {
       type: Boolean,
@@ -79,28 +68,6 @@ const bookingSchema = new mongoose.Schema(
     // ===============================
     // Customer Booking History
     // ===============================
-    // CUSTOMER ONLY
-    //
-    // This is a soft delete.
-    //
-    // The booking is NOT deleted from
-    // MongoDB.
-    //
-    // It is only hidden from the customer's
-    // normal "My Bookings" page.
-    //
-    // The booking can still be displayed
-    // inside the customer's "View History"
-    // page.
-    //
-    // This keeps:
-    // - Admin records
-    // - Payment records
-    // - Technician records
-    // - Reviews
-    // - Booking history
-    //
-    // safe.
 
     customerRemoved: {
       type: Boolean,
@@ -193,6 +160,41 @@ const bookingSchema = new mongoose.Schema(
       default: "Pending",
     },
 
+    // =====================================================
+    // RAZORPAY PAYMENT DETAILS
+    // =====================================================
+
+    // Razorpay Order ID
+    // Created by our backend before payment.
+
+    razorpayOrderId: {
+      type: String,
+      default: null,
+    },
+
+    // Razorpay Payment ID
+    // Received after successful payment.
+
+    razorpayPaymentId: {
+      type: String,
+      default: null,
+    },
+
+    // Razorpay Signature
+    // Used by backend to verify the payment.
+
+    razorpaySignature: {
+      type: String,
+      default: null,
+    },
+
+    // Date and time when payment was successfully verified.
+
+    paidAt: {
+      type: Date,
+      default: null,
+    },
+
     // ===============================
     // OTP Verification
     // ===============================
@@ -238,7 +240,6 @@ const bookingSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
 
 // =========================================================
 // MODEL

@@ -257,15 +257,9 @@ const createBooking = async (req, res) => {
         bookingTime,
 
         price: serviceData.price,
+paymentMethod: paymentMethod || "Cash on Service",
 
-        paymentMethod,
-
-        paymentStatus:
-          paymentMethod ===
-          "Cash on Service"
-            ? "Pending"
-            : "Paid",
-
+paymentStatus: "Pending",
         otp,
 
         declinedTechnicians: [],
@@ -1403,87 +1397,102 @@ const verifyBookingOTP =
 // ==========================================
 // Pay For Booking
 // ==========================================
-const payForBooking =
-  async (req, res) => {
 
-    try {
+const payForBooking = async (req, res) => {
+  try {
+    const { paymentMethod } = req.body;
 
-      const booking =
-        await Booking.findById(
-          req.params.id
-        );
+    const booking = await Booking.findById(req.params.id);
 
-      if (!booking) {
-        return res.status(404).json({
-          success: false,
-          message:
-            "Booking not found",
-        });
-      }
-
-      if (
-        booking.customer.toString() !==
-        req.user.id.toString()
-      ) {
-        return res.status(403).json({
-          success: false,
-          message:
-            "Access denied",
-        });
-      }
-
-      if (
-        booking.status !==
-        "Completed"
-      ) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Service is not completed yet",
-        });
-      }
-
-      if (
-        booking.paymentStatus ===
-        "Paid"
-      ) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Payment has already been completed",
-        });
-      }
-
-      booking.paymentStatus =
-        "Paid";
-
-      await booking.save();
-
-      return res.status(200).json({
-
-        success: true,
-
-        message:
-          "Payment Successful",
-
-        booking,
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Pay For Booking Error:",
-        error
-      );
-
-      return res.status(500).json({
+    if (!booking) {
+      return res.status(404).json({
         success: false,
-        message:
-          error.message,
+        message: "Booking not found",
       });
     }
-  };
+
+    // Customer ownership check
+    if (
+      booking.customer.toString() !==
+      req.user.id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    // Validate payment method
+    const validPaymentMethods = [
+      "Cash on Service",
+      "UPI",
+      "Card",
+    ];
+
+    if (!validPaymentMethods.includes(paymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment method",
+      });
+    }
+
+    // Payment should only happen for an accepted/active/completed booking
+    const allowedStatuses = [
+      "Accepted",
+      "On The Way",
+      "In Progress",
+      "Completed",
+    ];
+
+    if (!allowedStatuses.includes(booking.status)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Payment is available only after a technician accepts the booking.",
+      });
+    }
+
+    // Prevent duplicate payment
+    if (booking.paymentStatus === "Paid") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment has already been completed",
+      });
+    }
+
+    // Save payment method
+    booking.paymentMethod = paymentMethod;
+
+    // Cash on Service remains pending
+    // UPI/Card are treated as successful demo payments
+    if (paymentMethod === "Cash on Service") {
+      booking.paymentStatus = "Pending";
+    } else {
+      booking.paymentStatus = "Paid";
+    }
+
+    await booking.save();
+
+    return res.status(200).json({
+      success: true,
+      message:
+        paymentMethod === "Cash on Service"
+          ? "Cash on Service selected successfully"
+          : "Payment Successful",
+      booking,
+    });
+  } catch (error) {
+    console.error(
+      "Pay For Booking Error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 
 // ==========================================
