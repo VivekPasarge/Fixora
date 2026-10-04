@@ -239,28 +239,23 @@ const createBooking = async (req, res) => {
     // Create Booking
     // ==========================================
 
-    const booking =
-      await Booking.create({
-        bookingId:
-          `FXR-${new Date().getFullYear()}-${String(
-            bookingNumber
-          ).padStart(6, "0")}`,
+    const booking = await Booking.create({
+  bookingId: `FXR-${new Date().getFullYear()}-${String(
+    totalBookings + 1
+  ).padStart(6, "0")}`,
 
-        customer,
+  customer,
+  service,
+  address,
+  bookingDate,
+  bookingTime,
+  price: serviceData.price,
 
-        service,
+  paymentMethod: paymentMethod || "Cash on Service",
+  paymentStatus: "Pending",
 
-        address,
+  otp,
 
-        bookingDate,
-
-        bookingTime,
-
-        price: serviceData.price,
-paymentMethod: paymentMethod || "Cash on Service",
-
-paymentStatus: "Pending",
-        otp,
 
         declinedTechnicians: [],
 
