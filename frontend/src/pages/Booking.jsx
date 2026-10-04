@@ -82,11 +82,11 @@ const Booking = () => {
   };
 
   // ==========================================
-  // Check Technician Acceptance Window
+  // Technician Acceptance Window
   // ==========================================
 
   const isBookingBeyondTechnicianWindow = (selectedDate) => {
-    const lastAllowedDate = getDateAfterDays(3);
+    const lastAllowedDate = getDateAfterDays(2);
 
     return selectedDate > lastAllowedDate;
   };
@@ -103,12 +103,6 @@ const Booking = () => {
 
   // ==========================================
   // Convert 24-Hour Time To Minutes
-  //
-  // Example:
-  // 00:00 -> 0
-  // 12:00 -> 720
-  // 14:00 -> 840
-  // 22:00 -> 1320
   // ==========================================
 
   const convertTimeToMinutes = (time) => {
@@ -182,7 +176,8 @@ const Booking = () => {
     if (name === "date") {
       const today = getTodayDate();
 
-      const maxDate = getDateAfterDays(30);
+      // Maximum 2 days from today
+      const maxDate = getDateAfterDays(2);
 
       // ------------------------------------------
       // Prevent Past Dates
@@ -194,12 +189,12 @@ const Booking = () => {
       }
 
       // ------------------------------------------
-      // Prevent More Than 30 Days
+      // Prevent More Than 2 Days
       // ------------------------------------------
 
       if (value > maxDate) {
         alert(
-          "You can book a service only up to 30 days from today."
+          "You can book a service only up to 2 days from today."
         );
         return;
       }
@@ -325,7 +320,8 @@ const Booking = () => {
   const validateBooking = () => {
     const today = getTodayDate();
 
-    const maxDate = getDateAfterDays(30);
+    // Maximum 2 days from today
+    const maxDate = getDateAfterDays(2);
 
     // ------------------------------------------
     // Date Required
@@ -346,12 +342,12 @@ const Booking = () => {
     }
 
     // ------------------------------------------
-    // Maximum 30 Days
+    // Maximum 2 Days
     // ------------------------------------------
 
     if (bookingData.date > maxDate) {
       alert(
-        "You can book a service only up to 30 days from today."
+        "You can book a service only up to 2 days from today."
       );
       return false;
     }
@@ -520,14 +516,11 @@ const Booking = () => {
       {showDateWarning && (
         <div className="date-warning-overlay">
           <div className="date-warning-modal">
-
             <div className="date-warning-icon">
               !
             </div>
 
-            <h2>
-              Booking Date Notice
-            </h2>
+            <h2>Booking Date Notice</h2>
 
             <p>
               You can book this service for:
@@ -539,7 +532,7 @@ const Booking = () => {
 
             <p>
               However, this service date is more
-              than 3 days away.
+              than 2 days away.
             </p>
 
             <p>
@@ -560,7 +553,6 @@ const Booking = () => {
             >
               Got it
             </button>
-
           </div>
         </div>
       )}
@@ -570,7 +562,6 @@ const Booking = () => {
       ========================================== */}
 
       <main className="booking-page">
-
         <div className="booking-container">
 
           {/* ==========================================
@@ -629,15 +620,12 @@ const Booking = () => {
               ========================================== */}
 
               <div className="booking-card">
-
                 <h2>
                   Service Details
                 </h2>
 
                 <div className="service-box">
-
                   <div>
-
                     <h3>
                       {service.name}
                     </h3>
@@ -645,11 +633,9 @@ const Booking = () => {
                     <p>
                       {service.description}
                     </p>
-
                   </div>
 
                   <div className="service-price">
-
                     <h3>
                       ₹{service.price}
                     </h3>
@@ -657,11 +643,8 @@ const Booking = () => {
                     <p>
                       Starting Price
                     </p>
-
                   </div>
-
                 </div>
-
               </div>
 
               {/* ==========================================
@@ -669,7 +652,6 @@ const Booking = () => {
               ========================================== */}
 
               <div className="booking-card">
-
                 <h2 className="card-title">
                   <FiUser />
                   Customer Details
@@ -705,7 +687,6 @@ const Booking = () => {
                   />
 
                 </div>
-
               </div>
 
               {/* ==========================================
@@ -713,7 +694,6 @@ const Booking = () => {
               ========================================== */}
 
               <div className="booking-card">
-
                 <h2 className="card-title">
                   <FiHome />
                   Service Address
@@ -753,7 +733,6 @@ const Booking = () => {
                   </div>
 
                 </div>
-
               </div>
 
               {/* ==========================================
@@ -774,7 +753,6 @@ const Booking = () => {
                   ========================================== */}
 
                   <div>
-
                     <label className="form-label">
                       Select Date
                     </label>
@@ -785,7 +763,7 @@ const Booking = () => {
                       className="form-input"
                       value={bookingData.date}
                       min={getTodayDate()}
-                      max={getDateAfterDays(30)}
+                      max={getDateAfterDays(2)}
                       onChange={handleChange}
                     />
 
@@ -797,14 +775,7 @@ const Booking = () => {
                       }}
                     >
                       You can book from today up to
-                      30 days in advance.
-                    </small>
-
-                    <small className="technician-window-info">
-                      Bookings more than 3 days ahead
-                      can be created, but the technician
-                      can accept them only when they enter
-                      the 3-day acceptance window.
+                      2 days in advance.
                     </small>
 
                   </div>
@@ -814,7 +785,6 @@ const Booking = () => {
                   ========================================== */}
 
                   <div>
-
                     <label className="form-label">
                       Select Time
                     </label>
@@ -825,7 +795,6 @@ const Booking = () => {
                       value={bookingData.time}
                       onChange={handleChange}
                     >
-
                       <option value="">
                         Select Time
                       </option>
@@ -925,7 +894,6 @@ const Booking = () => {
                       <option value="23:00">
                         23:00
                       </option>
-
                     </select>
 
                     <small
@@ -942,7 +910,6 @@ const Booking = () => {
                   </div>
 
                 </div>
-
               </div>
 
               {/* ==========================================
@@ -984,7 +951,6 @@ const Booking = () => {
                 <div className="summary-list">
 
                   <div className="summary-row">
-
                     <span>
                       Service
                     </span>
@@ -992,11 +958,9 @@ const Booking = () => {
                     <strong>
                       {service.name}
                     </strong>
-
                   </div>
 
                   <div className="summary-row">
-
                     <span>
                       Service Charge
                     </span>
@@ -1004,11 +968,9 @@ const Booking = () => {
                     <strong>
                       ₹{service.price}
                     </strong>
-
                   </div>
 
                   <div className="summary-row">
-
                     <span>
                       Platform Fee
                     </span>
@@ -1016,13 +978,11 @@ const Booking = () => {
                     <strong>
                       ₹49
                     </strong>
-
                   </div>
 
                   <hr />
 
                   <div className="summary-total">
-
                     <span>
                       Total
                     </span>
@@ -1030,7 +990,6 @@ const Booking = () => {
                     <strong>
                       ₹{Number(service.price) + 49}
                     </strong>
-
                   </div>
 
                 </div>
@@ -1042,11 +1001,8 @@ const Booking = () => {
                 <div className="payment-section">
 
                   <h3 className="card-title">
-
                     <FiCreditCard />
-
                     Payment Method
-
                   </h3>
 
                   <div className="payment-options">
@@ -1054,7 +1010,6 @@ const Booking = () => {
                     {/* CASH */}
 
                     <label className="payment-option">
-
                       <input
                         type="radio"
                         name="paymentMethod"
@@ -1069,13 +1024,11 @@ const Booking = () => {
                       <span>
                         Cash on Service
                       </span>
-
                     </label>
 
                     {/* UPI */}
 
                     <label className="payment-option">
-
                       <input
                         type="radio"
                         name="paymentMethod"
@@ -1090,13 +1043,11 @@ const Booking = () => {
                       <span>
                         UPI
                       </span>
-
                     </label>
 
                     {/* CARD */}
 
                     <label className="payment-option">
-
                       <input
                         type="radio"
                         name="paymentMethod"
@@ -1111,7 +1062,6 @@ const Booking = () => {
                       <span>
                         Credit / Debit Card
                       </span>
-
                     </label>
 
                   </div>
@@ -1136,7 +1086,6 @@ const Booking = () => {
           </div>
 
         </div>
-
       </main>
     </>
   );
