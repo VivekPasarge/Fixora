@@ -125,42 +125,25 @@ const Booking = () => {
   // Example: 02:00 PM → 840
   // ==========================================
 
-  const convertTimeToMinutes = (
-    time
-  ) => {
-    if (!time) return null;
+ // ==========================================
+// Convert 24-Hour Time To Minutes
+// Example: 14:00 → 840
+// ==========================================
 
-    const [
-      timePart,
-      modifier,
-    ] = time.split(" ");
+const convertTimeToMinutes = (time) => {
+  if (!time) return null;
 
-    let [
-      hours,
-      minutes,
-    ] = timePart
-      .split(":")
-      .map(Number);
+  const [hours, minutes] = time.split(":").map(Number);
 
-    if (
-      modifier === "PM" &&
-      hours !== 12
-    ) {
-      hours += 12;
-    }
+  if (
+    Number.isNaN(hours) ||
+    Number.isNaN(minutes)
+  ) {
+    return null;
+  }
 
-    if (
-      modifier === "AM" &&
-      hours === 12
-    ) {
-      hours = 0;
-    }
-
-    return (
-      hours * 60 +
-      minutes
-    );
-  };
+  return hours * 60 + minutes;
+};
 
   // ==========================================
   // Format Date For Popup
