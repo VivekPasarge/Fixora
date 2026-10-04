@@ -2,14 +2,18 @@ const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema(
   {
+    // =====================================================
+    // BOOKING ID
+    // =====================================================
+
     bookingId: {
       type: String,
       unique: true,
     },
 
-    // ===============================
-    // Customer
-    // ===============================
+    // =====================================================
+    // CUSTOMER
+    // =====================================================
 
     customer: {
       type: mongoose.Schema.Types.ObjectId,
@@ -17,9 +21,9 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
 
-    // ===============================
-    // Technician
-    // ===============================
+    // =====================================================
+    // TECHNICIAN
+    // =====================================================
 
     technician: {
       type: mongoose.Schema.Types.ObjectId,
@@ -27,9 +31,9 @@ const bookingSchema = new mongoose.Schema(
       default: null,
     },
 
-    // ===============================
-    // Technicians Who Declined
-    // ===============================
+    // =====================================================
+    // TECHNICIANS WHO DECLINED
+    // =====================================================
 
     declinedTechnicians: [
       {
@@ -38,9 +42,9 @@ const bookingSchema = new mongoose.Schema(
       },
     ],
 
-    // ===============================
-    // Previous Technician Cancellation
-    // ===============================
+    // =====================================================
+    // PREVIOUS TECHNICIAN CANCELLATION
+    // =====================================================
 
     technicianCancelled: {
       type: Boolean,
@@ -65,9 +69,9 @@ const bookingSchema = new mongoose.Schema(
       },
     },
 
-    // ===============================
-    // Customer Booking History
-    // ===============================
+    // =====================================================
+    // CUSTOMER BOOKING HISTORY
+    // =====================================================
 
     customerRemoved: {
       type: Boolean,
@@ -79,9 +83,9 @@ const bookingSchema = new mongoose.Schema(
       default: null,
     },
 
-    // ===============================
-    // Service
-    // ===============================
+    // =====================================================
+    // SERVICE
+    // =====================================================
 
     service: {
       type: mongoose.Schema.Types.ObjectId,
@@ -89,9 +93,9 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
 
-    // ===============================
-    // Booking Details
-    // ===============================
+    // =====================================================
+    // BOOKING DETAILS
+    // =====================================================
 
     address: {
       type: String,
@@ -112,11 +116,12 @@ const bookingSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true,
+      min: 0,
     },
 
-    // ===============================
-    // Booking Status
-    // ===============================
+    // =====================================================
+    // BOOKING STATUS
+    // =====================================================
 
     status: {
       type: String,
@@ -133,9 +138,9 @@ const bookingSchema = new mongoose.Schema(
       default: "Pending",
     },
 
-    // ===============================
-    // Payment
-    // ===============================
+    // =====================================================
+    // PAYMENT METHOD
+    // =====================================================
 
     paymentMethod: {
       type: String,
@@ -149,6 +154,18 @@ const bookingSchema = new mongoose.Schema(
       default: "Cash on Service",
     },
 
+    // =====================================================
+    // PAYMENT STATUS
+    // =====================================================
+
+    // IMPORTANT:
+    // New bookings always start as Pending.
+    //
+    // Creating a Razorpay order also keeps this Pending.
+    //
+    // Only successful Razorpay verification changes
+    // this value to Paid.
+
     paymentStatus: {
       type: String,
 
@@ -161,43 +178,52 @@ const bookingSchema = new mongoose.Schema(
     },
 
     // =====================================================
-    // RAZORPAY PAYMENT DETAILS
+    // RAZORPAY ORDER ID
     // =====================================================
 
-    // Razorpay Order ID
-    // Created by our backend before payment.
+    // Created when backend creates a Razorpay order.
 
     razorpayOrderId: {
       type: String,
       default: null,
     },
 
-    // Razorpay Payment ID
-    // Received after successful payment.
+    // =====================================================
+    // RAZORPAY PAYMENT ID
+    // =====================================================
+
+    // Received after successful Razorpay payment.
 
     razorpayPaymentId: {
       type: String,
       default: null,
     },
 
-    // Razorpay Signature
-    // Used by backend to verify the payment.
+    // =====================================================
+    // RAZORPAY SIGNATURE
+    // =====================================================
+
+    // Used by backend to verify payment authenticity.
 
     razorpaySignature: {
       type: String,
       default: null,
     },
 
-    // Date and time when payment was successfully verified.
+    // =====================================================
+    // PAYMENT DATE
+    // =====================================================
+
+    // Set only after successful payment verification.
 
     paidAt: {
       type: Date,
       default: null,
     },
 
-    // ===============================
-    // OTP Verification
-    // ===============================
+    // =====================================================
+    // OTP VERIFICATION
+    // =====================================================
 
     otp: {
       type: String,
@@ -209,9 +235,9 @@ const bookingSchema = new mongoose.Schema(
       default: false,
     },
 
-    // ===============================
-    // Live Technician Tracking
-    // ===============================
+    // =====================================================
+    // LIVE TECHNICIAN TRACKING
+    // =====================================================
 
     technicianLocation: {
       latitude: {
@@ -229,6 +255,10 @@ const bookingSchema = new mongoose.Schema(
         default: null,
       },
     },
+
+    // =====================================================
+    // TRACKING STATUS
+    // =====================================================
 
     trackingActive: {
       type: Boolean,

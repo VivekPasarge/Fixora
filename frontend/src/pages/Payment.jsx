@@ -14,13 +14,11 @@ import Navbar from "../components/Navbar/Navbar";
 import api from "../api/axios";
 import "./Payment.css";
 
-// =========================================================
-// LOAD RAZORPAY CHECKOUT SCRIPT
-// =========================================================
-
+// ==========================================
+// Razorpay Script Loader
+// ==========================================
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
-    // Already loaded
     if (window.Razorpay) {
       resolve(true);
       return;
@@ -31,29 +29,24 @@ const loadRazorpayScript = () => {
     script.src =
       "https://checkout.razorpay.com/v1/checkout.js";
 
-    script.onload = () => {
-      resolve(true);
-    };
+    script.onload = () => resolve(true);
 
-    script.onerror = () => {
-      resolve(false);
-    };
+    script.onerror = () => resolve(false);
 
     document.body.appendChild(script);
   });
 };
 
-// =========================================================
-// PAYMENT COMPONENT
-// =========================================================
-
+// ==========================================
+// Payment Page
+// ==========================================
 const Payment = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // =======================================================
-  // STATE
-  // =======================================================
+  // ==========================================
+  // State
+  // ==========================================
 
   const [booking, setBooking] = useState(null);
 
@@ -61,16 +54,43 @@ const Payment = () => {
     useState("UPI");
 
   const [promoCode, setPromoCode] = useState("");
-  const [promoMessage, setPromoMessage] = useState("");
 
-  const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
+  const [promoMessage, setPromoMessage] =
+    useState("");
 
-  const [error, setError] = useState("");
+  const [loading, setLoading] =
+    useState(true);
 
-  // =======================================================
-  // FETCH BOOKING
-  // =======================================================
+  const [processing, setProcessing] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  // ==========================================
+  // Allowed Booking Statuses for Payment
+  // ==========================================
+
+  const paymentAllowedStatuses = [
+    "Accepted",
+    "On The Way",
+    "In Progress",
+    "Completed",
+  ];
+
+  // ==========================================
+  // Can Customer Pay?
+  // ==========================================
+
+  const canPay =
+    booking &&
+    paymentAllowedStatuses.includes(
+      booking.status
+    );
+
+  // ==========================================
+  // Fetch Booking
+  // ==========================================
 
   useEffect(() => {
     fetchBooking();
@@ -81,7 +101,8 @@ const Payment = () => {
       setLoading(true);
       setError("");
 
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
       if (!token) {
         setError("Please login again.");
@@ -97,7 +118,32 @@ const Payment = () => {
         }
       );
 
-      setBooking(response.data.booking);
+      const fetchedBooking =
+        response.data.booking;
+
+      setBooking(fetchedBooking);
+
+      // ==========================================
+      // Set Payment Method From Booking
+      // ==========================================
+
+      if (
+        fetchedBooking.paymentMethod ===
+        "UPI"
+      ) {
+        setPaymentMethod("UPI");
+      } else if (
+        fetchedBooking.paymentMethod ===
+          "Card" ||
+        fetchedBooking.paymentMethod ===
+          "Credit Card" ||
+        fetchedBooking.paymentMethod ===
+          "Debit Card"
+      ) {
+        setPaymentMethod("Credit Card");
+      } else {
+        setPaymentMethod("Cash on Service");
+      }
     } catch (error) {
       console.error(
         "Fetch Booking Error:",
@@ -113,31 +159,12 @@ const Payment = () => {
     }
   };
 
-  // =======================================================
-  // PAYMENT STATUS
-  // =======================================================
-
-  const paymentAllowedStatuses = [
-    "Accepted",
-    "On The Way",
-    "In Progress",
-    "Completed",
-  ];
-
-  const canPay =
-    booking &&
-    paymentAllowedStatuses.includes(
-      booking.status
-    );
-
-  // =======================================================
-  // CASH ON SERVICE
-  // =======================================================
+  // ==========================================
+  // Cash Payment
+  // ==========================================
 
   const handleCashPayment = async () => {
-    if (!booking) {
-      return;
-    }
+    if (!booking) return;
 
     try {
       setProcessing(true);
@@ -154,18 +181,22 @@ const Payment = () => {
       const response = await api.put(
         `/bookings/${booking._id}/pay`,
         {
-          paymentMethod: "Cash on Service",
+          paymentMethod:
+            "Cash on Service",
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization:
+              `Bearer ${token}`,
           },
         }
       );
 
       setBooking(response.data.booking);
 
-      setPaymentMethod("Cash on Service");
+      setPaymentMethod(
+        "Cash on Service"
+      );
     } catch (error) {
       console.error(
         "Cash Payment Error:",
@@ -180,13 +211,15 @@ const Payment = () => {
       setProcessing(false);
     }
   };
-
-  // =======================================================
-  // RAZORPAY PAYMENT
-  // =======================================================
+    // ==========================================
+  // Razorpay Payment
+  // ==========================================
 
   const handleRazorpayPayment = async () => {
     if (!booking) {
+      setError(
+        "Booking details are not available."
+      );
       return;
     }
 
@@ -194,61 +227,100 @@ const Payment = () => {
       setProcessing(true);
       setError("");
 
+      // ========================================
+      // Get JWT Token
+      // ========================================
+
       const token =
         localStorage.getItem("token");
 
       if (!token) {
         setError("Please login again.");
+        setProcessing(false);
         return;
       }
 
-      // ---------------------------------------------------
-      // Load Razorpay Checkout
-      // ---------------------------------------------------
+      // ========================================
+      // Load Razorpay Checkout Script
+      // ========================================
 
       const razorpayLoaded =
         await loadRazorpayScript();
 
       if (!razorpayLoaded) {
         setError(
-          "Unable to load Razorpay. Please check your internet connection and try again."
+          "Razorpay could not be loaded. Please check your internet connection and try again."
         );
 
         setProcessing(false);
         return;
       }
 
-      // ---------------------------------------------------
-      // Backend payment method
-      // ---------------------------------------------------
+      // ========================================
+      // Double Check Razorpay
+      // ========================================
+
+      if (!window.Razorpay) {
+        setError(
+          "Razorpay is not available. Please refresh the page and try again."
+        );
+
+        setProcessing(false);
+        return;
+      }
+
+      // ========================================
+      // Convert Frontend Payment Method
+      // To Backend Payment Method
+      // ========================================
 
       const backendPaymentMethod =
         paymentMethod === "Credit Card" ||
-        paymentMethod === "Debit Card"
+        paymentMethod === "Debit Card" ||
+        paymentMethod === "Card"
           ? "Card"
           : "UPI";
 
-      // ---------------------------------------------------
-      // Create Razorpay Order
-      // ---------------------------------------------------
+      console.log(
+        "Selected Payment Method:",
+        paymentMethod
+      );
 
-      const orderResponse =
-        await api.post(
-          "/payment/create-order",
-          {
-            bookingId: booking._id,
-            paymentMethod:
-              backendPaymentMethod,
+      console.log(
+        "Backend Payment Method:",
+        backendPaymentMethod
+      );
+
+      // ========================================
+      // Create Razorpay Order
+      // ========================================
+
+      const orderResponse = await api.post(
+        "/payment/create-order",
+        {
+          bookingId: booking._id,
+          paymentMethod:
+            backendPaymentMethod,
+        },
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        }
+      );
+
+      console.log(
+        "Create Order Response:",
+        orderResponse.data
+      );
 
       const orderData =
         orderResponse.data;
+
+      // ========================================
+      // Validate Order Response
+      // ========================================
 
       if (!orderData.success) {
         throw new Error(
@@ -257,9 +329,15 @@ const Payment = () => {
         );
       }
 
-      // ---------------------------------------------------
-      // Razorpay Options
-      // ---------------------------------------------------
+      if (!orderData.order?.id) {
+        throw new Error(
+          "Razorpay order ID was not received from the server."
+        );
+      }
+
+      // ========================================
+      // Razorpay Checkout Options
+      // ========================================
 
       const options = {
         key: orderData.keyId,
@@ -282,9 +360,11 @@ const Payment = () => {
           name:
             booking.customer?.name ||
             "",
+
           email:
             booking.customer?.email ||
             "",
+
           contact:
             booking.customer?.phone ||
             "",
@@ -300,13 +380,22 @@ const Payment = () => {
           color: "#2563eb",
         },
 
+        // ======================================
+        // Successful Payment
+        // ======================================
+
         handler: async function (
           response
         ) {
           try {
-            // ------------------------------------------------
-            // Verify payment on backend
-            // ------------------------------------------------
+            console.log(
+              "Razorpay Success Response:",
+              response
+            );
+
+            // ==================================
+            // Verify Payment With Backend
+            // ==================================
 
             const verifyResponse =
               await api.post(
@@ -326,10 +415,20 @@ const Payment = () => {
                 },
                 {
                   headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization:
+                      `Bearer ${token}`,
                   },
                 }
               );
+
+            console.log(
+              "Payment Verification Response:",
+              verifyResponse.data
+            );
+
+            // ==================================
+            // Verification Successful
+            // ==================================
 
             if (
               verifyResponse.data.success
@@ -339,11 +438,16 @@ const Payment = () => {
               );
 
               setError("");
+
+              // Payment is now actually Paid
+              setProcessing(false);
             } else {
               setError(
                 verifyResponse.data.message ||
                   "Payment verification failed."
               );
+
+              setProcessing(false);
             }
           } catch (error) {
             console.error(
@@ -353,15 +457,23 @@ const Payment = () => {
 
             setError(
               error.response?.data?.message ||
-                "Payment verification failed."
+                "Payment verification failed. Please contact support if money was deducted."
             );
-          } finally {
+
             setProcessing(false);
           }
         },
 
+        // ======================================
+        // Razorpay Modal Closed
+        // ======================================
+
         modal: {
           ondismiss: function () {
+            console.log(
+              "Razorpay checkout closed."
+            );
+
             setProcessing(false);
 
             setError(
@@ -371,12 +483,16 @@ const Payment = () => {
         },
       };
 
-      // ---------------------------------------------------
-      // Open Razorpay
-      // ---------------------------------------------------
+      // ========================================
+      // Create Razorpay Instance
+      // ========================================
 
       const razorpay =
         new window.Razorpay(options);
+
+      // ========================================
+      // Payment Failed
+      // ========================================
 
       razorpay.on(
         "payment.failed",
@@ -395,6 +511,10 @@ const Payment = () => {
         }
       );
 
+      // ========================================
+      // Open Razorpay Checkout
+      // ========================================
+
       razorpay.open();
     } catch (error) {
       console.error(
@@ -405,21 +525,27 @@ const Payment = () => {
       setError(
         error.response?.data?.message ||
           error.message ||
-          "Payment failed. Please try again."
+          "Unable to start Razorpay payment."
       );
 
       setProcessing(false);
     }
   };
-
-  // =======================================================
-  // HANDLE PAYMENT
-  // =======================================================
+    // ==========================================
+  // Main Payment Handler
+  // ==========================================
 
   const handlePayment = async () => {
     if (!booking) {
+      setError(
+        "Booking details are not available."
+      );
       return;
     }
+
+    // ========================================
+    // Already Paid
+    // ========================================
 
     if (
       booking.paymentStatus === "Paid"
@@ -427,17 +553,20 @@ const Payment = () => {
       return;
     }
 
+    // ========================================
+    // Check Booking Status
+    // ========================================
+
     if (!canPay) {
       setError(
         "Payment is available only after a technician accepts the booking."
       );
-
       return;
     }
 
-    // -----------------------------------------------------
+    // ========================================
     // Cash on Service
-    // -----------------------------------------------------
+    // ========================================
 
     if (
       paymentMethod ===
@@ -447,16 +576,16 @@ const Payment = () => {
       return;
     }
 
-    // -----------------------------------------------------
+    // ========================================
     // UPI / Card
-    // -----------------------------------------------------
+    // ========================================
 
     await handleRazorpayPayment();
   };
 
-  // =======================================================
-  // PROMO CODE
-  // =======================================================
+  // ==========================================
+  // Promo Code
+  // ==========================================
 
   const handlePromo = () => {
     const code =
@@ -466,7 +595,6 @@ const Payment = () => {
       setPromoMessage(
         "Please enter a promo code."
       );
-
       return;
     }
 
@@ -475,589 +603,763 @@ const Payment = () => {
     );
   };
 
-  // =======================================================
-  // LOADING
-  // =======================================================
-
-  if (loading) {
-    return (
-      <>
-        <Navbar />
-
-        <div className="payment-loading">
-          Loading payment details...
-        </div>
-      </>
-    );
-  }
-
-  // =======================================================
-  // ERROR / BOOKING NOT FOUND
-  // =======================================================
-
-  if (error && !booking) {
-    return (
-      <>
-        <Navbar />
-
-        <main className="payment-page">
-          <div className="payment-error-card">
-            <h2>
-              Unable to Load Payment
-            </h2>
-
-            <p>{error}</p>
-
-            <button
-              type="button"
-              onClick={fetchBooking}
-              className="retry-payment-btn"
-            >
-              Try Again
-            </button>
-          </div>
-        </main>
-      </>
-    );
-  }
-
-  // =======================================================
-  // BOOKING NOT FOUND
-  // =======================================================
-
-  if (!booking) {
-    return (
-      <>
-        <Navbar />
-
-        <div className="payment-loading">
-          Booking not found.
-        </div>
-      </>
-    );
-  }
-
-  // =======================================================
-  // PAGE
-  // =======================================================
+    // ==========================================
+  // Main JSX
+  // ==========================================
 
   return (
     <>
       <Navbar />
 
-      <main className="payment-page">
+      <div className="payment-page">
         <div className="payment-container">
 
-          {/* BACK */}
+          {/* ==================================
+              Back Button
+          ================================== */}
 
           <Link
-            to={`/track-booking/${booking._id}`}
-            className="back-btn"
+            to={`/booking/${booking._id}`}
+            className="back-payment"
           >
             <FiArrowLeft />
             Back to Booking
           </Link>
 
-          {/* HEADER */}
+          {/* ==================================
+              Page Header
+          ================================== */}
 
           <motion.div
             className="payment-header"
             initial={{
               opacity: 0,
-              y: 25,
+              y: -20,
             }}
             animate={{
               opacity: 1,
               y: 0,
             }}
-            transition={{
-              duration: 0.5,
-            }}
           >
-            <div className="payment-header-icon">
-              <FiCreditCard />
-            </div>
-
             <div>
-              <h1>Payment</h1>
+              <h1>
+                Complete Payment
+              </h1>
 
               <p>
-                Complete your payment securely.
+                Choose your preferred payment
+                method to complete your booking.
               </p>
             </div>
+
+            <div className="payment-secure">
+              <FiCheckCircle />
+
+              <span>
+                Secure Payment
+              </span>
+            </div>
           </motion.div>
 
-          {/* ERROR */}
+          {/* ==================================
+              Error Message
+          ================================== */}
 
           {error && (
-            <div className="payment-error-message">
+            <motion.div
+              className="payment-alert error"
+              initial={{
+                opacity: 0,
+                y: -10,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+            >
               {error}
-            </div>
+            </motion.div>
           )}
 
-          {/* PAYMENT NOT AVAILABLE */}
+          <div className="payment-grid">
 
-          {!canPay &&
-            booking.paymentStatus !==
-              "Paid" && (
-              <div className="payment-error-message">
-                Payment will be available after
-                a technician accepts your booking.
-              </div>
-            )}
+            {/* ==================================
+                LEFT SIDE
+            ================================== */}
 
-          {/* =================================================
-              ORDER SUMMARY
-          ================================================= */}
+            <div className="payment-main">
 
-          <motion.div
-            className="summary-card"
-            initial={{
-              opacity: 0,
-            }}
-            animate={{
-              opacity: 1,
-            }}
-            transition={{
-              delay: 0.2,
-            }}
-          >
-            <div className="summary-title">
-              <FiFileText />
+              {/* =================================
+                  Booking Summary
+              ================================= */}
 
-              <h2>
-                Order Summary
-              </h2>
-            </div>
-
-            <div className="summary-row">
-              <span>Booking ID</span>
-
-              <strong>
-                {booking.bookingId ||
-                  booking._id}
-              </strong>
-            </div>
-
-            <div className="summary-row">
-              <span>Service</span>
-
-              <strong>
-                {booking.service?.name ||
-                  "Home Service"}
-              </strong>
-            </div>
-
-            <div className="summary-row">
-              <span>Booking Date</span>
-
-              <strong>
-                {booking.bookingDate
-                  ? new Date(
-                      booking.bookingDate
-                    ).toLocaleDateString()
-                  : "N/A"}
-              </strong>
-            </div>
-
-            <div className="summary-row">
-              <span>Booking Time</span>
-
-              <strong>
-                {booking.bookingTime ||
-                  "N/A"}
-              </strong>
-            </div>
-
-            <div className="summary-row">
-              <span>Payment Method</span>
-
-              <strong>
-                {booking.paymentMethod ||
-                  paymentMethod ||
-                  "Not selected"}
-              </strong>
-            </div>
-
-            <div className="summary-row">
-              <span>Payment Status</span>
-
-              <strong
-                className={
-                  booking.paymentStatus ===
-                  "Paid"
-                    ? "payment-status-paid"
-                    : "payment-status-pending"
-                }
-              >
-                {booking.paymentStatus ||
-                  "Pending"}
-              </strong>
-            </div>
-
-            <hr />
-
-            <div className="summary-total">
-              <span>Total Amount</span>
-
-              <strong>
-                ₹{booking.price || 0}
-              </strong>
-            </div>
-          </motion.div>
-
-          {/* =================================================
-              PAYMENT CARD
-          ================================================= */}
-
-          <motion.div
-            className="payment-card"
-            initial={{
-              opacity: 0,
-              y: 30,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            transition={{
-              delay: 0.3,
-            }}
-          >
-            <div className="payment-title">
-              <FiCreditCard />
-
-              <h2>
-                Select Payment Method
-              </h2>
-            </div>
-
-            {/* PAYMENT OPTIONS */}
-
-            <div className="payment-options">
-
-              {/* UPI */}
-
-              <label
-                className={`payment-option ${
-                  paymentMethod === "UPI"
-                    ? "selected"
-                    : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  value="UPI"
-                  checked={
-                    paymentMethod === "UPI"
-                  }
-                  onChange={(e) =>
-                    setPaymentMethod(
-                      e.target.value
-                    )
-                  }
-                  disabled={
-                    booking.paymentStatus ===
-                      "Paid" ||
-                    !canPay ||
-                    processing
-                  }
-                />
-
-                <span>
-                  UPI / QR
-                </span>
-              </label>
-
-              {/* CREDIT CARD */}
-
-              <label
-                className={`payment-option ${
-                  paymentMethod ===
-                  "Credit Card"
-                    ? "selected"
-                    : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  value="Credit Card"
-                  checked={
-                    paymentMethod ===
-                    "Credit Card"
-                  }
-                  onChange={(e) =>
-                    setPaymentMethod(
-                      e.target.value
-                    )
-                  }
-                  disabled={
-                    booking.paymentStatus ===
-                      "Paid" ||
-                    !canPay ||
-                    processing
-                  }
-                />
-
-                <span>
-                  Credit Card
-                </span>
-              </label>
-
-              {/* DEBIT CARD */}
-
-              <label
-                className={`payment-option ${
-                  paymentMethod ===
-                  "Debit Card"
-                    ? "selected"
-                    : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  value="Debit Card"
-                  checked={
-                    paymentMethod ===
-                    "Debit Card"
-                  }
-                  onChange={(e) =>
-                    setPaymentMethod(
-                      e.target.value
-                    )
-                  }
-                  disabled={
-                    booking.paymentStatus ===
-                      "Paid" ||
-                    !canPay ||
-                    processing
-                  }
-                />
-
-                <span>
-                  Debit Card
-                </span>
-              </label>
-
-              {/* CASH ON SERVICE */}
-
-              <label
-                className={`payment-option ${
-                  paymentMethod ===
-                  "Cash on Service"
-                    ? "selected"
-                    : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  value="Cash on Service"
-                  checked={
-                    paymentMethod ===
-                    "Cash on Service"
-                  }
-                  onChange={(e) =>
-                    setPaymentMethod(
-                      e.target.value
-                    )
-                  }
-                  disabled={
-                    booking.paymentStatus ===
-                      "Paid" ||
-                    !canPay ||
-                    processing
-                  }
-                />
-
-                <span>
-                  Cash on Service
-                </span>
-              </label>
-            </div>
-
-            {/* =================================================
-                RAZORPAY INFORMATION
-            ================================================= */}
-
-            {paymentMethod !==
-              "Cash on Service" &&
-              booking.paymentStatus !==
-                "Paid" &&
-              canPay && (
-                <div
-                  style={{
-                    marginTop: "15px",
-                    padding: "14px 16px",
-                    borderRadius: "10px",
-                    background:
-                      "#f8fafc",
-                    border:
-                      "1px solid #e2e8f0",
-                    fontSize: "14px",
-                    lineHeight: "1.5",
-                  }}
-                >
-                  <strong>
-                    Secure online payment
-                  </strong>
-
-                  <br />
-
-                  UPI payments may include
-                  QR scan, UPI ID or supported
-                  UPI options inside Razorpay.
-                  Card payments are also
-                  supported.
-                </div>
-              )}
-
-            {/* =================================================
-                PROMO
-            ================================================= */}
-
-            <div className="promo-section">
-              <label className="promo-label">
-                Promo Code
-              </label>
-
-              <div className="promo-box">
-                <FiTag />
-
-                <input
-                  type="text"
-                  className="promo-input"
-                  placeholder="Enter Promo Code"
-                  value={promoCode}
-                  onChange={(e) => {
-                    setPromoCode(
-                      e.target.value
-                    );
-
-                    setPromoMessage("");
-                  }}
-                  disabled={
-                    booking.paymentStatus ===
-                      "Paid" ||
-                    !canPay ||
-                    processing
-                  }
-                />
-
-                <button
-                  type="button"
-                  className="apply-btn"
-                  onClick={handlePromo}
-                  disabled={
-                    booking.paymentStatus ===
-                      "Paid" ||
-                    !canPay ||
-                    processing
-                  }
-                >
-                  Apply
-                </button>
-              </div>
-
-              {promoMessage && (
-                <p className="promo-message">
-                  {promoMessage}
-                </p>
-              )}
-            </div>
-
-            {/* =================================================
-                PAY BUTTON
-            ================================================= */}
-
-            <button
-              type="button"
-              className="pay-btn"
-              onClick={handlePayment}
-              disabled={
-                processing ||
-                booking.paymentStatus ===
-                  "Paid" ||
-                !canPay
-              }
-            >
-              {booking.paymentStatus ===
-              "Paid" ? (
-                <>
-                  <FiCheckCircle />
-
-                  Payment Completed
-                </>
-              ) : processing ? (
-                "Opening Secure Payment..."
-              ) : paymentMethod ===
-                "Cash on Service" ? (
-                `Confirm Cash ₹${
-                  booking.price || 0
-                }`
-              ) : (
-                `Pay ₹${
-                  booking.price || 0
-                } Securely`
-              )}
-            </button>
-
-            {/* =================================================
-                SUCCESS
-            ================================================= */}
-
-            {booking.paymentStatus ===
-              "Paid" && (
               <motion.div
+                className="payment-card booking-summary"
                 initial={{
                   opacity: 0,
-                  y: 10,
+                  y: 20,
                 }}
                 animate={{
                   opacity: 1,
                   y: 0,
                 }}
-                className="payment-success"
               >
-                <div className="payment-success-icon">
-                  <FiCheckCircle />
+                <div className="section-title">
+                  <FiFileText />
+
+                  <h2>
+                    Booking Summary
+                  </h2>
                 </div>
 
-                <h3>
-                  Payment Successful
-                </h3>
+                <div className="booking-summary-content">
 
-                <p>
-                  Thank you for choosing
-                  Fixora.
-                </p>
+                  <div className="summary-row">
+                    <span>
+                      Service
+                    </span>
 
-                {booking.razorpayPaymentId && (
-                  <p>
-                    Payment ID:{" "}
                     <strong>
-                      {
-                        booking.razorpayPaymentId
-                      }
+                      {booking.service?.name ||
+                        booking.serviceName ||
+                        "Home Service"}
                     </strong>
+                  </div>
+
+                  <div className="summary-row">
+                    <span>
+                      Booking ID
+                    </span>
+
+                    <strong>
+                      {booking.bookingId ||
+                        booking._id}
+                    </strong>
+                  </div>
+
+                  <div className="summary-row">
+                    <span>
+                      Date
+                    </span>
+
+                    <strong>
+                      {booking.date
+                        ? new Date(
+                            booking.date
+                          ).toLocaleDateString(
+                            "en-IN"
+                          )
+                        : "Not available"}
+                    </strong>
+                  </div>
+
+                  <div className="summary-row">
+                    <span>
+                      Time
+                    </span>
+
+                    <strong>
+                      {booking.time ||
+                        "Not available"}
+                    </strong>
+                  </div>
+
+                  <div className="summary-row">
+                    <span>
+                      Technician
+                    </span>
+
+                    <strong>
+                      {booking.technician?.name ||
+                        booking.technicianName ||
+                        "Assigned Technician"}
+                    </strong>
+                  </div>
+
+                </div>
+              </motion.div>
+
+              {/* =================================
+                  Payment Status
+              ================================= */}
+
+              <motion.div
+                className="payment-card payment-status-card"
+                initial={{
+                  opacity: 0,
+                  y: 20,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                transition={{
+                  delay: 0.1,
+                }}
+              >
+                <div className="section-title">
+                  <FiCheckCircle />
+
+                  <h2>
+                    Payment Status
+                  </h2>
+                </div>
+
+                <div className="payment-status-display">
+
+                  <span>
+                    Current Status
+                  </span>
+
+                  <strong
+                    className={
+                      booking.paymentStatus ===
+                      "Paid"
+                        ? "status-paid"
+                        : "status-pending"
+                    }
+                  >
+                    {booking.paymentStatus ||
+                      "Pending"}
+                  </strong>
+
+                </div>
+              </motion.div>
+
+              {/* =================================
+                  Payment Methods
+              ================================= */}
+
+              <motion.div
+                className="payment-card"
+                initial={{
+                  opacity: 0,
+                  y: 20,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                transition={{
+                  delay: 0.2,
+                }}
+              >
+                <div className="section-title">
+                  <FiCreditCard />
+
+                  <h2>
+                    Payment Method
+                  </h2>
+                </div>
+
+                <div className="payment-methods">
+
+                  {/* =================================
+                      UPI
+                  ================================= */}
+
+                  <label
+                    className={`payment-method-option ${
+                      paymentMethod === "UPI"
+                        ? "selected"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="UPI"
+                      checked={
+                        paymentMethod ===
+                        "UPI"
+                      }
+                      onChange={(e) =>
+                        setPaymentMethod(
+                          e.target.value
+                        )
+                      }
+                      disabled={
+                        processing ||
+                        booking.paymentStatus ===
+                          "Paid" ||
+                        !canPay
+                      }
+                    />
+
+                    <div className="payment-method-content">
+
+                      <div className="payment-method-icon">
+                        <span>
+                          UPI
+                        </span>
+                      </div>
+
+                      <div>
+                        <h3>
+                          UPI
+                        </h3>
+
+                        <p>
+                          Pay using Google Pay,
+                          PhonePe, Paytm or any
+                          supported UPI app.
+                        </p>
+                      </div>
+
+                    </div>
+
+                    {paymentMethod ===
+                      "UPI" && (
+                      <FiCheckCircle className="method-check" />
+                    )}
+                  </label>
+
+                  {/* =================================
+                      Credit Card
+                  ================================= */}
+
+                  <label
+                    className={`payment-method-option ${
+                      paymentMethod ===
+                      "Credit Card"
+                        ? "selected"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="Credit Card"
+                      checked={
+                        paymentMethod ===
+                        "Credit Card"
+                      }
+                      onChange={(e) =>
+                        setPaymentMethod(
+                          e.target.value
+                        )
+                      }
+                      disabled={
+                        processing ||
+                        booking.paymentStatus ===
+                          "Paid" ||
+                        !canPay
+                      }
+                    />
+
+                    <div className="payment-method-content">
+
+                      <div className="payment-method-icon">
+                        <FiCreditCard />
+                      </div>
+
+                      <div>
+                        <h3>
+                          Credit Card
+                        </h3>
+
+                        <p>
+                          Pay securely using
+                          your credit card.
+                        </p>
+                      </div>
+
+                    </div>
+
+                    {paymentMethod ===
+                      "Credit Card" && (
+                      <FiCheckCircle className="method-check" />
+                    )}
+                  </label>
+
+                  {/* =================================
+                      Debit Card
+                  ================================= */}
+
+                  <label
+                    className={`payment-method-option ${
+                      paymentMethod ===
+                      "Debit Card"
+                        ? "selected"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="Debit Card"
+                      checked={
+                        paymentMethod ===
+                        "Debit Card"
+                      }
+                      onChange={(e) =>
+                        setPaymentMethod(
+                          e.target.value
+                        )
+                      }
+                      disabled={
+                        processing ||
+                        booking.paymentStatus ===
+                          "Paid" ||
+                        !canPay
+                      }
+                    />
+
+                    <div className="payment-method-content">
+
+                      <div className="payment-method-icon">
+                        <FiCreditCard />
+                      </div>
+
+                      <div>
+                        <h3>
+                          Debit Card
+                        </h3>
+
+                        <p>
+                          Pay securely using
+                          your debit card.
+                        </p>
+                      </div>
+
+                    </div>
+
+                    {paymentMethod ===
+                      "Debit Card" && (
+                      <FiCheckCircle className="method-check" />
+                    )}
+                  </label>
+
+                  {/* =================================
+                      Cash on Service
+                  ================================= */}
+
+                  <label
+                    className={`payment-method-option ${
+                      paymentMethod ===
+                      "Cash on Service"
+                        ? "selected"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="Cash on Service"
+                      checked={
+                        paymentMethod ===
+                        "Cash on Service"
+                      }
+                      onChange={(e) =>
+                        setPaymentMethod(
+                          e.target.value
+                        )
+                      }
+                      disabled={
+                        processing ||
+                        booking.paymentStatus ===
+                          "Paid" ||
+                        !canPay
+                      }
+                    />
+
+                    <div className="payment-method-content">
+
+                      <div className="payment-method-icon">
+                        ₹
+                      </div>
+
+                      <div>
+                        <h3>
+                          Cash on Service
+                        </h3>
+
+                        <p>
+                          Pay directly to the
+                          technician after the
+                          service.
+                        </p>
+                      </div>
+
+                    </div>
+
+                    {paymentMethod ===
+                      "Cash on Service" && (
+                      <FiCheckCircle className="method-check" />
+                    )}
+                  </label>
+
+                </div>
+
+                {/* =================================
+                    Razorpay Information
+                ================================= */}
+
+                {paymentMethod !==
+                  "Cash on Service" &&
+                  booking.paymentStatus !==
+                    "Paid" && (
+                    <div className="razorpay-info">
+
+                      <FiCheckCircle />
+
+                      <div>
+                        <strong>
+                          Secure online payment
+                        </strong>
+
+                        <p>
+                          You will be redirected
+                          to Razorpay's secure
+                          checkout after clicking
+                          the payment button.
+                        </p>
+                      </div>
+
+                    </div>
+                  )}
+
+              </motion.div>
+
+              {/* =================================
+                  Promo Code
+              ================================= */}
+
+              <motion.div
+                className="payment-card promo-card"
+                initial={{
+                  opacity: 0,
+                  y: 20,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                transition={{
+                  delay: 0.3,
+                }}
+              >
+                <div className="section-title">
+                  <FiTag />
+
+                  <h2>
+                    Promo Code
+                  </h2>
+                </div>
+
+                <div className="promo-input-row">
+
+                  <input
+                    type="text"
+                    placeholder="Enter promo code"
+                    value={promoCode}
+                    onChange={(e) => {
+                      setPromoCode(
+                        e.target.value
+                      );
+                      setPromoMessage("");
+                    }}
+                    disabled={
+                      processing ||
+                      booking.paymentStatus ===
+                        "Paid"
+                    }
+                  />
+
+                  <button
+                    type="button"
+                    onClick={handlePromo}
+                    disabled={
+                      processing ||
+                      booking.paymentStatus ===
+                        "Paid"
+                    }
+                  >
+                    Apply
+                  </button>
+
+                </div>
+
+                {promoMessage && (
+                  <p className="promo-message">
+                    {promoMessage}
                   </p>
                 )}
 
+              </motion.div>
+
+            </div>
+
+            {/* ==================================
+                RIGHT SIDE
+            ================================== */}
+
+            <motion.div
+              className="payment-sidebar"
+              initial={{
+                opacity: 0,
+                x: 20,
+              }}
+              animate={{
+                opacity: 1,
+                x: 0,
+              }}
+            >
+
+              <div className="payment-card price-card">
+
+                <div className="section-title">
+                  <FiFileText />
+
+                  <h2>
+                    Payment Summary
+                  </h2>
+                </div>
+
+                <div className="price-details">
+
+                  <div className="price-row">
+                    <span>
+                      Service Charge
+                    </span>
+
+                    <strong>
+                      ₹
+                      {booking.price || 0}
+                    </strong>
+                  </div>
+
+                  <div className="price-row">
+                    <span>
+                      Platform Fee
+                    </span>
+
+                    <strong>
+                      ₹0
+                    </strong>
+                  </div>
+
+                  <div className="price-divider"></div>
+
+                  <div className="price-total">
+                    <span>
+                      Total Amount
+                    </span>
+
+                    <strong>
+                      ₹
+                      {booking.price || 0}
+                    </strong>
+                  </div>
+
+                </div>
+
+                {/* =================================
+                    Pay Button
+                ================================= */}
+
                 <button
                   type="button"
-                  className="back-dashboard-btn"
-                  onClick={() =>
-                    navigate(
-                      "/customer-dashboard"
-                    )
+                  className="pay-btn"
+                  onClick={
+                    handlePayment
+                  }
+                  disabled={
+                    processing ||
+                    booking.paymentStatus ===
+                      "Paid" ||
+                    !canPay
                   }
                 >
-                  Go to Dashboard
+                  {booking.paymentStatus ===
+                  "Paid" ? (
+                    <>
+                      <FiCheckCircle />
+
+                      Payment Completed
+                    </>
+                  ) : processing ? (
+                    "Opening Secure Payment..."
+                  ) : paymentMethod ===
+                    "Cash on Service" ? (
+                    `Confirm Cash ₹${
+                      booking.price || 0
+                    }`
+                  ) : (
+                    `Pay ₹${
+                      booking.price || 0
+                    } Securely`
+                  )}
                 </button>
-              </motion.div>
-            )}
-          </motion.div>
+
+                {/* =================================
+                    Payment Restriction
+                ================================= */}
+
+                {!canPay &&
+                  booking.paymentStatus !==
+                    "Paid" && (
+                    <p className="payment-note">
+                      Payment will be available
+                      after a technician accepts
+                      your booking.
+                    </p>
+                  )}
+
+                {/* =================================
+                    Paid Message
+                ================================= */}
+
+                {booking.paymentStatus ===
+                  "Paid" && (
+                  <div className="paid-message">
+
+                    <FiCheckCircle />
+
+                    <div>
+                      <strong>
+                        Payment Successful
+                      </strong>
+
+                      <p>
+                        Your payment has been
+                        successfully verified.
+                      </p>
+                    </div>
+
+                  </div>
+                )}
+
+              </div>
+
+              {/* ==================================
+                  Security Card
+              ================================== */}
+
+              <div className="payment-card security-card">
+
+                <FiCheckCircle />
+
+                <div>
+                  <h3>
+                    Secure Payment
+                  </h3>
+
+                  <p>
+                    Your payment is processed
+                    securely through Razorpay.
+                    Fixora does not store your
+                    card or UPI credentials.
+                  </p>
+                </div>
+
+              </div>
+
+            </motion.div>
+
+          </div>
         </div>
-      </main>
+      </div>
     </>
   );
 };

@@ -8,11 +8,10 @@ const router = express.Router();
 
 const {
   protect,
-  authorizeRoles,
 } = require("../middleware/authMiddleware");
 
 // ==========================================
-// Controllers
+// Controller
 // ==========================================
 
 const {
@@ -22,28 +21,28 @@ const {
 
 // ==========================================
 // CREATE RAZORPAY ORDER
+// POST /api/payment/create-order
 // ==========================================
 
 router.post(
   "/create-order",
   protect,
-  authorizeRoles("customer"),
   createRazorpayOrder
 );
 
 // ==========================================
 // VERIFY RAZORPAY PAYMENT
+// POST /api/payment/verify
 // ==========================================
 
 router.post(
   "/verify",
   protect,
-  authorizeRoles("customer"),
   verifyRazorpayPayment
 );
 
 // ==========================================
-// EXPORT
+// Export
 // ==========================================
 
 module.exports = router;

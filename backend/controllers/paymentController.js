@@ -9,7 +9,10 @@ const razorpay = require("../config/razorpay");
 
 const createRazorpayOrder = async (req, res) => {
   try {
-    const { bookingId, paymentMethod } = req.body;
+    const {
+      bookingId,
+      paymentMethod,
+    } = req.body;
 
     // -----------------------------------------------------
     // Validate booking ID
@@ -31,10 +34,15 @@ const createRazorpayOrder = async (req, res) => {
       "Card",
     ];
 
-    if (!validPaymentMethods.includes(paymentMethod)) {
+    if (
+      !validPaymentMethods.includes(
+        paymentMethod
+      )
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid online payment method",
+        message:
+          "Invalid online payment method",
       });
     }
 
@@ -42,7 +50,8 @@ const createRazorpayOrder = async (req, res) => {
     // Find booking
     // -----------------------------------------------------
 
-    const booking = await Booking.findById(bookingId);
+    const booking =
+      await Booking.findById(bookingId);
 
     if (!booking) {
       return res.status(404).json({
@@ -76,7 +85,11 @@ const createRazorpayOrder = async (req, res) => {
       "Completed",
     ];
 
-    if (!allowedStatuses.includes(booking.status)) {
+    if (
+      !allowedStatuses.includes(
+        booking.status
+      )
+    ) {
       return res.status(400).json({
         success: false,
         message:
@@ -85,13 +98,16 @@ const createRazorpayOrder = async (req, res) => {
     }
 
     // -----------------------------------------------------
-    // Check existing payment
+    // Prevent paying an already-paid booking
     // -----------------------------------------------------
 
-    if (booking.paymentStatus === "Paid") {
+    if (
+      booking.paymentStatus === "Paid"
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Payment has already been completed",
+        message:
+          "Payment has already been completed",
       });
     }
 
@@ -99,20 +115,26 @@ const createRazorpayOrder = async (req, res) => {
     // Validate booking price
     // -----------------------------------------------------
 
-    const amount = Number(booking.price);
+    const amount =
+      Number(booking.price);
 
-    if (!amount || amount <= 0) {
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid booking amount",
+        message:
+          "Invalid booking amount",
       });
     }
 
     // -----------------------------------------------------
-    // Convert rupees to paise
+    // Convert INR to paise
     // -----------------------------------------------------
 
-    const amountInPaise = Math.round(amount * 100);
+    const amountInPaise =
+      Math.round(amount * 100);
 
     // -----------------------------------------------------
     // Create Razorpay order
@@ -120,20 +142,30 @@ const createRazorpayOrder = async (req, res) => {
 
     const options = {
       amount: amountInPaise,
+
       currency: "INR",
 
-      receipt: booking.bookingId,
+      receipt:
+        booking.bookingId,
 
       notes: {
-        bookingId: booking._id.toString(),
-        fixoraBookingId: booking.bookingId,
-        customerId: booking.customer.toString(),
+        bookingId:
+          booking._id.toString(),
+
+        fixoraBookingId:
+          booking.bookingId,
+
+        customerId:
+          booking.customer.toString(),
+
         paymentMethod,
       },
     };
 
     const razorpayOrder =
-      await razorpay.orders.create(options);
+      await razorpay.orders.create(
+        options
+      );
 
     // -----------------------------------------------------
     // Save Razorpay order information
@@ -145,12 +177,16 @@ const createRazorpayOrder = async (req, res) => {
     booking.paymentMethod =
       paymentMethod;
 
-    booking.paymentStatus = "Pending";
+    // IMPORTANT:
+    // Creating an order DOES NOT mean payment is paid.
+
+    booking.paymentStatus =
+      "Pending";
 
     await booking.save();
 
     // -----------------------------------------------------
-    // Response
+    // Send response
     // -----------------------------------------------------
 
     return res.status(200).json({
@@ -161,14 +197,22 @@ const createRazorpayOrder = async (req, res) => {
 
       order: {
         id: razorpayOrder.id,
-        amount: razorpayOrder.amount,
-        currency: razorpayOrder.currency,
+
+        amount:
+          razorpayOrder.amount,
+
+        currency:
+          razorpayOrder.currency,
       },
 
       booking: {
         id: booking._id,
-        bookingId: booking.bookingId,
-        price: booking.price,
+
+        bookingId:
+          booking.bookingId,
+
+        price:
+          booking.price,
       },
 
       keyId:
@@ -182,6 +226,7 @@ const createRazorpayOrder = async (req, res) => {
 
     return res.status(500).json({
       success: false,
+
       message:
         error.error?.description ||
         error.message ||
@@ -218,6 +263,7 @@ const verifyRazorpayPayment = async (
     ) {
       return res.status(400).json({
         success: false,
+
         message:
           "Payment verification data is incomplete",
       });
@@ -227,9 +273,10 @@ const verifyRazorpayPayment = async (
     // Find booking
     // -----------------------------------------------------
 
-    const booking = await Booking.findById(
-      bookingId
-    );
+    const booking =
+      await Booking.findById(
+        bookingId
+      );
 
     if (!booking) {
       return res.status(404).json({
@@ -253,7 +300,7 @@ const verifyRazorpayPayment = async (
     }
 
     // -----------------------------------------------------
-    // Verify order ID
+    // Check Razorpay order ID
     // -----------------------------------------------------
 
     if (
@@ -262,13 +309,14 @@ const verifyRazorpayPayment = async (
     ) {
       return res.status(400).json({
         success: false,
+
         message:
           "Razorpay order does not match this booking",
       });
     }
 
     // -----------------------------------------------------
-    // Generate Razorpay signature
+    // Generate expected signature
     // -----------------------------------------------------
 
     const generatedSignature =
@@ -278,21 +326,25 @@ const verifyRazorpayPayment = async (
           process.env.RAZORPAY_KEY_SECRET
         )
         .update(
-          razorpay_order_id +
-            "|" +
-            razorpay_payment_id
+          `${razorpay_order_id}|${razorpay_payment_id}`
         )
         .digest("hex");
 
     // -----------------------------------------------------
-    // Compare signatures safely
+    // Safe signature comparison
     // -----------------------------------------------------
 
     const generatedBuffer =
-      Buffer.from(generatedSignature);
+      Buffer.from(
+        generatedSignature,
+        "utf8"
+      );
 
     const receivedBuffer =
-      Buffer.from(razorpay_signature);
+      Buffer.from(
+        razorpay_signature,
+        "utf8"
+      );
 
     if (
       generatedBuffer.length !==
@@ -300,6 +352,7 @@ const verifyRazorpayPayment = async (
     ) {
       return res.status(400).json({
         success: false,
+
         message:
           "Payment signature verification failed",
       });
@@ -314,6 +367,7 @@ const verifyRazorpayPayment = async (
     if (!signaturesMatch) {
       return res.status(400).json({
         success: false,
+
         message:
           "Payment signature verification failed",
       });
@@ -323,23 +377,26 @@ const verifyRazorpayPayment = async (
     // Prevent duplicate payment
     // -----------------------------------------------------
 
-    if (booking.paymentStatus === "Paid") {
+    if (
+      booking.paymentStatus ===
+      "Paid"
+    ) {
       return res.status(200).json({
         success: true,
+
         message:
           "Payment has already been verified",
+
         booking,
       });
     }
 
     // -----------------------------------------------------
-    // Mark booking as paid
+    // MARK PAYMENT AS PAID
     // -----------------------------------------------------
 
-    booking.paymentStatus = "Paid";
-
-    // Keep the payment method selected
-    // while creating the Razorpay order.
+    booking.paymentStatus =
+      "Paid";
 
     booking.razorpayPaymentId =
       razorpay_payment_id;
@@ -347,7 +404,8 @@ const verifyRazorpayPayment = async (
     booking.razorpaySignature =
       razorpay_signature;
 
-    booking.paidAt = new Date();
+    booking.paidAt =
+      new Date();
 
     await booking.save();
 
@@ -371,6 +429,7 @@ const verifyRazorpayPayment = async (
 
     return res.status(500).json({
       success: false,
+
       message:
         error.message ||
         "Payment verification failed",
