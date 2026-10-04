@@ -12,11 +12,13 @@ import {
 
 import Navbar from "../components/Navbar/Navbar";
 import api from "../api/axios";
+
 import "./Payment.css";
 
 // ==========================================
 // Razorpay Script Loader
 // ==========================================
+
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
     if (window.Razorpay) {
@@ -40,6 +42,7 @@ const loadRazorpayScript = () => {
 // ==========================================
 // Payment Page
 // ==========================================
+
 const Payment = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -58,17 +61,15 @@ const Payment = () => {
   const [promoMessage, setPromoMessage] =
     useState("");
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
   const [processing, setProcessing] =
     useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   // ==========================================
-  // Allowed Booking Statuses for Payment
+  // Allowed Booking Statuses
   // ==========================================
 
   const paymentAllowedStatuses = [
@@ -93,6 +94,12 @@ const Payment = () => {
   // ==========================================
 
   useEffect(() => {
+    if (!id) {
+      setError("Booking ID is missing.");
+      setLoading(false);
+      return;
+    }
+
     fetchBooking();
   }, [id]);
 
@@ -119,22 +126,35 @@ const Payment = () => {
       );
 
       const fetchedBooking =
-        response.data.booking;
+        response.data?.booking;
+
+      // ==========================================
+      // IMPORTANT
+      // Prevent null booking error
+      // ==========================================
+
+      if (!fetchedBooking) {
+        setBooking(null);
+
+        setError(
+          "Booking details could not be found."
+        );
+
+        return;
+      }
 
       setBooking(fetchedBooking);
 
       // ==========================================
-      // Set Payment Method From Booking
+      // Set Payment Method
       // ==========================================
 
       if (
-        fetchedBooking.paymentMethod ===
-        "UPI"
+        fetchedBooking.paymentMethod === "UPI"
       ) {
         setPaymentMethod("UPI");
       } else if (
-        fetchedBooking.paymentMethod ===
-          "Card" ||
+        fetchedBooking.paymentMethod === "Card" ||
         fetchedBooking.paymentMethod ===
           "Credit Card" ||
         fetchedBooking.paymentMethod ===
@@ -150,6 +170,8 @@ const Payment = () => {
         error
       );
 
+      setBooking(null);
+
       setError(
         error.response?.data?.message ||
           "Unable to load booking details."
@@ -164,7 +186,12 @@ const Payment = () => {
   // ==========================================
 
   const handleCashPayment = async () => {
-    if (!booking) return;
+    if (!booking?._id) {
+      setError(
+        "Booking details are not available."
+      );
+      return;
+    }
 
     try {
       setProcessing(true);
@@ -192,6 +219,12 @@ const Payment = () => {
         }
       );
 
+      if (!response.data?.booking) {
+        throw new Error(
+          "Booking information was not returned."
+        );
+      }
+
       setBooking(response.data.booking);
 
       setPaymentMethod(
@@ -211,332 +244,323 @@ const Payment = () => {
       setProcessing(false);
     }
   };
-    // ==========================================
+
+  // ==========================================
   // Razorpay Payment
   // ==========================================
 
-  const handleRazorpayPayment = async () => {
-    if (!booking) {
-      setError(
-        "Booking details are not available."
-      );
-      return;
-    }
-
-    try {
-      setProcessing(true);
-      setError("");
-
-      // ========================================
-      // Get JWT Token
-      // ========================================
-
-      const token =
-        localStorage.getItem("token");
-
-      if (!token) {
-        setError("Please login again.");
-        setProcessing(false);
-        return;
-      }
-
-      // ========================================
-      // Load Razorpay Checkout Script
-      // ========================================
-
-      const razorpayLoaded =
-        await loadRazorpayScript();
-
-      if (!razorpayLoaded) {
+  const handleRazorpayPayment =
+    async () => {
+      if (!booking?._id) {
         setError(
-          "Razorpay could not be loaded. Please check your internet connection and try again."
+          "Booking details are not available."
         );
-
-        setProcessing(false);
         return;
       }
 
-      // ========================================
-      // Double Check Razorpay
-      // ========================================
+      try {
+        setProcessing(true);
+        setError("");
 
-      if (!window.Razorpay) {
-        setError(
-          "Razorpay is not available. Please refresh the page and try again."
-        );
+        // ======================================
+        // Token
+        // ======================================
 
-        setProcessing(false);
-        return;
-      }
+        const token =
+          localStorage.getItem("token");
 
-      // ========================================
-      // Convert Frontend Payment Method
-      // To Backend Payment Method
-      // ========================================
-
-      const backendPaymentMethod =
-        paymentMethod === "Credit Card" ||
-        paymentMethod === "Debit Card" ||
-        paymentMethod === "Card"
-          ? "Card"
-          : "UPI";
-
-      console.log(
-        "Selected Payment Method:",
-        paymentMethod
-      );
-
-      console.log(
-        "Backend Payment Method:",
-        backendPaymentMethod
-      );
-
-      // ========================================
-      // Create Razorpay Order
-      // ========================================
-
-      const orderResponse = await api.post(
-        "/payment/create-order",
-        {
-          bookingId: booking._id,
-          paymentMethod:
-            backendPaymentMethod,
-        },
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
+        if (!token) {
+          setError("Please login again.");
+          setProcessing(false);
+          return;
         }
-      );
-
-      console.log(
-        "Create Order Response:",
-        orderResponse.data
-      );
-
-      const orderData =
-        orderResponse.data;
-
-      // ========================================
-      // Validate Order Response
-      // ========================================
-
-      if (!orderData.success) {
-        throw new Error(
-          orderData.message ||
-            "Unable to create payment order."
-        );
-      }
-
-      if (!orderData.order?.id) {
-        throw new Error(
-          "Razorpay order ID was not received from the server."
-        );
-      }
-
-      // ========================================
-      // Razorpay Checkout Options
-      // ========================================
-
-      const options = {
-        key: orderData.keyId,
-
-        amount:
-          orderData.order.amount,
-
-        currency:
-          orderData.order.currency,
-
-        name: "Fixora",
-
-        description:
-          `${booking.service?.name || "Home Service"} Payment`,
-
-        order_id:
-          orderData.order.id,
-
-        prefill: {
-          name:
-            booking.customer?.name ||
-            "",
-
-          email:
-            booking.customer?.email ||
-            "",
-
-          contact:
-            booking.customer?.phone ||
-            "",
-        },
-
-        notes: {
-          bookingId:
-            booking.bookingId ||
-            booking._id,
-        },
-
-        theme: {
-          color: "#2563eb",
-        },
 
         // ======================================
-        // Successful Payment
+        // Load Razorpay
         // ======================================
 
-        handler: async function (
-          response
-        ) {
-          try {
-            console.log(
-              "Razorpay Success Response:",
-              response
-            );
+        const razorpayLoaded =
+          await loadRazorpayScript();
 
-            // ==================================
-            // Verify Payment With Backend
-            // ==================================
+        if (!razorpayLoaded) {
+          setError(
+            "Razorpay could not be loaded. Please check your internet connection and try again."
+          );
 
-            const verifyResponse =
-              await api.post(
-                "/payment/verify",
-                {
-                  razorpay_order_id:
-                    response.razorpay_order_id,
+          setProcessing(false);
+          return;
+        }
 
-                  razorpay_payment_id:
-                    response.razorpay_payment_id,
+        if (!window.Razorpay) {
+          setError(
+            "Razorpay is not available. Please refresh the page and try again."
+          );
 
-                  razorpay_signature:
-                    response.razorpay_signature,
+          setProcessing(false);
+          return;
+        }
 
-                  bookingId:
-                    booking._id,
-                },
-                {
-                  headers: {
-                    Authorization:
-                      `Bearer ${token}`,
+        // ======================================
+        // Backend Payment Method
+        // ======================================
+
+        const backendPaymentMethod =
+          paymentMethod === "Credit Card" ||
+          paymentMethod === "Debit Card" ||
+          paymentMethod === "Card"
+            ? "Card"
+            : "UPI";
+
+        // ======================================
+        // Create Razorpay Order
+        // ======================================
+
+        const orderResponse =
+          await api.post(
+            "/payment/create-order",
+            {
+              bookingId: booking._id,
+              paymentMethod:
+                backendPaymentMethod,
+            },
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+        const orderData =
+          orderResponse.data;
+
+        console.log(
+          "Create Order Response:",
+          orderData
+        );
+
+        // ======================================
+        // Validate Response
+        // ======================================
+
+        if (!orderData?.success) {
+          throw new Error(
+            orderData?.message ||
+              "Unable to create payment order."
+          );
+        }
+
+        if (!orderData?.order?.id) {
+          throw new Error(
+            "Razorpay order ID was not received from the server."
+          );
+        }
+
+        // ======================================
+        // Razorpay Options
+        // ======================================
+
+        const options = {
+          key: orderData.keyId,
+
+          amount:
+            orderData.order.amount,
+
+          currency:
+            orderData.order.currency,
+
+          name: "Fixora",
+
+          description:
+            `${booking.service?.name || "Home Service"} Payment`,
+
+          order_id:
+            orderData.order.id,
+
+          prefill: {
+            name:
+              booking.customer?.name || "",
+
+            email:
+              booking.customer?.email || "",
+
+            contact:
+              booking.customer?.phone || "",
+          },
+
+          notes: {
+            bookingId:
+              booking.bookingId ||
+              booking._id,
+          },
+
+          theme: {
+            color: "#2563eb",
+          },
+
+          // ====================================
+          // Successful Payment
+          // ====================================
+
+          handler: async function (
+            response
+          ) {
+            try {
+              console.log(
+                "Razorpay Success Response:",
+                response
+              );
+
+              // =================================
+              // Verify With Backend
+              // =================================
+
+              const verifyResponse =
+                await api.post(
+                  "/payment/verify",
+                  {
+                    razorpay_order_id:
+                      response.razorpay_order_id,
+
+                    razorpay_payment_id:
+                      response.razorpay_payment_id,
+
+                    razorpay_signature:
+                      response.razorpay_signature,
+
+                    bookingId:
+                      booking._id,
                   },
+                  {
+                    headers: {
+                      Authorization:
+                        `Bearer ${token}`,
+                    },
+                  }
+                );
+
+              console.log(
+                "Payment Verification Response:",
+                verifyResponse.data
+              );
+
+              // =================================
+              // Verification Successful
+              // =================================
+
+              if (
+                verifyResponse.data?.success
+              ) {
+                if (
+                  verifyResponse.data.booking
+                ) {
+                  setBooking(
+                    verifyResponse.data.booking
+                  );
                 }
+
+                setError("");
+
+                setProcessing(false);
+              } else {
+                setError(
+                  verifyResponse.data
+                    ?.message ||
+                    "Payment verification failed."
+                );
+
+                setProcessing(false);
+              }
+            } catch (error) {
+              console.error(
+                "Payment Verification Error:",
+                error
               );
 
-            console.log(
-              "Payment Verification Response:",
-              verifyResponse.data
-            );
-
-            // ==================================
-            // Verification Successful
-            // ==================================
-
-            if (
-              verifyResponse.data.success
-            ) {
-              setBooking(
-                verifyResponse.data.booking
-              );
-
-              setError("");
-
-              // Payment is now actually Paid
-              setProcessing(false);
-            } else {
               setError(
-                verifyResponse.data.message ||
-                  "Payment verification failed."
+                error.response?.data
+                  ?.message ||
+                  "Payment verification failed. Please contact support if money was deducted."
               );
 
               setProcessing(false);
             }
-          } catch (error) {
+          },
+
+          // ====================================
+          // Razorpay Modal Closed
+          // ====================================
+
+          modal: {
+            ondismiss: function () {
+              console.log(
+                "Razorpay checkout closed."
+              );
+
+              setProcessing(false);
+
+              setError(
+                "Payment was cancelled."
+              );
+            },
+          },
+        };
+
+        // ======================================
+        // Create Razorpay Instance
+        // ======================================
+
+        const razorpay =
+          new window.Razorpay(options);
+
+        // ======================================
+        // Payment Failed
+        // ======================================
+
+        razorpay.on(
+          "payment.failed",
+          function (response) {
             console.error(
-              "Payment Verification Error:",
-              error
+              "Razorpay Payment Failed:",
+              response
             );
 
             setError(
-              error.response?.data?.message ||
-                "Payment verification failed. Please contact support if money was deducted."
+              response.error?.description ||
+                "Payment failed. Please try again."
             );
 
             setProcessing(false);
           }
-        },
+        );
 
         // ======================================
-        // Razorpay Modal Closed
+        // Open Razorpay
         // ======================================
 
-        modal: {
-          ondismiss: function () {
-            console.log(
-              "Razorpay checkout closed."
-            );
+        razorpay.open();
+      } catch (error) {
+        console.error(
+          "Razorpay Payment Error:",
+          error
+        );
 
-            setProcessing(false);
+        setError(
+          error.response?.data?.message ||
+            error.message ||
+            "Unable to start Razorpay payment."
+        );
 
-            setError(
-              "Payment was cancelled."
-            );
-          },
-        },
-      };
+        setProcessing(false);
+      }
+    };
 
-      // ========================================
-      // Create Razorpay Instance
-      // ========================================
-
-      const razorpay =
-        new window.Razorpay(options);
-
-      // ========================================
-      // Payment Failed
-      // ========================================
-
-      razorpay.on(
-        "payment.failed",
-        function (response) {
-          console.error(
-            "Razorpay Payment Failed:",
-            response
-          );
-
-          setError(
-            response.error?.description ||
-              "Payment failed. Please try again."
-          );
-
-          setProcessing(false);
-        }
-      );
-
-      // ========================================
-      // Open Razorpay Checkout
-      // ========================================
-
-      razorpay.open();
-    } catch (error) {
-      console.error(
-        "Razorpay Payment Error:",
-        error
-      );
-
-      setError(
-        error.response?.data?.message ||
-          error.message ||
-          "Unable to start Razorpay payment."
-      );
-
-      setProcessing(false);
-    }
-  };
-    // ==========================================
+  // ==========================================
   // Main Payment Handler
   // ==========================================
 
   const handlePayment = async () => {
-    if (!booking) {
+    if (!booking?._id) {
       setError(
         "Booking details are not available."
       );
@@ -561,11 +585,12 @@ const Payment = () => {
       setError(
         "Payment is available only after a technician accepts the booking."
       );
+
       return;
     }
 
     // ========================================
-    // Cash on Service
+    // Cash
     // ========================================
 
     if (
@@ -595,6 +620,7 @@ const Payment = () => {
       setPromoMessage(
         "Please enter a promo code."
       );
+
       return;
     }
 
@@ -603,8 +629,85 @@ const Payment = () => {
     );
   };
 
-    // ==========================================
-  // Main JSX
+  // ==========================================
+  // LOADING SCREEN
+  // ==========================================
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+
+        <div className="payment-page">
+          <div className="payment-container">
+            <div
+              className="payment-card"
+              style={{
+                textAlign: "center",
+                padding: "50px",
+              }}
+            >
+              <h2>
+                Loading Payment Details...
+              </h2>
+
+              <p>
+                Please wait while we load
+                your booking.
+              </p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ==========================================
+  // BOOKING NOT FOUND / ERROR
+  // ==========================================
+
+  if (!booking) {
+    return (
+      <>
+        <Navbar />
+
+        <div className="payment-page">
+          <div className="payment-container">
+            <div
+              className="payment-card"
+              style={{
+                textAlign: "center",
+                padding: "50px",
+              }}
+            >
+              <h2>
+                Unable to Load Booking
+              </h2>
+
+              <p>
+                {error ||
+                  "Booking details could not be found."}
+              </p>
+
+              <button
+                type="button"
+                className="pay-btn"
+                onClick={fetchBooking}
+                style={{
+                  marginTop: "20px",
+                }}
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ==========================================
+  // MAIN JSX
   // ==========================================
 
   return (
@@ -615,7 +718,7 @@ const Payment = () => {
         <div className="payment-container">
 
           {/* ==================================
-              Back Button
+              BACK BUTTON
           ================================== */}
 
           <Link
@@ -627,7 +730,7 @@ const Payment = () => {
           </Link>
 
           {/* ==================================
-              Page Header
+              PAGE HEADER
           ================================== */}
 
           <motion.div
@@ -662,7 +765,7 @@ const Payment = () => {
           </motion.div>
 
           {/* ==================================
-              Error Message
+              ERROR MESSAGE
           ================================== */}
 
           {error && (
@@ -690,7 +793,7 @@ const Payment = () => {
             <div className="payment-main">
 
               {/* =================================
-                  Booking Summary
+                  BOOKING SUMMARY
               ================================= */}
 
               <motion.div
@@ -743,9 +846,11 @@ const Payment = () => {
                     </span>
 
                     <strong>
-                      {booking.date
+                      {booking.bookingDate ||
+                      booking.date
                         ? new Date(
-                            booking.date
+                            booking.bookingDate ||
+                              booking.date
                           ).toLocaleDateString(
                             "en-IN"
                           )
@@ -759,7 +864,8 @@ const Payment = () => {
                     </span>
 
                     <strong>
-                      {booking.time ||
+                      {booking.bookingTime ||
+                        booking.time ||
                         "Not available"}
                     </strong>
                   </div>
@@ -780,7 +886,7 @@ const Payment = () => {
               </motion.div>
 
               {/* =================================
-                  Payment Status
+                  PAYMENT STATUS
               ================================= */}
 
               <motion.div
@@ -806,7 +912,6 @@ const Payment = () => {
                 </div>
 
                 <div className="payment-status-display">
-
                   <span>
                     Current Status
                   </span>
@@ -822,12 +927,11 @@ const Payment = () => {
                     {booking.paymentStatus ||
                       "Pending"}
                   </strong>
-
                 </div>
               </motion.div>
 
               {/* =================================
-                  Payment Methods
+                  PAYMENT METHODS
               ================================= */}
 
               <motion.div
@@ -854,9 +958,7 @@ const Payment = () => {
 
                 <div className="payment-methods">
 
-                  {/* =================================
-                      UPI
-                  ================================= */}
+                  {/* UPI */}
 
                   <label
                     className={`payment-method-option ${
@@ -870,8 +972,7 @@ const Payment = () => {
                       name="paymentMethod"
                       value="UPI"
                       checked={
-                        paymentMethod ===
-                        "UPI"
+                        paymentMethod === "UPI"
                       }
                       onChange={(e) =>
                         setPaymentMethod(
@@ -887,11 +988,8 @@ const Payment = () => {
                     />
 
                     <div className="payment-method-content">
-
                       <div className="payment-method-icon">
-                        <span>
-                          UPI
-                        </span>
+                        <span>UPI</span>
                       </div>
 
                       <div>
@@ -905,7 +1003,6 @@ const Payment = () => {
                           supported UPI app.
                         </p>
                       </div>
-
                     </div>
 
                     {paymentMethod ===
@@ -914,9 +1011,7 @@ const Payment = () => {
                     )}
                   </label>
 
-                  {/* =================================
-                      Credit Card
-                  ================================= */}
+                  {/* CREDIT CARD */}
 
                   <label
                     className={`payment-method-option ${
@@ -948,7 +1043,6 @@ const Payment = () => {
                     />
 
                     <div className="payment-method-content">
-
                       <div className="payment-method-icon">
                         <FiCreditCard />
                       </div>
@@ -963,7 +1057,6 @@ const Payment = () => {
                           your credit card.
                         </p>
                       </div>
-
                     </div>
 
                     {paymentMethod ===
@@ -972,9 +1065,7 @@ const Payment = () => {
                     )}
                   </label>
 
-                  {/* =================================
-                      Debit Card
-                  ================================= */}
+                  {/* DEBIT CARD */}
 
                   <label
                     className={`payment-method-option ${
@@ -1006,7 +1097,6 @@ const Payment = () => {
                     />
 
                     <div className="payment-method-content">
-
                       <div className="payment-method-icon">
                         <FiCreditCard />
                       </div>
@@ -1021,7 +1111,6 @@ const Payment = () => {
                           your debit card.
                         </p>
                       </div>
-
                     </div>
 
                     {paymentMethod ===
@@ -1030,9 +1119,7 @@ const Payment = () => {
                     )}
                   </label>
 
-                  {/* =================================
-                      Cash on Service
-                  ================================= */}
+                  {/* CASH */}
 
                   <label
                     className={`payment-method-option ${
@@ -1064,7 +1151,6 @@ const Payment = () => {
                     />
 
                     <div className="payment-method-content">
-
                       <div className="payment-method-icon">
                         ₹
                       </div>
@@ -1080,7 +1166,6 @@ const Payment = () => {
                           service.
                         </p>
                       </div>
-
                     </div>
 
                     {paymentMethod ===
@@ -1092,7 +1177,7 @@ const Payment = () => {
                 </div>
 
                 {/* =================================
-                    Razorpay Information
+                    RAZORPAY INFORMATION
                 ================================= */}
 
                 {paymentMethod !==
@@ -1100,7 +1185,6 @@ const Payment = () => {
                   booking.paymentStatus !==
                     "Paid" && (
                     <div className="razorpay-info">
-
                       <FiCheckCircle />
 
                       <div>
@@ -1115,14 +1199,12 @@ const Payment = () => {
                           the payment button.
                         </p>
                       </div>
-
                     </div>
                   )}
-
               </motion.div>
 
               {/* =================================
-                  Promo Code
+                  PROMO CODE
               ================================= */}
 
               <motion.div
@@ -1148,7 +1230,6 @@ const Payment = () => {
                 </div>
 
                 <div className="promo-input-row">
-
                   <input
                     type="text"
                     placeholder="Enter promo code"
@@ -1157,6 +1238,7 @@ const Payment = () => {
                       setPromoCode(
                         e.target.value
                       );
+
                       setPromoMessage("");
                     }}
                     disabled={
@@ -1177,7 +1259,6 @@ const Payment = () => {
                   >
                     Apply
                   </button>
-
                 </div>
 
                 {promoMessage && (
@@ -1185,7 +1266,6 @@ const Payment = () => {
                     {promoMessage}
                   </p>
                 )}
-
               </motion.div>
 
             </div>
@@ -1206,6 +1286,10 @@ const Payment = () => {
               }}
             >
 
+              {/* =================================
+                  PAYMENT SUMMARY
+              ================================= */}
+
               <div className="payment-card price-card">
 
                 <div className="section-title">
@@ -1224,8 +1308,7 @@ const Payment = () => {
                     </span>
 
                     <strong>
-                      ₹
-                      {booking.price || 0}
+                      ₹{booking.price || 0}
                     </strong>
                   </div>
 
@@ -1247,23 +1330,20 @@ const Payment = () => {
                     </span>
 
                     <strong>
-                      ₹
-                      {booking.price || 0}
+                      ₹{booking.price || 0}
                     </strong>
                   </div>
 
                 </div>
 
                 {/* =================================
-                    Pay Button
+                    PAY BUTTON
                 ================================= */}
 
                 <button
                   type="button"
                   className="pay-btn"
-                  onClick={
-                    handlePayment
-                  }
+                  onClick={handlePayment}
                   disabled={
                     processing ||
                     booking.paymentStatus ===
@@ -1293,7 +1373,7 @@ const Payment = () => {
                 </button>
 
                 {/* =================================
-                    Payment Restriction
+                    PAYMENT RESTRICTION
                 ================================= */}
 
                 {!canPay &&
@@ -1307,13 +1387,12 @@ const Payment = () => {
                   )}
 
                 {/* =================================
-                    Paid Message
+                    PAID MESSAGE
                 ================================= */}
 
                 {booking.paymentStatus ===
                   "Paid" && (
                   <div className="paid-message">
-
                     <FiCheckCircle />
 
                     <div>
@@ -1326,14 +1405,13 @@ const Payment = () => {
                         successfully verified.
                       </p>
                     </div>
-
                   </div>
                 )}
 
               </div>
 
               {/* ==================================
-                  Security Card
+                  SECURITY CARD
               ================================== */}
 
               <div className="payment-card security-card">
