@@ -1,159 +1,403 @@
-.stats-section{
-    margin-top:35px;
+/* =========================================================
+   STATS SECTION
+   ========================================================= */
+
+.stats-section {
+  width: 100%;
+  margin: 30px 0;
 }
 
-.stats-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-    gap:28px;
+.stats-grid {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 22px;
 }
 
-.stats-card{
-    position:relative;
-    overflow:hidden;
 
-    background:#ffffff;
-    border-radius:28px;
-    padding:30px;
+/* =========================================================
+   STAT CARD
+   ========================================================= */
 
-    border:1px solid #eef2f7;
+.stats-card {
+  position: relative;
 
-    box-shadow:
-        0 10px 30px rgba(15,23,42,.06),
-        0 1px 2px rgba(15,23,42,.04);
+  min-width: 0;
+  min-height: 175px;
 
-    transition:all .35s ease;
+  padding: 28px 30px;
+
+  background: #ffffff;
+
+  border: 1px solid #dbe4f0;
+  border-radius: 24px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.06);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
 }
 
-.stats-card:hover{
-    transform:translateY(-8px);
-    box-shadow:
-        0 25px 50px rgba(15,23,42,.12),
-        0 6px 18px rgba(15,23,42,.08);
+
+/* Hover */
+
+.stats-card:hover {
+  transform: translateY(-5px);
+
+  border-color: #cbd8e8;
+
+  box-shadow:
+    0 16px 35px rgba(15, 23, 42, 0.10);
 }
 
-.stats-card::before{
-    content:"";
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:5px;
+
+/* =========================================================
+   TOP COLOR LINE
+   ========================================================= */
+
+.stats-card::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 5px;
+
+  border-radius: 24px 24px 0 0;
 }
 
-.stats-card.blue::before{
-    background:linear-gradient(90deg,#2563eb,#60a5fa);
+
+/* Individual colors */
+
+.stats-card.blue::before {
+  background: #2563eb;
 }
 
-.stats-card.green::before{
-    background:linear-gradient(90deg,#16a34a,#4ade80);
+.stats-card.green::before {
+  background: #16a34a;
 }
 
-.stats-card.orange::before{
-    background:linear-gradient(90deg,#ea580c,#fbbf24);
+.stats-card.orange::before {
+  background: #f59e0b;
 }
 
-.stats-card.purple::before{
-    background:linear-gradient(90deg,#7c3aed,#c084fc);
+.stats-card.purple::before {
+  background: #9333ea;
 }
 
-.stats-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:26px;
+
+/* =========================================================
+   BACKGROUND DECORATION
+   ========================================================= */
+
+.stats-card::after {
+  content: "";
+
+  position: absolute;
+
+  width: 135px;
+  height: 135px;
+
+  right: -45px;
+  bottom: -65px;
+
+  border-radius: 50%;
+
+  pointer-events: none;
 }
 
-.stats-icon{
-    width:74px;
-    height:74px;
 
-    border-radius:22px;
+/* Blue */
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    font-size:32px;
-    color:#fff;
-
-    box-shadow:0 12px 28px rgba(0,0,0,.16);
+.stats-card.blue::after {
+  background: #eff6ff;
 }
 
-.blue .stats-icon{
-    background:linear-gradient(135deg,#2563eb,#60a5fa);
+
+/* Green */
+
+.stats-card.green::after {
+  background: #ecfdf5;
 }
 
-.green .stats-icon{
-    background:linear-gradient(135deg,#16a34a,#4ade80);
+
+/* Orange */
+
+.stats-card.orange::after {
+  background: #fff7ed;
 }
 
-.orange .stats-icon{
-    background:linear-gradient(135deg,#ea580c,#fbbf24);
+
+/* Purple */
+
+.stats-card.purple::after {
+  background: #faf5ff;
 }
 
-.purple .stats-icon{
-    background:linear-gradient(135deg,#7c3aed,#c084fc);
+
+/* =========================================================
+   TOP ROW
+   ========================================================= */
+
+.stats-top {
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
 }
 
-.stats-number{
-    font-size:34px;
-    font-weight:800;
-    color:#0f172a;
+
+/* =========================================================
+   ICON
+   ========================================================= */
+
+.stats-icon {
+  width: 72px;
+  height: 72px;
+
+  min-width: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 20px;
+
+  font-size: 32px;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
-.stats-title{
-    margin-top:8px;
-    font-size:17px;
-    color:#d2d9e2;
-    font-weight:600;
+.stats-card:hover .stats-icon {
+  transform: scale(1.06);
 }
 
-.stats-card::after{
-    content:"";
-    position:absolute;
-    width:170px;
-    height:170px;
-    border-radius:50%;
-    right:-70px;
-    bottom:-70px;
-    opacity:.06;
+
+/* Blue */
+
+.stats-card.blue .stats-icon {
+  background: #eff6ff;
+  color: #2563eb;
+
+  box-shadow:
+    0 10px 25px rgba(37, 99, 235, 0.18);
 }
 
-.stats-card.blue::after{
-    background:#2563eb;
+
+/* Green */
+
+.stats-card.green .stats-icon {
+  background: #ecfdf3;
+  color: #16a34a;
+
+  box-shadow:
+    0 10px 25px rgba(22, 163, 74, 0.16);
 }
 
-.stats-card.green::after{
-    background:#22c55e;
+
+/* Orange */
+
+.stats-card.orange .stats-icon {
+  background: #fff7ed;
+  color: #ea580c;
+
+  box-shadow:
+    0 10px 25px rgba(234, 88, 12, 0.16);
 }
 
-.stats-card.orange::after{
-    background:#f59e0b;
+
+/* Purple */
+
+.stats-card.purple .stats-icon {
+  background: #f5f3ff;
+  color: #9333ea;
+
+  box-shadow:
+    0 10px 25px rgba(147, 51, 234, 0.16);
 }
 
-.stats-card.purple::after{
-    background:#7c3aed;
+
+/* =========================================================
+   NUMBER
+   ========================================================= */
+
+.stats-number {
+  position: relative;
+  z-index: 2;
+
+  color: #071a3d;
+
+  font-size: 36px;
+  line-height: 1;
+
+  font-weight: 850;
+
+  letter-spacing: -1.5px;
+
+  white-space: nowrap;
+
+  text-align: right;
 }
 
-@media(max-width:768px){
 
-.stats-grid{
-grid-template-columns:1fr;
+/* Total spent needs slightly smaller text */
+
+.stats-card.purple .stats-number {
+  font-size: 29px;
+  letter-spacing: -1px;
 }
 
-.stats-card{
-padding:24px;
+
+/* =========================================================
+   TITLE
+   ========================================================= */
+
+.stats-title {
+  position: relative;
+  z-index: 2;
+
+  margin: 25px 0 0;
+
+  color: #475569;
+
+  font-size: 15px;
+  line-height: 1.4;
+
+  font-weight: 750;
+
+  letter-spacing: 0.1px;
 }
 
-.stats-icon{
-width:62px;
-height:62px;
-font-size:26px;
+
+/* =========================================================
+   COLOR-SPECIFIC TITLE
+   ========================================================= */
+
+.stats-card.blue .stats-title {
+  color: #475569;
 }
 
-.stats-number{
-font-size:28px;
+.stats-card.green .stats-title {
+  color: #475569;
 }
+
+.stats-card.orange .stats-title {
+  color: #475569;
+}
+
+.stats-card.purple .stats-title {
+  color: #475569;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1150px) {
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 700px) {
+
+  .stats-section {
+    margin: 24px 0;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+
+    gap: 16px;
+  }
+
+  .stats-card {
+    min-height: 145px;
+
+    padding: 22px;
+
+    border-radius: 20px;
+  }
+
+  .stats-icon {
+    width: 62px;
+    height: 62px;
+
+    min-width: 62px;
+
+    border-radius: 17px;
+
+    font-size: 28px;
+  }
+
+  .stats-number {
+    font-size: 31px;
+  }
+
+  .stats-card.purple .stats-number {
+    font-size: 27px;
+  }
+
+  .stats-title {
+    margin-top: 18px;
+
+    font-size: 14px;
+  }
+
+}
+
+
+@media (max-width: 430px) {
+
+  .stats-card {
+    padding: 19px;
+
+    min-height: 135px;
+  }
+
+  .stats-icon {
+    width: 55px;
+    height: 55px;
+
+    min-width: 55px;
+
+    border-radius: 15px;
+
+    font-size: 24px;
+  }
+
+  .stats-number {
+    font-size: 27px;
+  }
+
+  .stats-card.purple .stats-number {
+    font-size: 24px;
+  }
+
+  .stats-title {
+    font-size: 13px;
+  }
 
 }

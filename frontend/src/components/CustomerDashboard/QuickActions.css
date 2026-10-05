@@ -1,212 +1,183 @@
-.quick-actions{
-margin-top:35px;
+/* =========================================================
+   QUICK ACTIONS
+========================================================= */
+
+.quick-actions {
+  width: 100%;
+  margin-top: 34px;
 }
 
-.section-heading{
-margin-bottom:25px;
-}
-
-.section-heading h2{
-font-size:28px;
-color:#0f172a;
-margin-bottom:8px;
-}
-
-.section-heading p{
-color:#64748b;
-}
-
-.actions-grid{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:25px;
-}
-
-.action-card{
-background:#fff;
-border-radius:22px;
-padding:30px;
-box-shadow:0 15px 40px rgba(117, 133, 170, 0.08);
-transition:.3s;
-text-align:center;
-position:relative;
-overflow:hidden;
-}
-
-.action-card:hover{
-transform:translateY(-8px);
-box-shadow:0 20px 50px rgba(15,23,42,.12);
-}
-
-.action-card::before{
-content:"";
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:5px;
-}
-
-.blue::before{
-background:#2563eb;
-}
-
-.green::before{
-background:#16a34a;
-}
-
-.orange::before{
-background:#ea580c;
-}
-
-.purple::before{
-background:#9333ea;
-}
-
-.action-icon{
-width:80px;
-height:80px;
-margin:auto;
-border-radius:20px;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:34px;
-color:#fff;
-margin-bottom:22px;
-}
-
-.blue .action-icon{
-background:linear-gradient(135deg,#4b74cb,#7da9df);
-}
-
-.green .action-icon{
-background:linear-gradient(135deg,#16a34a,#4ade80);
-}
-
-.orange .action-icon{
-background:linear-gradient(135deg,#ea580c,#fb923c);
-}
-
-.purple .action-icon{
-background:linear-gradient(135deg,#9333ea,#c084fc);
-}
-
-.action-card h3{
-font-size:22px;
-color:#68171b;
-margin-bottom:12px;
-}
-
-.action-card p{
-font-size:15px;
-line-height:1.7;
-color:#e30b82;
-margin-bottom:24px;
-}
-
-.action-card button{
-border:none;
-background:#2563eb;
-color:#fff;
-padding:14px 28px;
-border-radius:14px;
-cursor:pointer;
-font-size:15px;
-font-weight:600;
-transition:.3s;
-}
-
-.action-card button:hover{
-background:#1d4ed8;
-transform:translateY(-2px);
-}
-
-@media(max-width:1100px){
-
-.actions-grid{
-grid-template-columns:repeat(2,1fr);
-}
-
-}
-
-@media(max-width:768px){
-
-.actions-grid{
-grid-template-columns:1fr;
-}
-
-.action-card{
-padding:24px;
-}
-
-.section-heading h2{
-font-size:24px;
-}
-
-}
-/* =========================================
-   PAYMENT COMING SOON MODAL
-========================================= */
-
-.payment-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-
+.quick-actions .section-heading {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;
+  justify-content: space-between;
 
-  padding: 24px;
-
-  background: rgba(15, 23, 42, 0.58);
-  backdrop-filter: blur(8px);
-
-  animation: paymentOverlayIn 0.25s ease;
+  margin-bottom: 22px;
 }
 
-.payment-modal {
+.quick-actions .section-heading h2 {
+  margin: 0;
+
+  font-size: 25px;
+  font-weight: 750;
+  letter-spacing: -0.5px;
+
+  color: #111827;
+}
+
+.quick-actions .section-heading p {
+  margin: 0;
+
+  font-size: 14px;
+  color: #64748b;
+}
+
+
+/* =========================================================
+   ACTION GRID
+========================================================= */
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+
+/* =========================================================
+   ACTION CARD
+========================================================= */
+.action-card {
   position: relative;
 
-  width: min(480px, 100%);
+  min-height: 215px;
+  padding: 24px;
 
-  padding: 42px 38px 36px;
+  display: flex;
+  flex-direction: column;
 
-  background: #ffffff;
+  background: #ffffff !important;
 
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  /* Stronger card border */
+  border: 1px solid #cbd5e1;
+  border-radius: 18px;
 
-  border-radius: 26px;
-
+  /* Better separation from dashboard background */
   box-shadow:
-    0 30px 80px rgba(15, 23, 42, 0.25),
-    0 10px 30px rgba(37, 99, 235, 0.08);
+    0 2px 6px rgba(15, 23, 42, 0.04),
+    0 8px 20px rgba(15, 23, 42, 0.05);
 
-  text-align: center;
-
-  animation: paymentModalIn 0.3s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
 }
 
-.payment-modal-close {
-  position: absolute;
-  top: 18px;
-  right: 18px;
+.action-card:hover {
+  transform: translateY(-4px);
 
-  width: 38px;
-  height: 38px;
+  border-color: #94a3b8;
+
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.08),
+    0 18px 35px rgba(15, 23, 42, 0.07);
+}
+
+/* =========================================================
+   ICON BOX
+========================================================= */
+
+.action-icon {
+  width: 50px;
+  height: 50px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  border: none;
-  border-radius: 50%;
+  margin-bottom: 20px;
 
-  background: #f1f5f9;
-  color: #64748b;
+  border-radius: 14px;
 
-  font-size: 19px;
+  font-size: 22px;
+}
+
+.action-icon svg {
+  width: 23px;
+  height: 23px;
+}
+
+
+/* =========================================================
+   ICON COLORS
+========================================================= */
+
+.action-card.blue .action-icon {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.action-card.green .action-icon {
+  color: #16a34a;
+  background: #f0fdf4;
+}
+
+.action-card.orange .action-icon {
+  color: #ea580c;
+  background: #fff7ed;
+}
+
+.action-card.purple .action-icon {
+  color: #7c3aed;
+  background: #f5f3ff;
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.action-card h3 {
+  margin: 0 0 7px;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  color: #111827 !important;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.action-card p {
+  margin: 0;
+
+  max-width: 230px;
+
+  font-size: 13px;
+  line-height: 1.55;
+
+  color: #64748b !important;
+}
+
+
+/* =========================================================
+   BUTTON
+========================================================= */
+
+.action-card button {
+  width: 100%;
+  height: 42px;
+
+  margin-top: auto;
+
+  border: 0;
+  border-radius: 10px;
+
+  font-size: 13px;
+  font-weight: 700;
 
   cursor: pointer;
 
@@ -216,239 +187,468 @@ font-size:24px;
     transform 0.2s ease;
 }
 
-.payment-modal-close:hover {
-  background: #e2e8f0;
-  color: #0f172a;
-  transform: rotate(90deg);
+.action-card button:hover {
+  transform: translateY(-1px);
 }
 
-.payment-modal-icon {
-  width: 76px;
-  height: 76px;
 
-  margin: 0 auto 18px;
+/* =========================================================
+   BLUE BUTTON
+========================================================= */
+
+.action-card.blue button {
+  color: #1d4ed8 !important;
+  background: #eff6ff !important;
+}
+
+.action-card.blue button:hover {
+  background: #dbeafe !important;
+}
+
+
+/* =========================================================
+   GREEN BUTTON
+========================================================= */
+
+.action-card.green button {
+  color: #15803d !important;
+  background: #f0fdf4 !important;
+}
+
+.action-card.green button:hover {
+  background: #dcfce7 !important;
+}
+
+
+/* =========================================================
+   ORANGE BUTTON
+========================================================= */
+
+.action-card.orange button {
+  color: #c2410c !important;
+  background: #fff7ed !important;
+}
+
+.action-card.orange button:hover {
+  background: #ffedd5 !important;
+}
+
+
+/* =========================================================
+   PURPLE BUTTON
+========================================================= */
+
+.action-card.purple button {
+  color: #6d28d9 !important;
+  background: #f5f3ff !important;
+}
+
+.action-card.purple button:hover {
+  background: #ede9fe !important;
+}
+
+
+/* =========================================================
+   PAYMENT MODAL
+========================================================= */
+
+.payment-modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 9999;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  border-radius: 22px;
+  padding: 20px;
 
-  background: linear-gradient(
-    135deg,
-    #f97316,
-    #fb923c
-  );
+  background: rgba(15, 23, 42, 0.55);
 
-  color: #ffffff;
-
-  font-size: 34px;
-
-  box-shadow:
-    0 12px 28px rgba(249, 115, 22, 0.25);
+  backdrop-filter: blur(6px);
 }
 
-.payment-coming-badge {
-  display: inline-flex;
 
+.payment-modal {
+  position: relative;
+
+  width: 100%;
+  max-width: 620px;
+
+  max-height: 90vh;
+  overflow-y: auto;
+
+  padding: 32px;
+
+  background: #ffffff;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 25px 70px rgba(15, 23, 42, 0.22);
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+========================================================= */
+
+.payment-modal-close {
+  position: absolute;
+
+  top: 18px;
+  right: 18px;
+
+  width: 36px;
+  height: 36px;
+
+  display: flex;
   align-items: center;
   justify-content: center;
 
-  padding: 7px 14px;
+  border: none;
+  border-radius: 50%;
 
-  margin-bottom: 14px;
+  background: #f3f4f6;
 
-  border-radius: 999px;
+  color: #64748b;
 
-  background: #fff7ed;
+  cursor: pointer;
+}
+
+.payment-modal-close:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+
+/* =========================================================
+   PAYMENT MODAL ICON
+========================================================= */
+
+.payment-modal-icon {
+  width: 56px;
+  height: 56px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 18px;
+
+  border-radius: 15px;
+
   color: #ea580c;
+  background: #fff7ed;
+
+  font-size: 25px;
+}
+
+
+/* =========================================================
+   PAYMENT MODAL HEADING
+========================================================= */
+
+.payment-modal h2 {
+  margin: 0 45px 8px 0;
+
+  font-size: 23px;
+  font-weight: 750;
+
+  color: #111827;
+}
+
+.payment-modal > p {
+  margin: 0 0 22px;
+
+  font-size: 14px;
+  line-height: 1.6;
+
+  color: #64748b;
+}
+
+
+/* =========================================================
+   PAYMENT LIST
+========================================================= */
+
+.payment-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+
+  margin-bottom: 20px;
+}
+
+.payment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 15px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 13px;
+
+  transition: background 0.2s ease;
+}
+
+.payment-item:hover {
+  background: #f8fafc;
+}
+
+
+/* =========================================================
+   PAYMENT ITEM LEFT
+========================================================= */
+
+.payment-item-left {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  min-width: 0;
+}
+
+.payment-item-icon {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  color: #ea580c;
+  background: #fff7ed;
+}
+
+.payment-item-left h4 {
+  margin: 0 0 3px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  color: #111827;
+}
+
+.payment-item-left span {
+  display: block;
+
+  font-size: 11px;
+
+  color: #64748b;
+}
+
+.payment-item-left small {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 11px;
+
+  color: #94a3b8;
+}
+
+
+/* =========================================================
+   PAYMENT ITEM RIGHT
+========================================================= */
+
+.payment-item-right {
+  flex-shrink: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  gap: 3px;
+}
+
+.payment-item-right strong {
+  font-size: 14px;
+  font-weight: 750;
+
+  color: #111827;
+}
+
+.payment-item-right small {
+  font-size: 11px;
+
+  color: #94a3b8;
+}
+
+
+/* =========================================================
+   PAYMENT STATUS
+========================================================= */
+
+.payment-status {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 4px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.payment-status.paid {
+  color: #15803d;
+}
+
+.payment-status.pending {
+  color: #b45309;
+}
+
+
+/* =========================================================
+   PAYMENT SECURITY
+========================================================= */
+
+.payment-security {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 13px 15px;
+
+  margin-bottom: 18px;
+
+  border-radius: 12px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e5e7eb;
+}
+
+.payment-security > svg {
+  width: 19px;
+  height: 19px;
+
+  flex-shrink: 0;
+
+  color: #2563eb;
+}
+
+.payment-security strong {
+  display: block;
+
+  font-size: 12px;
+
+  color: #374151;
+}
+
+.payment-security span {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 11px;
+
+  color: #64748b;
+}
+
+
+/* =========================================================
+   MODAL BUTTON
+========================================================= */
+
+.payment-modal-button {
+  width: 100%;
+  height: 44px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #2563eb;
+
+  color: #ffffff;
 
   font-size: 13px;
   font-weight: 700;
 
-  letter-spacing: 0.3px;
-}
-
-.payment-modal h2 {
-  margin: 0 0 12px;
-
-  color: #0f172a;
-
-  font-size: 27px;
-  font-weight: 800;
-
-  line-height: 1.2;
-}
-
-.payment-modal > p {
-  max-width: 390px;
-
-  margin: 0 auto 26px;
-
-  color: #64748b;
-
-  font-size: 15px;
-  line-height: 1.7;
-}
-
-.payment-features {
-  display: flex;
-  flex-direction: column;
-
-  gap: 12px;
-
-  margin-bottom: 26px;
-
-  text-align: left;
-}
-
-.payment-feature {
-  display: flex;
-  align-items: center;
-
-  gap: 14px;
-
-  padding: 14px;
-
-  border: 1px solid #e2e8f0;
-
-  border-radius: 15px;
-
-  background: #f8fafc;
-}
-
-.payment-feature-icon {
-  flex: 0 0 42px;
-
-  width: 42px;
-  height: 42px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 12px;
-
-  background: #eff6ff;
-  color: #2563eb;
-
-  font-size: 19px;
-}
-
-.payment-feature strong {
-  display: block;
-
-  margin-bottom: 3px;
-
-  color: #0f172a;
-
-  font-size: 14px;
-}
-
-.payment-feature span {
-  display: block;
-
-  color: #64748b;
-
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.payment-modal-button {
-  width: 100%;
-
-  padding: 14px 20px;
-
-  border: none;
-  border-radius: 13px;
-
-  background: #2563eb;
-  color: #ffffff;
-
-  font-size: 15px;
-  font-weight: 700;
-
   cursor: pointer;
 
-  box-shadow:
-    0 8px 20px rgba(37, 99, 235, 0.22);
-
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .payment-modal-button:hover {
   background: #1d4ed8;
-
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 12px 25px rgba(37, 99, 235, 0.3);
 }
 
 
-/* =========================================
-   ANIMATIONS
-========================================= */
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 
-@keyframes paymentOverlayIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes paymentModalIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(0.97);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+@media (max-width: 1100px) {
+  .actions-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 
-/* =========================================
-   MOBILE
-========================================= */
+@media (max-width: 700px) {
 
-@media (max-width: 600px) {
+  .quick-actions .section-heading {
+    display: block;
+  }
 
-  .payment-modal-overlay {
-    padding: 18px;
+  .quick-actions .section-heading h2 {
+    font-size: 22px;
+  }
+
+  .quick-actions .section-heading p {
+    margin-top: 6px;
+  }
+
+  .actions-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .action-card {
+    min-height: 195px;
   }
 
   .payment-modal {
-    padding: 36px 22px 24px;
+    padding: 25px 20px;
+  }
+}
 
-    border-radius: 22px;
+
+@media (max-width: 430px) {
+
+  .action-card {
+    padding: 20px;
   }
 
-  .payment-modal-icon {
-    width: 68px;
-    height: 68px;
-
-    font-size: 30px;
-  }
-
-  .payment-modal h2 {
-    font-size: 23px;
-  }
-
-  .payment-modal > p {
-    font-size: 14px;
-  }
-
-  .payment-feature {
+  .payment-modal-overlay {
     padding: 12px;
   }
 
+  .payment-modal {
+    padding: 22px 16px;
+  }
+
+  .payment-item {
+    align-items: flex-start;
+  }
+
+  .payment-item-left h4 {
+    max-width: 170px;
+  }
 }

@@ -1,242 +1,200 @@
-.recent-activity{
-margin-top:35px;
-background:#fff;
-padding:35px;
-border-radius:24px;
-box-shadow:0 15px 40px rgba(15,23,42,.08);
+/* =========================================================
+   RECENT ACTIVITY
+========================================================= */
+
+.recent-activity {
+  width: 100%;
+  margin: 36px 0;
 }
 
-.activity-header{
-margin-bottom:30px;
-}
-
-.activity-header h2{
-font-size:28px;
-color:#0f172a;
-margin-bottom:8px;
-}
-
-.activity-header p{
-color:#64748b;
-}
-
-.activity-list{
-display:flex;
-flex-direction:column;
-gap:20px;
-}
-
-.activity-card{
-display:flex;
-align-items:flex-start;
-gap:20px;
-padding:20px;
-border-radius:18px;
-background:#f8fafc;
-transition:.3s;
-}
-
-.activity-card:hover{
-background:#eff6ff;
-transform:translateY(-4px);
-}
-
-.activity-icon{
-width:60px;
-height:60px;
-border-radius:18px;
-display:flex;
-justify-content:center;
-align-items:center;
-color:#fff;
-font-size:24px;
-flex-shrink:0;
-}
-
-.green{
-background:#16a34a;
-}
-
-.blue{
-background:#2563eb;
-}
-
-.orange{
-background:#ea580c;
-}
-
-.purple{
-background:#9333ea;
-}
-
-.activity-content{
-flex:1;
-}
-
-.activity-content h3{
-font-size:18px;
-color:#0f172a;
-margin-bottom:8px;
-}
-
-.activity-content p{
-color:#64748b;
-line-height:1.6;
-margin-bottom:10px;
-}
-
-.activity-content span{
-font-size:14px;
-color:#94a3b8;
-}
-
-@media(max-width:768px){
-
-.recent-activity{
-padding:22px;
-}
-
-.activity-card{
-flex-direction:column;
-}
-
-.activity-icon{
-margin-bottom:10px;
-}
-
-}
 
 /* =========================================================
-   CLICKABLE ACTIVITY CARDS
+   HEADER
+========================================================= */
+
+.activity-header {
+  margin-bottom: 22px;
+}
+
+.activity-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.activity-header p {
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   ACTIVITY LIST
+========================================================= */
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+
+/* =========================================================
+   ACTIVITY CARD
 ========================================================= */
 
 .activity-card {
-    position: relative;
+  width: 100%;
+  min-height: 118px;
 
-    width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 22px;
 
-    display: flex;
-    align-items: center;
+  padding: 24px;
 
-    gap: 18px;
+  border: 1px solid #dbe4ef;
+  border-radius: 22px;
 
-    padding: 18px 20px;
+  background: #ffffff;
 
-    border: 1px solid #e2e8f0;
+  text-align: left;
 
-    border-radius: 18px;
+  cursor: pointer;
 
-    background: #ffffff;
+  box-shadow:
+    0 8px 25px rgba(15, 23, 42, 0.04);
 
-    text-align: left;
-
-    font-family: inherit;
-
-    cursor: pointer;
-
-    transition:
-        transform 0.25s ease,
-        box-shadow 0.25s ease,
-        border-color 0.25s ease,
-        background 0.25s ease;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease,
+    background 0.22s ease;
 }
 
 .activity-card:hover {
-    transform: translateY(-3px);
+  transform: translateY(-3px);
 
-    border-color: #bfdbfe;
+  border-color: #bfd3f5;
 
-    background: #f8fbff;
+  box-shadow:
+    0 16px 35px rgba(37, 99, 235, 0.09);
 
-    box-shadow:
-        0 12px 28px rgba(15, 23, 42, 0.08);
+  background: #fcfdff;
 }
 
 .activity-card:active {
-    transform: translateY(0);
-}
-
-.activity-card:focus-visible {
-    outline: 3px solid rgba(37, 99, 235, 0.2);
-
-    outline-offset: 3px;
+  transform: translateY(-1px);
 }
 
 
 /* =========================================================
-   ACTIVITY ICON
+   ICON
 ========================================================= */
 
 .activity-icon {
-    width: 52px;
-    height: 52px;
+  width: 64px;
+  height: 64px;
 
-    flex-shrink: 0;
+  flex-shrink: 0;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    border-radius: 15px;
+  border-radius: 18px;
 
-    font-size: 22px;
+  font-size: 27px;
+
+  border: 1px solid transparent;
 }
+
+
+/* GREEN */
 
 .activity-icon.green {
-    background: #dcfce7;
-    color: #16a34a;
+  background: #dcfce7;
+  color: #16a34a;
+  border-color: #bbf7d0;
 }
+
+
+/* BLUE */
 
 .activity-icon.blue {
-    background: #dbeafe;
-    color: #2563eb;
+  background: #dbeafe;
+  color: #2563eb;
+  border-color: #bfdbfe;
 }
+
+
+/* ORANGE */
 
 .activity-icon.orange {
-    background: #ffedd5;
-    color: #ea580c;
+  background: #ffedd5;
+  color: #ea580c;
+  border-color: #fed7aa;
 }
 
+
+/* PURPLE */
+
 .activity-icon.purple {
-    background: #f3e8ff;
-    color: #9333ea;
+  background: #f3e8ff;
+  color: #9333ea;
+  border-color: #e9d5ff;
+}
+
+
+/* RED */
+
+.activity-icon.red {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
 }
 
 
 /* =========================================================
-   ACTIVITY CONTENT
+   CONTENT
 ========================================================= */
 
 .activity-content {
-    min-width: 0;
-
-    flex: 1;
+  flex: 1;
+  min-width: 0;
 }
 
 .activity-content h3 {
-    margin: 0 0 5px;
+  margin: 0;
 
-    color: #0f172a;
+  color: #0f172a;
 
-    font-size: 15px;
-    font-weight: 750;
+  font-size: 18px;
+  font-weight: 800;
+
+  line-height: 1.35;
 }
 
 .activity-content p {
-    margin: 0 0 6px;
+  margin: 6px 0 9px;
 
-    color: #64748b;
+  color: #64748b;
 
-    font-size: 13px;
+  font-size: 14px;
 
-    line-height: 1.5;
+  line-height: 1.5;
 }
 
 .activity-content span {
-    color: #94a3b8;
+  display: block;
 
-    font-size: 11px;
-    font-weight: 600;
+  color: #94a3b8;
+
+  font-size: 12px;
+  font-weight: 700;
 }
 
 
@@ -245,35 +203,135 @@ margin-bottom:10px;
 ========================================================= */
 
 .activity-arrow {
-    flex-shrink: 0;
+  width: 42px;
+  height: 42px;
 
-    width: 32px;
-    height: 32px;
+  flex-shrink: 0;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    border-radius: 50%;
+  border-radius: 50%;
 
-    background: #f1f5f9;
+  background: #f1f5f9;
+  color: #64748b;
 
-    color: #64748b;
+  font-size: 20px;
+  font-weight: 600;
 
-    font-size: 18px;
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .activity-card:hover .activity-arrow {
-    background: #dbeafe;
+  background: #dbeafe;
+  color: #2563eb;
+  transform: translateX(3px);
+}
 
-    color: #2563eb;
 
-    transform: translateX(3px);
+/* =========================================================
+   LOADING
+========================================================= */
+
+.activity-loading {
+  min-height: 130px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #dbe4ef;
+  border-radius: 22px;
+
+  background: #ffffff;
+
+  color: #64748b;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.activity-empty {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  padding: 26px;
+
+  border: 1px solid #dbe4ef;
+  border-radius: 22px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 8px 25px rgba(15, 23, 42, 0.04);
+}
+
+.activity-empty-icon {
+  width: 58px;
+  height: 58px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+
+  background: #eff6ff;
+  color: #2563eb;
+
+  font-size: 24px;
+}
+
+.activity-empty h3 {
+  margin: 0 0 5px;
+
+  color: #0f172a;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.activity-empty p {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   MODAL OVERLAY
+========================================================= */
+
+.activity-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(15, 23, 42, 0.55);
+
+  backdrop-filter: blur(7px);
 }
 
 
@@ -281,340 +339,396 @@ margin-bottom:10px;
    MODAL
 ========================================================= */
 
-.activity-modal-overlay {
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 10000;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-
-    background: rgba(15, 23, 42, 0.58);
-
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-
-    animation: activityOverlayIn 0.25s ease;
-}
-
 .activity-modal {
-    position: relative;
+  position: relative;
 
-    width: min(470px, 100%);
+  width: 100%;
+  max-width: 520px;
 
-    padding: 38px 30px 28px;
+  max-height: 90vh;
 
-    background: #ffffff;
+  overflow-y: auto;
 
-    border: 1px solid #e2e8f0;
+  padding: 34px;
 
-    border-radius: 25px;
+  border: 1px solid #dbe4ef;
+  border-radius: 26px;
 
-    text-align: center;
+  background: #ffffff;
 
-    box-shadow:
-        0 30px 80px rgba(15, 23, 42, 0.25);
+  box-shadow:
+    0 30px 80px rgba(15, 23, 42, 0.22);
 
-    animation: activityModalIn 0.3s ease;
+  animation: activity-modal-in 0.22s ease;
+}
+
+@keyframes activity-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 
-/* Close */
+/* =========================================================
+   CLOSE BUTTON
+========================================================= */
 
 .activity-modal-close {
-    position: absolute;
+  position: absolute;
 
-    top: 16px;
-    right: 16px;
+  top: 18px;
+  right: 18px;
 
-    width: 38px;
-    height: 38px;
+  width: 38px;
+  height: 38px;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    border: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
 
-    border-radius: 50%;
+  background: #f8fafc;
 
-    background: #f1f5f9;
+  color: #64748b;
 
-    color: #64748b;
+  font-size: 18px;
 
-    font-size: 18px;
+  cursor: pointer;
 
-    cursor: pointer;
-
-    transition: 0.2s ease;
+  transition: 0.2s ease;
 }
 
 .activity-modal-close:hover {
-    background: #e2e8f0;
-
-    color: #0f172a;
-
-    transform: rotate(90deg);
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
 }
 
 
-/* Modal icon */
+/* =========================================================
+   MODAL ICON
+========================================================= */
 
 .activity-modal-icon {
-    width: 68px;
-    height: 68px;
+  width: 68px;
+  height: 68px;
 
-    margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  margin-bottom: 18px;
 
-    border-radius: 20px;
+  border-radius: 20px;
 
-    font-size: 28px;
+  font-size: 30px;
 }
 
 .activity-modal-icon.green {
-    background: #dcfce7;
-    color: #16a34a;
+  background: #dcfce7;
+  color: #16a34a;
 }
 
 .activity-modal-icon.blue {
-    background: #dbeafe;
-    color: #2563eb;
+  background: #dbeafe;
+  color: #2563eb;
 }
 
 .activity-modal-icon.orange {
-    background: #ffedd5;
-    color: #ea580c;
+  background: #ffedd5;
+  color: #ea580c;
 }
 
 .activity-modal-icon.purple {
-    background: #f3e8ff;
-    color: #9333ea;
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+.activity-modal-icon.red {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 
-/* Badge */
+/* =========================================================
+   MODAL BADGE
+========================================================= */
 
 .activity-modal-badge {
-    display: inline-flex;
+  display: inline-flex;
 
-    padding: 6px 12px;
+  padding: 7px 12px;
 
-    margin-bottom: 11px;
+  margin-bottom: 10px;
 
-    border-radius: 999px;
+  border-radius: 999px;
 
-    background: #eff6ff;
+  background: #eff6ff;
+  color: #2563eb;
 
-    color: #2563eb;
+  font-size: 11px;
+  font-weight: 800;
 
-    font-size: 12px;
-
-    font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
 
-/* Heading */
+/* =========================================================
+   MODAL TITLE
+========================================================= */
 
 .activity-modal h2 {
-    margin: 0 0 9px;
+  margin: 0;
 
-    color: #0f172a;
+  color: #0f172a;
 
-    font-size: 25px;
-
-    font-weight: 800;
+  font-size: 26px;
+  font-weight: 800;
 }
 
 .activity-modal-description {
-    max-width: 380px;
+  margin: 9px 0 24px;
 
-    margin: 0 auto 22px;
+  color: #64748b;
 
-    color: #64748b;
+  font-size: 15px;
 
-    font-size: 14px;
-
-    line-height: 1.7;
+  line-height: 1.6;
 }
 
 
 /* =========================================================
-   INFO
+   MODAL INFORMATION
 ========================================================= */
 
 .activity-modal-info {
-    display: flex;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 
-    flex-direction: column;
-
-    gap: 10px;
-
-    margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .activity-info-row {
-    display: flex;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 
-    align-items: center;
+  padding: 15px;
 
-    gap: 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
 
-    padding: 13px;
+  background: #f8fafc;
 
-    border: 1px solid #e2e8f0;
-
-    border-radius: 14px;
-
-    background: #f8fafc;
-
-    text-align: left;
+  color: #2563eb;
 }
 
 .activity-info-row > svg {
-    width: 19px;
-    height: 19px;
+  flex-shrink: 0;
 
-    flex-shrink: 0;
-
-    color: #2563eb;
+  font-size: 20px;
 }
 
 .activity-info-row div {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 3px;
+  min-width: 0;
 }
 
 .activity-info-row span {
-    color: #64748b;
+  display: block;
 
-    font-size: 11px;
+  margin-bottom: 3px;
 
-    font-weight: 600;
+  color: #94a3b8;
+
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .activity-info-row strong {
-    color: #0f172a;
+  display: block;
 
-    font-size: 13px;
+  color: #0f172a;
+
+  font-size: 14px;
 }
 
 
 /* =========================================================
-   PAYMENT COMING SOON
+   REAL PAYMENT SUCCESS BOX
 ========================================================= */
 
-.activity-coming-soon {
-    display: flex;
+.activity-payment-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 
-    align-items: center;
+  padding: 17px;
 
-    gap: 13px;
+  margin-bottom: 20px;
 
-    padding: 14px;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
 
-    margin-bottom: 16px;
+  background: #f0fdf4;
 
-    border: 1px solid #fed7aa;
-
-    border-radius: 14px;
-
-    background: #fff7ed;
-
-    text-align: left;
+  color: #16a34a;
 }
 
-.activity-coming-soon > svg {
-    width: 22px;
-    height: 22px;
+.payment-box-icon {
+  width: 44px;
+  height: 44px;
 
-    flex-shrink: 0;
+  flex-shrink: 0;
 
-    color: #ea580c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: #dcfce7;
+
+  font-size: 20px;
 }
 
-.activity-coming-soon div {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 3px;
+.activity-payment-box strong,
+.activity-payment-box span {
+  display: block;
 }
 
-.activity-coming-soon strong {
-    color: #9a3412;
+.activity-payment-box strong {
+  margin-bottom: 4px;
 
-    font-size: 13px;
+  color: #166534;
+
+  font-size: 14px;
+  font-weight: 800;
 }
 
-.activity-coming-soon span {
-    color: #c2410c;
+.activity-payment-box span {
+  color: #15803d;
 
-    font-size: 11px;
-
-    line-height: 1.4;
+  font-size: 13px;
 }
 
 
 /* =========================================================
-   REVIEW
+   PAYMENT PENDING BOX
 ========================================================= */
 
-.activity-review-box {
-    display: flex;
+.activity-pending-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 
-    flex-direction: column;
-    align-items: center;
+  padding: 17px;
 
-    gap: 5px;
+  margin-bottom: 20px;
 
-    padding: 16px;
+  border: 1px solid #fed7aa;
+  border-radius: 16px;
 
-    margin-bottom: 16px;
+  background: #fff7ed;
 
-    border-radius: 15px;
-
-    background: #fffbeb;
-
-    border: 1px solid #fde68a;
+  color: #ea580c;
 }
 
-.activity-stars {
-    display: flex;
+.activity-pending-box > svg {
+  width: 42px;
+  height: 42px;
 
-    gap: 3px;
+  padding: 10px;
 
-    color: #eab308;
+  flex-shrink: 0;
+
+  border-radius: 12px;
+
+  background: #ffedd5;
 }
 
-.activity-stars svg {
-    width: 17px;
-    height: 17px;
-
-    fill: #facc15;
+.activity-pending-box strong,
+.activity-pending-box span {
+  display: block;
 }
 
-.activity-review-box strong {
-    color: #92400e;
+.activity-pending-box strong {
+  margin-bottom: 4px;
 
-    font-size: 14px;
+  color: #c2410c;
+
+  font-size: 14px;
+  font-weight: 800;
 }
 
-.activity-review-box span {
-    color: #a16207;
+.activity-pending-box span {
+  color: #9a3412;
 
-    font-size: 12px;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   COMPLETED BOX
+========================================================= */
+
+.activity-completed-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 17px;
+
+  margin-bottom: 20px;
+
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+
+  background: #f0fdf4;
+
+  color: #16a34a;
+}
+
+.activity-completed-box > svg {
+  width: 42px;
+  height: 42px;
+
+  padding: 10px;
+
+  flex-shrink: 0;
+
+  border-radius: 12px;
+
+  background: #dcfce7;
+}
+
+.activity-completed-box strong,
+.activity-completed-box span {
+  display: block;
+}
+
+.activity-completed-box strong {
+  margin-bottom: 4px;
+
+  color: #166534;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.activity-completed-box span {
+  color: #15803d;
+
+  font-size: 13px;
 }
 
 
@@ -623,111 +737,126 @@ margin-bottom:10px;
 ========================================================= */
 
 .activity-modal-button {
-    width: 100%;
+  width: 100%;
 
-    padding: 13px 20px;
+  min-height: 48px;
 
-    border: none;
+  border: none;
+  border-radius: 13px;
 
-    border-radius: 13px;
+  background: #2563eb;
+  color: #ffffff;
 
-    background: #2563eb;
+  font-size: 14px;
+  font-weight: 800;
 
-    color: #ffffff;
+  cursor: pointer;
 
-    font-size: 14px;
-
-    font-weight: 700;
-
-    cursor: pointer;
-
-    transition: 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .activity-modal-button:hover {
-    background: #1d4ed8;
+  background: #1d4ed8;
 
-    transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 
 /* =========================================================
-   ANIMATION
+   RESPONSIVE
 ========================================================= */
 
-@keyframes activityOverlayIn {
-    from {
-        opacity: 0;
-    }
+@media (max-width: 700px) {
+  .recent-activity {
+    margin: 28px 0;
+  }
 
-    to {
-        opacity: 1;
-    }
+  .activity-header h2 {
+    font-size: 26px;
+  }
+
+  .activity-card {
+    min-height: 100px;
+
+    padding: 18px;
+
+    gap: 15px;
+
+    border-radius: 18px;
+  }
+
+  .activity-icon {
+    width: 54px;
+    height: 54px;
+
+    border-radius: 15px;
+
+    font-size: 23px;
+  }
+
+  .activity-content h3 {
+    font-size: 16px;
+  }
+
+  .activity-content p {
+    font-size: 13px;
+  }
+
+  .activity-arrow {
+    width: 36px;
+    height: 36px;
+
+    font-size: 17px;
+  }
+
+  .activity-modal {
+    padding: 26px 20px;
+
+    border-radius: 22px;
+  }
+
+  .activity-modal h2 {
+    font-size: 22px;
+  }
 }
 
-@keyframes activityModalIn {
-    from {
-        opacity: 0;
 
-        transform:
-            translateY(18px)
-            scale(0.97);
-    }
+@media (max-width: 480px) {
+  .activity-card {
+    align-items: flex-start;
+  }
 
-    to {
-        opacity: 1;
+  .activity-arrow {
+    display: none;
+  }
 
-        transform:
-            translateY(0)
-            scale(1);
-    }
-}
+  .activity-icon {
+    width: 48px;
+    height: 48px;
 
+    font-size: 20px;
+  }
 
-/* =========================================================
-   MOBILE
-========================================================= */
+  .activity-content h3 {
+    font-size: 15px;
+  }
 
-@media (max-width: 600px) {
+  .activity-content p {
+    font-size: 12px;
+  }
 
-    .activity-card {
-        padding: 15px;
+  .activity-content span {
+    font-size: 11px;
+  }
 
-        gap: 12px;
-    }
+  .activity-empty {
+    padding: 20px;
+  }
 
-    .activity-icon {
-        width: 45px;
-        height: 45px;
-
-        border-radius: 13px;
-
-        font-size: 19px;
-    }
-
-    .activity-content h3 {
-        font-size: 14px;
-    }
-
-    .activity-content p {
-        font-size: 12px;
-    }
-
-    .activity-arrow {
-        display: none;
-    }
-
-    .activity-modal-overlay {
-        padding: 15px;
-    }
-
-    .activity-modal {
-        padding: 34px 20px 24px;
-
-        border-radius: 22px;
-    }
-
-    .activity-modal h2 {
-        font-size: 22px;
-    }
+  .activity-empty-icon {
+    width: 48px;
+    height: 48px;
+  }
 }

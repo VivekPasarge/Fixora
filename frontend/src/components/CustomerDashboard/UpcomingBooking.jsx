@@ -1,351 +1,875 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import "./UpcomingBooking.css";
+import api from "../../api/axios";
 
 import {
-  FiCalendar,
-  FiClock,
-  FiMapPin,
-  FiNavigation,
-  FiPhone,
-  FiStar,
-  FiX,
-  FiUser,
-} from "react-icons/fi";
+  CalendarDays,
+  Clock3,
+  MapPin,
+  Phone,
+  Navigation,
+  Wrench,
+  CheckCircle2,
+  Loader2,
+  CreditCard,
+  UserRound,
+} from "lucide-react";
 
-import technician from "../../assets/hero/hero-right.png";
+import "./UpcomingBooking.css";
 
 const UpcomingBooking = () => {
   const navigate = useNavigate();
 
-  const [showReviews, setShowReviews] = useState(false);
-  const [showCallModal, setShowCallModal] = useState(false);
+  const [booking, setBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Temporary demo booking ID.
-  // Later this will come from real booking data.
-  const bookingId = "YOUR_BOOKING_ID";
+  // =========================================================
+  // FETCH CUSTOMER BOOKINGS
+  // =========================================================
 
-  const technicianPhone = "+91 98765 43210";
+  const fetchBooking = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-  const handleTrack = () => {
-    if (bookingId === "YOUR_BOOKING_ID") {
-      alert("No active booking is available for live tracking.");
-      return;
+      if (!token) {
+        setBooking(null);
+        setLoading(false);
+        return;
+      }
+
+      const response = await api.get("/bookings/my-bookings", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const bookings =
+        response.data?.bookings ||
+        response.data?.data ||
+        [];
+
+      if (!Array.isArray(bookings) || bookings.length === 0) {
+        setBooking(null);
+        setLoading(false);
+        return;
+      }
+
+      // =====================================================
+      // FIND CURRENT ACTIVE BOOKING
+      // =====================================================
+
+      const activeStatuses = [
+        "Pending",
+        "Accepted",
+        "On The Way",
+        "In Progress",
+      ];
+
+      const activeBookings = bookings.filter((item) =>
+        activeStatuses.includes(item.status)
+      );
+
+      if (activeBookings.length > 0) {
+        // Most recently created active booking
+        const sortedActiveBookings = [...activeBookings].sort(
+          (a, b) =>
+            new Date(b.createdAt || 0) -
+            new Date(a.createdAt || 0)
+        );
+
+        setBooking(sortedActiveBookings[0]);
+      } else {
+        setBooking(null);
+      }
+    } catch (error) {
+      console.error(
+        "Upcoming Booking Error:",
+        error
+      );
+
+      setBooking(null);
+    } finally {
+      setLoading(false);
     }
-
-    navigate(`/track-booking/${bookingId}`);
   };
 
-  const handleCall = () => {
-    setShowCallModal(true);
-  };
+  // =========================================================
+  // INITIAL LOAD + AUTO REFRESH
+  // =========================================================
 
-  const handleActualCall = () => {
-    window.location.href = `tel:${technicianPhone}`;
-  };
+  useEffect(() => {
+    fetchBooking();
 
-  return (
-    <>
-      <section className="upcoming-booking">
+    const interval = setInterval(() => {
+      fetchBooking();
+    }, 10000);
 
-        <div className="booking-header">
-          <div>
-            <h2>Upcoming Booking</h2>
+    return () => clearInterval(interval);
+  }, []);
 
-            <p>
-              Your technician is confirmed and will arrive shortly.
-            </p>
-          </div>
+  // =========================================================
+  // LOADING
+  // =========================================================
 
-          <span className="booking-status">
-            Confirmed
+  if (loading) {
+    return (
+      <section className="upcoming-booking-section">
+        <div className="upcoming-booking-loading">
+          <Loader2
+            className="loading-icon"
+            size={24}
+          />
+
+          <span>
+            Checking your booking...
           </span>
         </div>
-
-        <div className="booking-body">
-
-          <div className="technician-card">
-
-            <img
-              src={technician}
-              alt="Rahul Sharma"
-            />
-
-            <h3>Rahul Sharma</h3>
-
-            <p>Certified Electrician</p>
-
-            {/* CLICKABLE RATING */}
-           {/* CLICKABLE TECHNICIAN RATING */}
-<button
-  type="button"
-  className="rating rating-button"
-  onClick={() => setShowReviews(true)}
-  aria-label="View Rahul Sharma's reviews"
->
-  <span className="rating-stars">
-    <FiStar />
-    <FiStar />
-    <FiStar />
-    <FiStar />
-    <FiStar />
-  </span>
-
-  <span className="rating-text">
-    4.9 Rating
-  </span>
-</button>
-
-          </div>
-
-          <div className="booking-details">
-
-            <div className="details-grid">
-
-              <div className="detail-card">
-
-                <div className="detail-icon">
-                  <FiCalendar />
-                </div>
-
-                <div>
-                  <span>Date</span>
-                  <h4>12 July 2026</h4>
-                </div>
-
-              </div>
-
-              <div className="detail-card">
-
-                <div className="detail-icon">
-                  <FiClock />
-                </div>
-
-                <div>
-                  <span>Time</span>
-                  <h4>10:30 AM</h4>
-                </div>
-
-              </div>
-
-              <div className="detail-card full-width">
-
-                <div className="detail-icon">
-                  <FiMapPin />
-                </div>
-
-                <div>
-                  <span>Address</span>
-
-                  <h4>
-                    24 MG Road, Bengaluru, Karnataka
-                  </h4>
-                </div>
-
-              </div>
-
-            </div>
-
-            <div className="booking-buttons">
-
-              <button
-                type="button"
-                className="track-btn"
-                onClick={handleTrack}
-              >
-                <FiNavigation />
-                Track Live
-              </button>
-
-              <button
-                type="button"
-                className="call-btn"
-                onClick={handleCall}
-              >
-                <FiPhone />
-                Call Technician
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
       </section>
+    );
+  }
 
-      {/* ================================
-          REVIEWS MODAL
-      ================================= */}
+  // =========================================================
+  // NO ACTIVE BOOKING
+  // =========================================================
 
-      {showReviews && (
-        <div
-          className="reviews-modal-overlay"
-          onClick={() => setShowReviews(false)}
-        >
+  if (!booking) {
+    return (
+      <section className="upcoming-booking-section">
+        <div className="upcoming-empty-card">
 
-          <div
-            className="reviews-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-
-            <button
-              type="button"
-              className="reviews-modal-close"
-              onClick={() => setShowReviews(false)}
-              aria-label="Close reviews"
-            >
-              <FiX />
-            </button>
-
-            <div className="reviews-modal-icon">
-              <FiStar />
-            </div>
-
-            <span className="reviews-modal-badge">
-              Verified Technician
-            </span>
-
-            <h2>Rahul Sharma</h2>
-
-            <p className="reviews-role">
-              Certified Electrician
-            </p>
-
-            <div className="overall-rating">
-
-              <strong>4.9</strong>
-
-              <div className="overall-stars">
-                <FiStar />
-                <FiStar />
-                <FiStar />
-                <FiStar />
-                <FiStar />
-              </div>
-
-              <span>524 reviews</span>
-
-            </div>
-
-            <div className="review-item">
-
-              <div className="review-top">
-                <strong>Excellent Service</strong>
-                <span>5.0</span>
-              </div>
-
-              <p>
-                Very professional and completed the work on time.
-              </p>
-
-            </div>
-
-            <div className="review-item">
-
-              <div className="review-top">
-                <strong>Highly Recommended</strong>
-                <span>4.8</span>
-              </div>
-
-              <p>
-                Friendly technician and good quality of work.
-              </p>
-
-            </div>
-
-            <button
-              type="button"
-              className="reviews-done-btn"
-              onClick={() => setShowReviews(false)}
-            >
-              Close
-            </button>
-
+          <div className="empty-icon">
+            <CalendarDays size={30} />
           </div>
 
-        </div>
-      )}
+          <div className="empty-content">
 
-      {/* ================================
-          CALL TECHNICIAN MODAL
-      ================================= */}
-
-      {showCallModal && (
-        <div
-          className="call-modal-overlay"
-          onClick={() => setShowCallModal(false)}
-        >
-
-          <div
-            className="call-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
-
-            <button
-              type="button"
-              className="call-modal-close"
-              onClick={() => setShowCallModal(false)}
-              aria-label="Close"
-            >
-              <FiX />
-            </button>
-
-            <div className="call-modal-icon">
-              <FiPhone />
-            </div>
-
-            <span className="call-modal-badge">
-              Technician Assigned
+            <span className="empty-label">
+              YOUR BOOKINGS
             </span>
 
             <h2>
-              Call Rahul Sharma
+              No active booking
             </h2>
 
             <p>
-              Your assigned technician is available for
-              assistance regarding your upcoming service.
+              You don't have an upcoming service
+              request right now.
             </p>
 
-            <div className="technician-contact">
+            <button
+              type="button"
+              className="empty-book-button"
+              onClick={() =>
+                navigate("/services")
+              }
+            >
+              Book a Service
+            </button>
 
-              <div className="contact-avatar">
-                <FiUser />
-              </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
-              <div className="contact-info">
-                <strong>Rahul Sharma</strong>
-                <span>Certified Electrician</span>
-                <b>{technicianPhone}</b>
+  // =========================================================
+  // REAL BOOKING DATA
+  // =========================================================
+
+  const status =
+    booking.status || "Pending";
+
+  // =========================================================
+  // SERVICE
+  // =========================================================
+
+  const serviceName =
+    booking.service?.name ||
+    booking.serviceName ||
+    booking.service?.title ||
+    "Home Service";
+
+  // =========================================================
+  // TECHNICIAN
+  // =========================================================
+
+  const technician =
+    booking.technician ||
+    booking.assignedTechnician ||
+    null;
+
+  const technicianName =
+    typeof technician === "object" && technician
+      ? technician.name ||
+        technician.fullName ||
+        ""
+      : "";
+
+  const technicianPhone =
+    typeof technician === "object" && technician
+      ? technician.phone ||
+        technician.mobile ||
+        ""
+      : "";
+
+  // =========================================================
+  // TECHNICIAN INITIALS
+  // =========================================================
+
+  const technicianInitials = technicianName
+    ? technicianName
+        .split(" ")
+        .filter(Boolean)
+        .map((word) => word[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "T";
+
+  // =========================================================
+  // BOOKING ID
+  // =========================================================
+
+  const bookingNumber =
+    booking.bookingNumber ||
+    booking.bookingId ||
+    booking._id?.slice(-8).toUpperCase() ||
+    "N/A";
+
+  // =========================================================
+  // IMPORTANT:
+  // PAYMENT STATUS MUST COME FROM BACKEND
+  //
+  // Pending = not successfully paid
+  // Paid    = backend verified successful payment
+  // =========================================================
+
+  const rawPaymentStatus =
+    booking.paymentStatus;
+
+  const paymentStatus =
+    rawPaymentStatus === "Paid"
+      ? "Paid"
+      : "Pending";
+
+  const isPaymentPaid =
+    paymentStatus === "Paid";
+
+  // =========================================================
+  // ADDRESS
+  // =========================================================
+
+  const address =
+    booking.address ||
+    booking.serviceAddress ||
+    booking.location ||
+    "Address not available";
+
+  // =========================================================
+  // DATE
+  // =========================================================
+
+  const bookingDate =
+    booking.date ||
+    booking.bookingDate ||
+    "";
+
+  // =========================================================
+  // TIME
+  // =========================================================
+
+  const bookingTime =
+    booking.time ||
+    booking.bookingTime ||
+    "";
+
+  // =========================================================
+  // STATUS INFORMATION
+  // =========================================================
+
+  const statusData = {
+    Pending: {
+      title: "Waiting for technician",
+      description:
+        "Your request is waiting for a technician to accept it.",
+      message:
+        "Your booking request has been sent. We are looking for an available technician.",
+    },
+
+    Accepted: {
+      title: technicianName
+        ? `${technicianName} accepted your booking`
+        : "Technician confirmed",
+
+      description:
+        "Your technician has accepted the booking and will start travelling to your location.",
+
+      message:
+        "Your technician has accepted your booking.",
+    },
+
+    "On The Way": {
+      title: technicianName
+        ? `${technicianName} is on the way`
+        : "Technician is on the way",
+
+      description:
+        "Your technician is travelling to your location.",
+
+      message:
+        "Your technician is on the way. Live tracking will appear when location sharing starts.",
+    },
+
+    "In Progress": {
+      title: "Service is in progress",
+
+      description:
+        "Your technician is currently working on your service.",
+
+      message:
+        "Your service is currently in progress.",
+    },
+
+    Completed: {
+      title: "Service completed",
+
+      description:
+        "Your service has been completed successfully.",
+
+      message:
+        "Your service has been completed successfully.",
+    },
+  };
+
+  const currentStatus =
+    statusData[status] ||
+    statusData.Pending;
+
+  // =========================================================
+  // PROGRESS STEPS
+  // =========================================================
+
+  const progressSteps = [
+    {
+      key: "request",
+      title: "Request Sent",
+      description:
+        "Your booking request has been received.",
+      icon: <CheckCircle2 size={18} />,
+      active: true,
+    },
+
+    {
+      key: "technician",
+      title:
+        technicianName ||
+        "Technician Confirmation",
+
+      description: technicianName
+        ? "Technician has accepted your booking."
+        : "Waiting for a technician to accept your request.",
+
+      icon: <UserRound size={18} />,
+
+      active: [
+        "Accepted",
+        "On The Way",
+        "In Progress",
+        "Completed",
+      ].includes(status),
+    },
+
+    {
+      key: "way",
+      title: "On The Way",
+
+      description:
+        "Technician is travelling to your location.",
+
+      icon: <Navigation size={18} />,
+
+      active: [
+        "On The Way",
+        "In Progress",
+        "Completed",
+      ].includes(status),
+    },
+
+    {
+      key: "service",
+
+      title:
+        status === "Completed"
+          ? "Service Completed"
+          : "Service",
+
+      description:
+        status === "Completed"
+          ? "Your service has been completed successfully."
+          : status === "In Progress"
+          ? "Technician is currently working on your service."
+          : "Service will begin after technician arrival and verification.",
+
+      icon: <Wrench size={18} />,
+
+      active:
+        status === "In Progress" ||
+        status === "Completed",
+    },
+  ];
+
+  // =========================================================
+  // STATUS CSS CLASS
+  // =========================================================
+
+  const statusClass = status
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+
+  // =========================================================
+  // TRACK BOOKING
+  // =========================================================
+
+  const handleTrack = () => {
+    if (!booking?._id) {
+      return;
+    }
+
+    navigate(
+      `/track-booking/${booking._id}`
+    );
+  };
+
+  // =========================================================
+  // CALL TECHNICIAN
+  // =========================================================
+
+  const handleCall = () => {
+    if (!technicianPhone) {
+      return;
+    }
+
+    window.location.href =
+      `tel:${technicianPhone}`;
+  };
+
+  // =========================================================
+  // RETURN
+  // =========================================================
+
+  return (
+    <section className="upcoming-booking-section">
+
+      <div className="upcoming-booking-card">
+
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
+        <div className="booking-top-header">
+
+          <div className="booking-heading">
+
+            <span className="booking-label">
+              YOUR SERVICE
+            </span>
+
+            <h2>
+              Booking Request
+            </h2>
+
+            <p>
+              {currentStatus.description}
+            </p>
+
+          </div>
+
+          <div
+            className={`booking-status status-${statusClass}`}
+          >
+            <span className="booking-status-dot"></span>
+
+            {status}
+          </div>
+
+        </div>
+
+
+        {/* =================================================
+            TECHNICIAN / CURRENT STATUS
+        ================================================= */}
+
+        <div className="technician-section">
+
+          <div className="technician-avatar">
+
+            {technicianName ? (
+              technicianInitials
+            ) : (
+              <Wrench size={34} />
+            )}
+
+          </div>
+
+
+          <div className="technician-main-info">
+
+            <span className="technician-label">
+              TECHNICIAN
+            </span>
+
+            <h3>
+              {currentStatus.title}
+            </h3>
+
+            <p>
+              {technicianName
+                ? `Assigned technician: ${technicianName}`
+                : "Searching for an available technician"}
+            </p>
+
+          </div>
+
+
+          {status === "Pending" && (
+            <div className="searching-indicator">
+
+              <span className="searching-dot"></span>
+
+              Searching
+
+            </div>
+          )}
+
+
+          {technicianName &&
+            status !== "Pending" && (
+              <div className="technician-confirmed">
+
+                <CheckCircle2 size={17} />
+
+                Confirmed
+
               </div>
+            )}
+
+        </div>
+
+
+        {/* =================================================
+            BOOKING DETAILS
+        ================================================= */}
+
+        <div className="booking-details">
+
+          {/* SERVICE */}
+
+          <div className="booking-detail-card">
+
+            <div className="detail-icon service-icon">
+              <Wrench size={21} />
+            </div>
+
+            <div>
+
+              <span>
+                SERVICE
+              </span>
+
+              <strong>
+                {serviceName}
+              </strong>
 
             </div>
 
-            <button
-              type="button"
-              className="start-call-btn"
-              onClick={handleActualCall}
-            >
-              <FiPhone />
-              Call Now
-            </button>
+          </div>
 
-            <button
-              type="button"
-              className="cancel-call-btn"
-              onClick={() => setShowCallModal(false)}
-            >
-              Cancel
-            </button>
+
+          {/* DATE */}
+
+          <div className="booking-detail-card">
+
+            <div className="detail-icon date-icon">
+              <CalendarDays size={21} />
+            </div>
+
+            <div>
+
+              <span>
+                DATE
+              </span>
+
+              <strong>
+                {bookingDate ||
+                  "Not available"}
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          {/* TIME */}
+
+          <div className="booking-detail-card">
+
+            <div className="detail-icon time-icon">
+              <Clock3 size={21} />
+            </div>
+
+            <div>
+
+              <span>
+                TIME
+              </span>
+
+              <strong>
+                {bookingTime ||
+                  "Not available"}
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          {/* ADDRESS */}
+
+          <div className="booking-detail-card">
+
+            <div className="detail-icon address-icon">
+              <MapPin size={21} />
+            </div>
+
+            <div>
+
+              <span>
+                SERVICE ADDRESS
+              </span>
+
+              <strong>
+                {address}
+              </strong>
+
+            </div>
 
           </div>
 
         </div>
-      )}
 
-    </>
+
+        {/* =================================================
+            BOOKING PROGRESS
+        ================================================= */}
+
+        <div className="booking-progress">
+
+          <div className="progress-header">
+
+            <div>
+
+              <span className="progress-label">
+                BOOKING PROGRESS
+              </span>
+
+              <h3>
+                {currentStatus.title}
+              </h3>
+
+            </div>
+
+
+            <div
+              className={`progress-status progress-${statusClass}`}
+            >
+              <span></span>
+
+              {status}
+            </div>
+
+          </div>
+
+
+          {/* TIMELINE */}
+
+          <div className="progress-timeline">
+
+            {progressSteps.map(
+              (step, index) => (
+                <div
+                  key={step.key}
+                  className={`progress-step ${
+                    step.active
+                      ? "is-active"
+                      : ""
+                  }`}
+                >
+
+                  <div className="progress-step-top">
+
+                    <div className="progress-step-icon">
+                      {step.icon}
+                    </div>
+
+                    {index <
+                      progressSteps.length -
+                        1 && (
+                      <div
+                        className={`progress-line ${
+                          progressSteps[
+                            index + 1
+                          ].active
+                            ? "line-active"
+                            : ""
+                        }`}
+                      ></div>
+                    )}
+
+                  </div>
+
+
+                  <div className="progress-step-content">
+
+                    <strong>
+                      {step.title}
+                    </strong>
+
+                    <span>
+                      {step.description}
+                    </span>
+
+                  </div>
+
+                </div>
+              )
+            )}
+
+          </div>
+
+
+          {/* CURRENT MESSAGE */}
+
+          <div
+            className={`progress-message message-${statusClass}`}
+          >
+
+            {status === "Pending" ? (
+              <Clock3 size={18} />
+            ) : status === "Accepted" ? (
+              <CheckCircle2 size={18} />
+            ) : status === "On The Way" ? (
+              <Navigation size={18} />
+            ) : status === "In Progress" ? (
+              <Wrench size={18} />
+            ) : (
+              <CheckCircle2 size={18} />
+            )}
+
+            <span>
+              {currentStatus.message}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        {/* =================================================
+            ACTIONS
+        ================================================= */}
+
+        <div className="booking-actions">
+
+          {status !== "Pending" && (
+            <button
+              type="button"
+              className="track-booking-button"
+              onClick={handleTrack}
+            >
+              <Navigation size={17} />
+
+              Track Booking
+            </button>
+          )}
+
+
+          {technicianPhone && (
+            <button
+              type="button"
+              className="call-technician-button"
+              onClick={handleCall}
+            >
+              <Phone size={17} />
+
+              Call Technician
+            </button>
+          )}
+
+
+          {status === "Pending" && (
+            <div className="waiting-message">
+
+              <Clock3 size={17} />
+
+              Waiting for a technician
+              to accept your booking
+
+            </div>
+          )}
+
+        </div>
+
+
+        {/* =================================================
+            FOOTER
+        ================================================= */}
+
+        <div className="booking-footer">
+
+          {/* BOOKING ID */}
+
+          <div className="booking-id">
+
+            <span>
+              BOOKING ID
+            </span>
+
+            <strong>
+              {bookingNumber}
+            </strong>
+
+          </div>
+
+
+          {/* PAYMENT */}
+
+          <div className="payment-info">
+
+            <span>
+              PAYMENT
+            </span>
+
+            <strong
+              className={
+                isPaymentPaid
+                  ? "payment-paid"
+                  : "payment-pending"
+              }
+            >
+
+              <CreditCard size={16} />
+
+              {paymentStatus}
+
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
   );
 };
 

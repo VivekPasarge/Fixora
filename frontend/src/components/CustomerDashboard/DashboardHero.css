@@ -1,131 +1,184 @@
 /* =========================================================
    DASHBOARD HERO
 ========================================================= */
-/* =========================================================
-   DASHBOARD HERO
-========================================================= */
 
-.dashboard-hero {
+.dashboard-hero-card {
   position: relative;
 
-  /* Full horizontal length with small left gap */
-  width: calc(100% - 50px);
-  max-width: none;
+  width: 100%;
+  min-height: 450px;
 
-  /* Keep the same height */
-  height: 360px;
-  min-height: 360px;
-
-  /* Move card to the right */
-  margin-left: 5px;
-  margin-right: 0;
-
-  align-self: flex-start;
-
-  box-sizing: border-box;
-
-  padding: 32px 50px;
+  padding: 54px 62px;
 
   overflow: hidden;
 
-  border-radius: 24px;
+  border-radius: 26px;
 
   background:
-    radial-gradient(
-      circle at 88% 18%,
-      rgba(255, 255, 255, 0.14),
-      transparent 25%
-    ),
     linear-gradient(
-      135deg,
+      120deg,
       #2563eb 0%,
-      #3478ed 48%,
-      #4f8df5 100%
+      #3273e9 45%,
+      #5b8ff0 100%
     );
 
-  color: #ffffff;
-
   box-shadow:
-    0 14px 35px rgba(37, 99, 235, 0.18);
+    0 18px 45px rgba(37, 99, 235, 0.18);
 
-  isolation: isolate;
+  color: #ffffff;
 }
 
 
 /* =========================================================
-   DECORATIVE CIRCLE - TOP RIGHT
+   DECORATIONS
 ========================================================= */
 
-.dashboard-hero::before {
-  content: "";
-
+.hero-decoration {
   position: absolute;
-
-  width: 20px;
-  height: 20px;
-
-  top: 14px;
-  right: 110px;
-
-  border-radius: 50%;
-
-  background: rgba(255, 255, 255, 0.08);
 
   pointer-events: none;
 
-  z-index: 0;
+  border-radius: 50%;
 }
 
+.hero-decoration-one {
+  width: 220px;
+  height: 220px;
 
-/* =========================================================
-   DECORATIVE CIRCLE - BOTTOM LEFT
-========================================================= */
+  right: -65px;
+  top: -80px;
 
-.dashboard-hero::after {
-  content: "";
+  border: 1px solid rgba(255, 255, 255, 0.15);
 
-  position: absolute;
+  background: rgba(255, 255, 255, 0.04);
+}
 
+.hero-decoration-two {
   width: 150px;
   height: 150px;
 
-  left: 60px;
-  bottom: -100px;
+  right: 170px;
+  bottom: -90px;
 
-  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+}
 
-  background: rgba(255, 255, 255, 0.06);
+.hero-decoration-three {
+  width: 24px;
+  height: 24px;
 
-  pointer-events: none;
+  right: 115px;
+  top: 25px;
 
-  z-index: 0;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 
 /* =========================================================
-   HERO CONTENT
+   TOP ROW
 ========================================================= */
 
-.hero-content {
+.dashboard-hero-top {
   position: relative;
-
   z-index: 2;
 
-  width: 100%;
-  height: 100%;
-
   display: flex;
-
-  align-items: flex-start;
-
+  align-items: center;
   justify-content: space-between;
 
-  gap: 40px;
+  margin-bottom: 22px;
+}
 
-  box-sizing: border-box;
 
-  padding-top: 10px;
-  padding-bottom: 100px;
+/* =========================================================
+   GREETING PILL
+========================================================= */
+
+.greeting-pill {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 10px 17px;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+
+  border-radius: 30px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  backdrop-filter: blur(8px);
+
+  font-size: 13px;
+  font-weight: 650;
+
+  color: #ffffff;
+}
+
+.greeting-dot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.12);
+}
+
+
+/* =========================================================
+   AVAILABILITY
+========================================================= */
+
+.hero-availability {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 9px 14px;
+
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.09);
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  font-size: 12px;
+  font-weight: 650;
+
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.availability-dot {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  box-shadow:
+    0 0 0 4px rgba(34, 197, 94, 0.18);
+}
+
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.dashboard-hero-content {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 320px;
 }
 
 
@@ -133,100 +186,52 @@
    LEFT CONTENT
 ========================================================= */
 
-.hero-left {
-  flex: 1;
-
-  min-width: 0;
+.hero-content-left {
+  width: 68%;
 }
 
-
-/* =========================================================
-   WELCOME
-========================================================= */
-
-.welcome-text {
-  display: inline-flex;
-
-  align-items: center;
-
-  gap: 7px;
-
-  padding: 7px 13px;
-
-  margin-bottom: 12px;
-
-  border-radius: 999px;
-
-  border: 1px solid rgba(255, 255, 255, 0.2);
-
-  background: rgba(255, 255, 255, 0.12);
-
-  backdrop-filter: blur(10px);
-
-  color: #ffffff;
-
-  font-size: 12px;
-
-  font-weight: 700;
-}
-
-
-/* =========================================================
-   TITLE
-========================================================= */
-
-.hero-title {
-  margin: 0 0 8px;
-
+.hero-content-left h1 {
   max-width: 650px;
 
-  color: #ffffff;
+  margin: 0 0 12px;
 
-  font-size: 34px;
+  font-size: 43px;
+  line-height: 1.08;
 
-  line-height: 1.15;
+  letter-spacing: -1.3px;
 
   font-weight: 800;
 
-  letter-spacing: -0.8px;
+  color: #ffffff;
 }
 
+.hero-content-left h1 span {
+  display: inline;
+}
 
-/* =========================================================
-   DESCRIPTION
-========================================================= */
+.hero-content-left p {
+  max-width: 670px;
 
-.hero-description {
-  margin: 0 0 20px;
+  margin: 0 0 30px;
 
-  max-width: 700px;
+  font-size: 15px;
+  line-height: 1.6;
 
   color: rgba(255, 255, 255, 0.9);
-
-  font-size: 14px;
-
-  line-height: 1.55;
 }
 
 
 /* =========================================================
-   SEARCH AREA
+   SEARCH ROW
 ========================================================= */
 
-.hero-search {
-  width: 100%;
-
-  max-width: 660px;
-
-  display: grid;
-
-  grid-template-columns:
-    minmax(0, 1fr)
-    180px;
+.hero-search-row {
+  display: flex;
+  align-items: center;
 
   gap: 14px;
 
-  align-items: center;
+  margin-bottom: 22px;
 }
 
 
@@ -234,88 +239,74 @@
    SEARCH BOX
 ========================================================= */
 
-.search-box {
-  width: 100%;
-
-  height: 50px;
+.hero-search-box {
+  width: 520px;
+  height: 62px;
 
   display: flex;
-
   align-items: center;
 
-  box-sizing: border-box;
+  gap: 12px;
 
-  padding: 0 16px;
-
-  border-radius: 13px;
+  padding: 0 20px;
 
   background: #ffffff;
 
+  border: 1px solid rgba(255, 255, 255, 0.5);
+
+  border-radius: 14px;
+
   box-shadow:
-    0 8px 22px rgba(15, 23, 42, 0.14);
+    0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
-
-/* =========================================================
-   SEARCH ICON
-========================================================= */
-
-.search-icon {
+.hero-search-box svg {
   flex-shrink: 0;
 
-  margin-right: 10px;
+  width: 19px;
+  height: 19px;
 
-  color: #2563eb;
-
-  font-size: 18px;
+  color: #64748b;
 }
 
-
-/* =========================================================
-   SEARCH INPUT
-========================================================= */
-
-.search-box input {
+.hero-search-box input {
   width: 100%;
 
-  min-width: 0;
-
   border: none;
-
   outline: none;
 
   background: transparent;
 
-  color: #0f172a;
-
   font-family: inherit;
 
-  font-size: 13px;
+  font-size: 14px;
+
+  color: #111827;
 }
 
-.search-box input::placeholder {
-  color: #64748b;
+.hero-search-box input::placeholder {
+  color: #94a3b8;
 }
 
 
 /* =========================================================
-   BOOK SERVICE BUTTON
+   BOOK BUTTON
 ========================================================= */
 
-.book-btn {
-  height: 50px;
+.hero-book-button {
+  height: 62px;
 
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
-  gap: 8px;
+  gap: 9px;
 
-  border: none;
+  padding: 0 27px;
 
-  border-radius: 13px;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+
+  border-radius: 14px;
 
   background: #0f172a;
 
@@ -323,32 +314,28 @@
 
   font-family: inherit;
 
-  font-size: 13px;
-
+  font-size: 14px;
   font-weight: 700;
 
   cursor: pointer;
 
   box-shadow:
-    0 8px 22px rgba(15, 23, 42, 0.25);
+    0 8px 18px rgba(15, 23, 42, 0.15);
 
   transition:
     transform 0.2s ease,
     background 0.2s ease;
 }
 
-.book-btn svg {
-  font-size: 16px;
+.hero-book-button svg {
+  width: 19px;
+  height: 19px;
 }
 
-.book-btn:hover {
-  background: #020617;
+.hero-book-button:hover {
+  background: #1e293b;
 
   transform: translateY(-2px);
-}
-
-.book-btn:active {
-  transform: translateY(0);
 }
 
 
@@ -358,102 +345,92 @@
 
 .hero-features {
   display: flex;
-
   align-items: center;
 
-  flex-wrap: wrap;
-
-  gap: 20px;
-
-  margin-top: 15px;
+  gap: 25px;
 }
 
 .hero-feature {
   display: flex;
-
   align-items: center;
 
-  gap: 6px;
+  gap: 7px;
+
+  font-size: 12px;
+  font-weight: 650;
 
   color: rgba(255, 255, 255, 0.92);
-
-  font-size: 11px;
-
-  font-weight: 600;
 }
 
 .hero-feature svg {
-  font-size: 14px;
-
-  color: #ffffff;
+  width: 17px;
+  height: 17px;
 }
 
 
 /* =========================================================
-   RIGHT SIDE
+   USER PROFILE AREA
 ========================================================= */
 
-.hero-right {
-  width: 150px;
-
-  flex-shrink: 0;
+.hero-user-area {
+  width: 230px;
 
   display: flex;
-
   flex-direction: column;
-
   align-items: center;
 
-  justify-content: center;
-
-  gap: 10px;
+  text-align: center;
 }
 
 
 /* =========================================================
-   PROFILE
+   AVATAR
 ========================================================= */
 
-.profile-card {
+.hero-avatar-ring {
   position: relative;
 
-  width: 100px;
-  height: 100px;
+  width: 105px;
+  height: 105px;
 
-  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  box-sizing: border-box;
+  margin-bottom: 15px;
+
+  border: 1px solid rgba(255, 255, 255, 0.35);
 
   border-radius: 50%;
 
-  background: rgba(255, 255, 255, 0.15);
-
-  border: 1px solid rgba(255, 255, 255, 0.25);
-
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.08);
 
   box-shadow:
-    0 12px 30px rgba(15, 23, 42, 0.18);
+    0 0 0 7px rgba(255, 255, 255, 0.05),
+    0 12px 30px rgba(15, 23, 42, 0.1);
 }
 
+.hero-avatar {
+  width: 78px;
+  height: 78px;
 
-/* =========================================================
-   PROFILE IMAGE
-========================================================= */
-
-.profile-card img {
-  width: 100%;
-  height: 100%;
-
-  display: block;
-
-  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   border-radius: 50%;
 
-  border: 3px solid rgba(255, 255, 255, 0.35);
+  background: #2563eb;
 
-  box-sizing: border-box;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+
+  color: #ffffff;
+
+  font-size: 25px;
+  font-weight: 750;
+
+  box-shadow:
+    inset 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
 
@@ -461,11 +438,11 @@
    ONLINE DOT
 ========================================================= */
 
-.online-dot {
+.hero-online-dot {
   position: absolute;
 
-  right: 3px;
-  bottom: 4px;
+  right: 5px;
+  bottom: 8px;
 
   width: 17px;
   height: 17px;
@@ -475,40 +452,48 @@
   background: #22c55e;
 
   border: 3px solid #ffffff;
-
-  box-sizing: border-box;
 }
 
 
 /* =========================================================
-   PROFILE STATUS
+   USER NAME
 ========================================================= */
 
-.profile-status {
-  display: flex;
+.hero-user-name {
+  margin-bottom: 9px;
 
-  align-items: center;
-
-  gap: 6px;
-
-  padding: 6px 11px;
-
-  border-radius: 999px;
-
-  background: rgba(255, 255, 255, 0.12);
-
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 18px;
+  font-weight: 750;
 
   color: #ffffff;
-
-  font-size: 11px;
-
-  font-weight: 700;
-
-  white-space: nowrap;
 }
 
-.status-dot {
+
+/* =========================================================
+   USER STATUS
+========================================================= */
+
+.hero-user-status {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 7px 13px;
+
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.1);
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  font-size: 11px;
+  font-weight: 650;
+
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.hero-user-status span {
   width: 6px;
   height: 6px;
 
@@ -522,84 +507,34 @@
    TABLET
 ========================================================= */
 
-@media (max-width: 1200px) {
-  .dashboard-hero {
-    width: calc(100% - 35px);
+@media (max-width: 1100px) {
 
-    height: 350px;
-    min-height: 350px;
-
-    margin-left: 35px;
-
-    padding: 30px 35px;
+  .dashboard-hero-card {
+    padding: 45px;
   }
 
-  .hero-content {
-    gap: 30px;
+  .hero-content-left {
+    width: 70%;
   }
 
-  .hero-title {
-    font-size: 30px;
+  .hero-content-left h1 {
+    font-size: 36px;
   }
 
-  .hero-search {
-    max-width: 600px;
+  .hero-search-row {
+    flex-wrap: wrap;
   }
 
-  .hero-right {
-    width: 130px;
+  .hero-search-box {
+    width: 100%;
   }
 
-  .profile-card {
-    width: 90px;
-    height: 90px;
-  }
-}
-
-
-/* =========================================================
-   TABLET SMALL
-========================================================= */
-
-@media (max-width: 992px) {
-  .dashboard-hero {
-    width: calc(100% - 25px);
-
-    height: 340px;
-    min-height: 340px;
-
-    margin-left: 25px;
-
-    padding: 28px 30px;
+  .hero-book-button {
+    width: 190px;
   }
 
-  .hero-content {
-    gap: 25px;
-  }
-
-  .hero-title {
-    font-size: 28px;
-  }
-
-  .hero-description {
-    font-size: 13px;
-  }
-
-  .hero-search {
-    max-width: 550px;
-
-    grid-template-columns:
-      minmax(0, 1fr)
-      160px;
-  }
-
-  .hero-right {
-    width: 115px;
-  }
-
-  .profile-card {
-    width: 80px;
-    height: 80px;
+  .hero-user-area {
+    width: 190px;
   }
 }
 
@@ -609,62 +544,79 @@
 ========================================================= */
 
 @media (max-width: 768px) {
-  .dashboard-hero {
-    width: 100%;
 
-    max-width: none;
+  .dashboard-hero-card {
+    min-height: auto;
 
-    height: auto;
-    min-height: 0;
-
-    margin-left: 0;
-    margin-right: 0;
-
-    padding: 26px 22px;
+    padding: 30px 24px;
 
     border-radius: 20px;
   }
 
-  .hero-content {
-    height: auto;
+  .dashboard-hero-top {
+    align-items: flex-start;
 
+    gap: 12px;
+  }
+
+  .hero-availability {
+    display: none;
+  }
+
+  .dashboard-hero-content {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 35px;
+  }
+
+  .hero-content-left {
+    width: 100%;
+  }
+
+  .hero-content-left h1 {
+    font-size: 32px;
+
+    letter-spacing: -0.8px;
+  }
+
+  .hero-content-left p {
+    font-size: 14px;
+  }
+
+  .hero-search-row {
     flex-direction: column;
 
     align-items: stretch;
-
-    gap: 20px;
   }
 
-  .hero-title {
-    font-size: 27px;
-  }
-
-  .hero-description {
-    font-size: 13px;
-  }
-
-  .hero-search {
-    grid-template-columns: 1fr;
-
-    max-width: none;
-  }
-
-  .search-box,
-  .book-btn {
+  .hero-search-box {
     width: 100%;
   }
 
-  .hero-right {
+  .hero-book-button {
     width: 100%;
-
-    flex-direction: row;
-
-    justify-content: flex-start;
   }
 
-  .profile-card {
-    width: 70px;
-    height: 70px;
+  .hero-features {
+    flex-wrap: wrap;
+
+    gap: 14px 20px;
+  }
+
+  .hero-user-area {
+    width: 100%;
+  }
+
+  .hero-avatar-ring {
+    width: 90px;
+    height: 90px;
+  }
+
+  .hero-avatar {
+    width: 68px;
+    height: 68px;
   }
 }
 
@@ -674,726 +626,31 @@
 ========================================================= */
 
 @media (max-width: 480px) {
-  .dashboard-hero {
-    padding: 22px 18px;
+
+  .dashboard-hero-card {
+    padding: 25px 18px;
   }
 
-  .hero-title {
-    font-size: 24px;
+  .greeting-pill {
+    font-size: 11px;
+
+    padding: 9px 13px;
   }
 
-  .hero-description {
-    font-size: 12px;
-  }
-
-  .hero-features {
-    flex-direction: column;
-
-    align-items: flex-start;
-
-    gap: 9px;
-  }
-
-  .hero-right {
-    gap: 10px;
-  }
-
-  .profile-card {
-    width: 65px;
-    height: 65px;
-  }
-
-  .profile-status {
-    font-size: 10px;
-  }
-}
-/* =========================================================
-   TOP RIGHT DECORATIVE CIRCLE
-========================================================= */
-
-.dashboard-hero::before {
-  content: "";
-
-  position: absolute;
-
-  width: 20px;
-  height: 20px;
-
-  top: 10px;
-  right: 90px;
-
-  border-radius: 50%;
-
-  background: rgba(255, 255, 255, 0.08);
-
-  pointer-events: none;
-
-  z-index: 0;
-}
-
-
-/* =========================================================
-   BOTTOM LEFT DECORATIVE CIRCLE
-========================================================= */
-
-.dashboard-hero::after {
-  content: "";
-
-  position: absolute;
-
-  width: 150px;
-  height: 150px;
-
-  left: 60px;
-  bottom: -100px;
-
-  border-radius: 50%;
-
-  background: rgba(255, 255, 255, 0.06);
-
-  pointer-events: none;
-
-  z-index: 0;
-}
-
-
-/* =========================================================
-   HERO CONTENT
-========================================================= */
-
-.hero-content {
-  position: relative;
-
-  z-index: 2;
-
-  width: 100%;
-  height: 100%;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  gap: 30px;
-
-  box-sizing: border-box;
-}
-
-
-/* =========================================================
-   LEFT CONTENT
-========================================================= */
-
-.hero-left {
-  flex: 1;
-
-  min-width: 0;
-}
-
-
-/* =========================================================
-   WELCOME TEXT
-========================================================= */
-
-.welcome-text {
-  display: inline-flex;
-
-  align-items: center;
-
-  gap: 7px;
-
-  padding: 7px 13px;
-
-  margin-bottom: 12px;
-
-  border-radius: 999px;
-
-  border: 1px solid rgba(255, 255, 255, 0.2);
-
-  background: rgba(255, 255, 255, 0.12);
-
-  backdrop-filter: blur(10px);
-
-  color: #ffffff;
-
-  font-size: 12px;
-
-  font-weight: 700;
-}
-
-
-/* =========================================================
-   HERO TITLE
-========================================================= */
-
-.hero-title {
-  margin: 0 0 8px;
-
-  max-width: 550px;
-
-  color: #ffffff;
-
-  font-size: 32px;
-
-  line-height: 1.15;
-
-  font-weight: 800;
-
-  letter-spacing: -0.8px;
-}
-
-
-/* =========================================================
-   HERO DESCRIPTION
-========================================================= */
-
-.hero-description {
-  margin: 0 0 20px;
-
-  max-width: 560px;
-
-  color: rgba(255, 255, 255, 0.9);
-
-  font-size: 14px;
-
-  line-height: 1.55;
-}
-
-
-/* =========================================================
-   SEARCH AREA
-========================================================= */
-
-.hero-search {
-  width: 100%;
-
-  max-width: 600px;
-
-  display: grid;
-
-  grid-template-columns:
-    minmax(0, 1fr)
-    170px;
-
-  gap: 12px;
-
-  align-items: center;
-}
-
-
-/* =========================================================
-   SEARCH BOX
-========================================================= */
-
-.search-box {
-  width: 100%;
-
-  height: 50px;
-
-  display: flex;
-
-  align-items: center;
-
-  box-sizing: border-box;
-
-  padding: 0 16px;
-
-  border-radius: 13px;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 8px 22px rgba(15, 23, 42, 0.14);
-}
-
-
-/* =========================================================
-   SEARCH ICON
-========================================================= */
-
-.search-icon {
-  flex-shrink: 0;
-
-  margin-right: 10px;
-
-  color: #2563eb;
-
-  font-size: 18px;
-}
-
-
-/* =========================================================
-   SEARCH INPUT
-========================================================= */
-
-.search-box input {
-  width: 100%;
-
-  min-width: 0;
-
-  border: none;
-
-  outline: none;
-
-  background: transparent;
-
-  color: #0f172a;
-
-  font-family: inherit;
-
-  font-size: 13px;
-}
-
-
-/* =========================================================
-   SEARCH PLACEHOLDER
-========================================================= */
-
-.search-box input::placeholder {
-  color: #64748b;
-}
-
-
-/* =========================================================
-   BOOK SERVICE BUTTON
-========================================================= */
-
-.book-btn {
-  height: 50px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 8px;
-
-  border: none;
-
-  border-radius: 13px;
-
-  background: #0f172a;
-
-  color: #ffffff;
-
-  font-family: inherit;
-
-  font-size: 13px;
-
-  font-weight: 700;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 8px 22px rgba(15, 23, 42, 0.25);
-
-  transition:
-    transform 0.2s ease,
-    background 0.2s ease;
-}
-
-
-/* =========================================================
-   BUTTON ICON
-========================================================= */
-
-.book-btn svg {
-  font-size: 16px;
-}
-
-
-/* =========================================================
-   BUTTON HOVER
-========================================================= */
-
-.book-btn:hover {
-  background: #020617;
-
-  transform: translateY(-2px);
-}
-
-
-/* =========================================================
-   BUTTON ACTIVE
-========================================================= */
-
-.book-btn:active {
-  transform: translateY(0);
-}
-
-
-/* =========================================================
-   FEATURES
-========================================================= */
-
-.hero-features {
-  display: flex;
-
-  align-items: center;
-
-  flex-wrap: wrap;
-
-  gap: 20px;
-
-  margin-top: 15px;
-}
-
-
-/* =========================================================
-   FEATURE
-========================================================= */
-
-.hero-feature {
-  display: flex;
-
-  align-items: center;
-
-  gap: 6px;
-
-  color: rgba(255, 255, 255, 0.92);
-
-  font-size: 11px;
-
-  font-weight: 600;
-}
-
-
-/* =========================================================
-   FEATURE ICON
-========================================================= */
-
-.hero-feature svg {
-  font-size: 14px;
-
-  color: #ffffff;
-}
-
-
-/* =========================================================
-   RIGHT SIDE
-========================================================= */
-
-.hero-right {
-  width: 125px;
-
-  flex-shrink: 0;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 8px;
-}
-
-
-/* =========================================================
-   PROFILE CARD
-========================================================= */
-
-.profile-card {
-  position: relative;
-
-  width: 85px;
-  height: 85px;
-
-  padding: 5px;
-
-  box-sizing: border-box;
-
-  border-radius: 50%;
-
-  background: rgba(255, 255, 255, 0.15);
-
-  border: 1px solid rgba(255, 255, 255, 0.25);
-
-  backdrop-filter: blur(10px);
-
-  box-shadow:
-    0 12px 30px rgba(15, 23, 42, 0.18);
-}
-
-
-/* =========================================================
-   PROFILE IMAGE
-========================================================= */
-
-.profile-card img {
-  width: 100%;
-  height: 100%;
-
-  display: block;
-
-  object-fit: cover;
-
-  border-radius: 50%;
-
-  border: 3px solid rgba(255, 255, 255, 0.35);
-
-  box-sizing: border-box;
-}
-
-
-/* =========================================================
-   ONLINE DOT
-========================================================= */
-
-.online-dot {
-  position: absolute;
-
-  right: 3px;
-  bottom: 4px;
-
-  width: 17px;
-  height: 17px;
-
-  border-radius: 50%;
-
-  background: #22c55e;
-
-  border: 3px solid #ffffff;
-
-  box-sizing: border-box;
-}
-
-
-/* =========================================================
-   PROFILE STATUS
-========================================================= */
-
-.profile-status {
-  display: flex;
-
-  align-items: center;
-
-  gap: 6px;
-
-  padding: 6px 11px;
-
-  border-radius: 999px;
-
-  background: rgba(255, 255, 255, 0.12);
-
-  border: 1px solid rgba(255, 255, 255, 0.18);
-
-  color: #ffffff;
-
-  font-size: 11px;
-
-  font-weight: 700;
-
-  white-space: nowrap;
-}
-
-
-/* =========================================================
-   STATUS DOT
-========================================================= */
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-
-  border-radius: 50%;
-
-  background: #22c55e;
-}
-
-
-/* =========================================================
-   TABLET 1200px
-========================================================= */
-
-@media (max-width: 1200px) {
-  .dashboard-hero {
-    width: 55%;
-
-    height: 350px;
-    min-height: 350px;
-
-    padding: 30px 32px;
-  }
-
-  .hero-content {
-    gap: 25px;
-  }
-
-  .hero-title {
-    font-size: 30px;
-  }
-
-  .hero-search {
-    max-width: 560px;
-  }
-
-  .hero-right {
-    width: 110px;
-  }
-
-  .profile-card {
-    width: 82px;
-    height: 82px;
-  }
-}
-
-
-/* =========================================================
-   TABLET 992px
-========================================================= */
-
-@media (max-width: 992px) {
-  .dashboard-hero {
-    width: 60%;
-
-    height: 340px;
-    min-height: 340px;
-
-    padding: 28px 30px;
-  }
-
-  .hero-content {
-    gap: 22px;
-  }
-
-  .hero-title {
+  .hero-content-left h1 {
     font-size: 28px;
   }
 
-  .hero-description {
+  .hero-content-left p {
     font-size: 13px;
   }
 
-  .hero-search {
-    max-width: 520px;
-
-    grid-template-columns:
-      minmax(0, 1fr)
-      155px;
-  }
-
-  .hero-right {
-    width: 105px;
-  }
-
-  .profile-card {
-    width: 78px;
-    height: 78px;
-  }
-}
-
-
-/* =========================================================
-   MOBILE 768px
-========================================================= */
-
-@media (max-width: 768px) {
-  .dashboard-hero {
-    width: 100%;
-
-    max-width: none;
-
-    height: auto;
-    min-height: 0;
-
-    padding: 26px 22px;
-
-    border-radius: 20px;
-  }
-
-  .hero-content {
-    height: auto;
-
-    flex-direction: column;
-
-    align-items: stretch;
-
-    gap: 20px;
-  }
-
-  .hero-title {
-    font-size: 27px;
-  }
-
-  .hero-description {
-    font-size: 13px;
-  }
-
-  .hero-search {
-    grid-template-columns: 1fr;
-
-    max-width: none;
-  }
-
-  .search-box,
-  .book-btn {
-    width: 100%;
-  }
-
-  .hero-right {
-    width: 100%;
-
-    flex-direction: row;
-
-    justify-content: flex-start;
-
-    align-items: center;
-  }
-
-  .profile-card {
-    width: 70px;
-    height: 70px;
-  }
-
-  .hero-features {
-    gap: 14px;
-  }
-}
-
-
-/* =========================================================
-   SMALL MOBILE 480px
-========================================================= */
-
-@media (max-width: 480px) {
-  .dashboard-hero {
-    padding: 22px 18px;
-  }
-
-  .hero-title {
-    font-size: 24px;
-  }
-
-  .hero-description {
-    font-size: 12px;
-  }
-
-  .hero-features {
-    flex-direction: column;
-
-    align-items: flex-start;
-
-    gap: 9px;
+  .hero-search-box,
+  .hero-book-button {
+    height: 56px;
   }
 
   .hero-feature {
     font-size: 11px;
-  }
-
-  .hero-right {
-    gap: 10px;
-  }
-
-  .profile-card {
-    width: 65px;
-    height: 65px;
-  }
-
-  .profile-status {
-    font-size: 10px;
   }
 }

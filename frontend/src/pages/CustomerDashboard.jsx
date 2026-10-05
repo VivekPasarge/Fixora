@@ -14,79 +14,226 @@ import "./CustomerDashboard.css";
 
 const CustomerDashboard = () => {
   const [profile, setProfile] = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ==========================================
+  // FETCH CUSTOMER DATA
+  // ==========================================
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem("token");
 
-        const response = await api.get("/auth/profile", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        if (!token) {
+          setLoading(false);
+          return;
+        }
 
-        setProfile(response.data.user);
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+
+        const [profileResponse, bookingsResponse] =
+          await Promise.all([
+            api.get("/auth/profile", {
+              headers,
+            }),
+
+            api.get("/bookings/my-bookings", {
+              headers,
+            }),
+          ]);
+
+        setProfile(
+          profileResponse.data?.user || null
+        );
+
+        setBookings(
+          Array.isArray(
+            bookingsResponse.data?.bookings
+          )
+            ? bookingsResponse.data.bookings
+            : []
+        );
       } catch (error) {
-        console.error("Profile Fetch Error:", error);
+        console.error(
+          "Customer Dashboard Error:",
+          error
+        );
+
+        setProfile(null);
+        setBookings([]);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchProfile();
+    fetchDashboardData();
   }, []);
+
+  // ==========================================
+  // REFRESH BOOKINGS
+  // ==========================================
+
+  const refreshBookings = async () => {
+    try {
+      const token =
+        localStorage.getItem("token");
+
+      if (!token) return;
+
+      const response = await api.get(
+        "/bookings/my-bookings",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setBookings(
+        Array.isArray(
+          response.data?.bookings
+        )
+          ? response.data.bookings
+          : []
+      );
+    } catch (error) {
+      console.error(
+        "Refresh Bookings Error:",
+        error
+      );
+    }
+  };
+
+  // ==========================================
+  // LOADING
+  // ==========================================
+
+  if (loading) {
+    return (
+      <div className="customer-dashboard-loading">
+        <div className="dashboard-loader"></div>
+
+        <h2>Loading your dashboard...</h2>
+
+        <p>
+          Fetching your bookings and account
+          information.
+        </p>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // UI
+  // ==========================================
 
   return (
     <div className="customer-dashboard">
       <div className="dashboard-container">
 
-        {/* Welcome Section */}
-        <div
-          style={{
-            background: "#ffffff",
-            padding: "20px",
-            borderRadius: "12px",
-            marginBottom: "20px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-          }}
-        >
-          <h2>
-            Welcome, {profile ? profile.name : "Loading..."} 👋
-          </h2>
+        {/* ======================================
+            WELCOME
+        ====================================== */}
 
-          {profile && (
-            <>
-              <p>
-                <strong>Email:</strong> {profile.email}
-              </p>
+        <section className="customer-welcome">
+          <div className="welcome-content">
 
-              <p>
-                <strong>Phone:</strong> {profile.phone}
-              </p>
+            <div className="welcome-text">
+              <span className="welcome-label">
+                CUSTOMER DASHBOARD
+              </span>
+
+              <h1>
+                Welcome,
+                <span>
+                  {" "}
+                  {profile?.name || "Customer"}
+                </span>
+              </h1>
 
               <p>
-                <strong>Role:</strong> {profile.role}
+                Manage your home services,
+                bookings and technician tracking
+                from one place.
               </p>
-            </>
-          )}
-        </div>
+            </div>
+
+            <div className="welcome-profile">
+              <div className="welcome-avatar">
+                {profile?.name
+                  ?.charAt(0)
+                  ?.toUpperCase() || "U"}
+              </div>
+
+              <div>
+                <strong>
+                  {profile?.name ||
+                    "Customer"}
+                </strong>
+
+                <span>
+                  {profile?.email ||
+                    "Account"}
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* ======================================
+            HERO
+        ====================================== */}
 
         <DashboardHero />
 
+        {/* ======================================
+            STATS
+        ====================================== */}
+
         <StatsCards />
 
-        <UpcomingBooking />
+        {/* ======================================
+            UPCOMING BOOKING
+        ====================================== */}
+
+        <UpcomingBooking
+          bookings={bookings}
+          onBookingUpdated={refreshBookings}
+        />
+
+        {/* ======================================
+            LIVE TRACKING
+        ====================================== */}
 
         <LiveTrackingCard />
 
+        {/* ======================================
+            QUICK ACTIONS
+        ====================================== */}
+
         <QuickActions />
 
+        {/* ======================================
+            BOOKING HISTORY
+        ====================================== */}
+
         <BookingHistory />
+
+        {/* ======================================
+            BOTTOM
+        ====================================== */}
 
         <div className="dashboard-bottom">
           <RecentActivity />
 
           <ProfileSummary />
         </div>
+
       </div>
     </div>
   );
