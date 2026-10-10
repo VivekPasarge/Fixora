@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 const WalletTransaction = require("../models/WalletTransaction");
 
@@ -9,18 +10,13 @@ const getWallet = async (req, res) => {
       technician: technicianId,
     }).sort({ createdAt: -1 });
 
-    const completedTransactions = transactions.filter(
-      (transaction) => transaction.status === "COMPLETED"
-    );
-
-    const balance = completedTransactions.reduce(
-      (total, transaction) => {
+    const balance = transactions
+      .filter((transaction) => transaction.status === "COMPLETED")
+      .reduce((total, transaction) => {
         return transaction.direction === "CREDIT"
           ? total + transaction.amount
           : total - transaction.amount;
-      },
-      0
-    );
+      }, 0);
 
     const pendingWithdrawals = transactions
       .filter(
@@ -30,21 +26,17 @@ const getWallet = async (req, res) => {
       )
       .reduce((total, transaction) => total + transaction.amount, 0);
 
-    const availableBalance = Math.max(
-      0,
-      balance - pendingWithdrawals
-    );
-
     return res.status(200).json({
       success: true,
       balance: Number(balance.toFixed(2)),
       pendingWithdrawals: Number(pendingWithdrawals.toFixed(2)),
-      availableBalance: Number(availableBalance.toFixed(2)),
+      availableBalance: Number(
+        Math.max(0, balance - pendingWithdrawals).toFixed(2)
+      ),
       transactions,
     });
   } catch (error) {
     console.error("Get Wallet Error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Failed to fetch wallet",
@@ -56,21 +48,16 @@ const getWalletTransactions = async (req, res) => {
   try {
     const technicianId = req.user._id || req.user.id;
     const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = Math.min(
-      100,
-      Math.max(1, Number(req.query.limit) || 20)
-    );
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+
+    const filter = { technician: technicianId };
 
     const [transactions, total] = await Promise.all([
-      WalletTransaction.find({
-        technician: technicianId,
-      })
+      WalletTransaction.find(filter)
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),
-      WalletTransaction.countDocuments({
-        technician: technicianId,
-      }),
+      WalletTransaction.countDocuments(filter),
     ]);
 
     return res.status(200).json({
@@ -85,10 +72,75 @@ const getWalletTransactions = async (req, res) => {
     });
   } catch (error) {
     console.error("Get Wallet Transactions Error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Failed to fetch wallet transactions",
+    });
+  }
+};
+
+const getEarningsOverview = async (req, res) => {
+  try {
+    const technicianId = req.user._id || req.user.id;
+
+    const transactions = await WalletTransaction.find({
+      technician: technicianId,
+      type: "EARNING",
+      direction: "CREDIT",
+      status: "COMPLETED",
+    })
+      .select("amount createdAt booking description reference")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const now = new Date();
+
+    // Calculate reporting periods using the server's local timezone.
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+
+    const startOfWeek = new Date(startOfToday);
+    const daysSinceMonday = (startOfWeek.getDay() + 6) % 7;
+    startOfWeek.setDate(startOfWeek.getDate() - daysSinceMonday);
+
+    const startOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1
+    );
+
+    const sumSince = (startDate) =>
+      transactions.reduce((total, transaction) => {
+        return new Date(transaction.createdAt) >= startDate
+          ? total + Number(transaction.amount)
+          : total;
+      }, 0);
+
+    const sumAll = transactions.reduce(
+      (total, transaction) => total + Number(transaction.amount),
+      0
+    );
+
+    const money = (amount) => Number(amount.toFixed(2));
+
+    return res.status(200).json({
+      success: true,
+      earnings: {
+        today: money(sumSince(startOfToday)),
+        thisWeek: money(sumSince(startOfWeek)),
+        thisMonth: money(sumSince(startOfMonth)),
+        lifetime: money(sumAll),
+        transactions: transactions.slice(0, 20),
+      },
+    });
+  } catch (error) {
+    console.error("Get Earnings Overview Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch earnings overview",
     });
   }
 };
@@ -138,8 +190,7 @@ const requestWithdrawal = async (req, res) => {
     }
 
     if (payoutDetails.upiId) {
-      safePayoutDetails.upiId =
-        String(payoutDetails.upiId).trim();
+      safePayoutDetails.upiId = String(payoutDetails.upiId).trim();
     }
 
     if (
@@ -194,18 +245,13 @@ const requestWithdrawal = async (req, res) => {
         technician: technicianId,
       }).session(session);
 
-      const completedBalance = transactions.reduce(
-        (total, transaction) => {
-          if (transaction.status !== "COMPLETED") {
-            return total;
-          }
+      const completedBalance = transactions.reduce((total, transaction) => {
+        if (transaction.status !== "COMPLETED") return total;
 
-          return transaction.direction === "CREDIT"
-            ? total + transaction.amount
-            : total - transaction.amount;
-        },
-        0
-      );
+        return transaction.direction === "CREDIT"
+          ? total + transaction.amount
+          : total - transaction.amount;
+      }, 0);
 
       const pendingWithdrawalAmount = transactions
         .filter(
@@ -213,24 +259,15 @@ const requestWithdrawal = async (req, res) => {
             transaction.type === "WITHDRAWAL" &&
             transaction.status === "PENDING"
         )
-        .reduce(
-          (total, transaction) => total + transaction.amount,
-          0
-        );
+        .reduce((total, transaction) => total + transaction.amount, 0);
 
-      const availableBalance =
-        completedBalance - pendingWithdrawalAmount;
+      const availableBalance = completedBalance - pendingWithdrawalAmount;
 
       if (amount > availableBalance) {
-        const error = new Error(
-          "Insufficient available wallet balance"
-        );
+        const error = new Error("Insufficient available wallet balance");
         error.statusCode = 400;
         throw error;
       }
-
-      const reference =
-        `withdrawal:${technicianId}:${new mongoose.Types.ObjectId()}`;
 
       await WalletTransaction.create(
         [
@@ -241,7 +278,7 @@ const requestWithdrawal = async (req, res) => {
             direction: "DEBIT",
             status: "PENDING",
             description: "Withdrawal request awaiting review",
-            reference,
+            reference: `withdrawal:${technicianId}:${new mongoose.Types.ObjectId()}`,
             metadata: {
               payoutDetails: safePayoutDetails,
             },
@@ -254,7 +291,7 @@ const requestWithdrawal = async (req, res) => {
     return res.status(201).json({
       success: true,
       message:
-        "Withdrawal request submitted. The funds remain reserved until the request is reviewed.",
+        "Withdrawal request submitted. Funds remain reserved until the request is reviewed.",
     });
   } catch (error) {
     console.error("Request Withdrawal Error:", error);
@@ -275,4 +312,5 @@ module.exports = {
   getWallet,
   getWalletTransactions,
   requestWithdrawal,
+  getEarningsOverview,
 };
