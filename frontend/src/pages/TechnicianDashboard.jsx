@@ -89,88 +89,42 @@ const TechnicianDashboard = () => {
       </section>
 
 
-      {/* =====================================================
-          JOB MANAGEMENT
-      ===================================================== */}
+     {/* JOB MANAGEMENT */}
+<section className="tech-section-heading">
+  <div>
+    <span>WORK MANAGEMENT</span>
+    <h2>Your Jobs</h2>
+    <p>
+      Find new service requests and manage your assigned work.
+    </p>
+  </div>
+</section>
 
-      <section className="tech-section-heading">
+<section className="tech-jobs-grid">
+  <div
+    id="available-jobs"
+    className="tech-card-area"
+  >
+    <AvailableJobs />
+  </div>
 
-        <div>
+  <div className="tech-card-area">
+    <WalletCard />
+  </div>
+</section>
 
-          <span>
-            WORK MANAGEMENT
-          </span>
-
-          <h2>
-            Your Jobs
-          </h2>
-
-          <p>
-            Find new service requests and manage your assigned work.
-          </p>
-
-        </div>
-
-      </section>
-
-
-      <section className="tech-jobs-grid">
-
-        {/* ================================================
-            AVAILABLE JOBS
-        ================================================ */}
-
-        <div
-          id="available-jobs"
-          className="tech-card-area"
-        >
-
-          <AvailableJobs />
-
-        </div>
-
-
-        {/* ================================================
-            WALLET
-        ================================================ */}
-
-        <div className="tech-card-area">
-
-          <WalletCard />
-
-        </div>
-
-      </section>
-
-
-      {/* =====================================================
-          ASSIGNED JOBS
-      ===================================================== */}
-
-      <section
-        id="assigned-jobs"
-        className="tech-full-section"
-      >
-<AvailableJobs />
-       <section
+{/* ASSIGNED JOBS */}
+<section
   id="assigned-jobs"
   className="tech-full-section"
 >
   <AssignedJobs />
 </section>
 
-      </section>
-
-
-      {/* =====================================================
-          REVIEWS
-      ===================================================== */}
-
-      <section className="tech-full-section">
-
-        <ReviewsCard />
-
-      </section>
+{/* REVIEWS */}
+<section className="tech-full-section">
+  <ReviewsCard />
+</section>
 
     </main>
   );

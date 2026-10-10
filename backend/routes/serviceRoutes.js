@@ -2,65 +2,57 @@ const express = require("express");
 
 const router = express.Router();
 
-
-// =========================================================
-// Controller
-// =========================================================
-
 const {
   createService,
   getAllServices,
   getServiceById,
+  getTechniciansForService,
   updateService,
   toggleServiceStatus,
   deleteService,
 } = require("../controllers/serviceController");
 
-
 // =========================================================
-// Routes
+// Services
 // =========================================================
 
-// Create Service
-router.post(
-  "/",
-  createService
-);
+// Get all services
+router.get("/", getAllServices);
 
-
-// Get All Services
+// Get technicians for a particular service
 router.get(
-  "/",
-  getAllServices
+  "/:id/technicians",
+  getTechniciansForService
 );
 
-
-// Get Single Service
+// Get single service
 router.get(
   "/:id",
   getServiceById
 );
 
+// Create service
+router.post(
+  "/",
+  createService
+);
 
-// Update Service
+// Update service
 router.put(
   "/:id",
   updateService
 );
 
-
-// Toggle Active / Inactive
+// Toggle service availability
 router.patch(
-  "/:id/status",
+  "/:id/toggle",
   toggleServiceStatus
 );
 
-
-// Delete Service
+// Delete service
 router.delete(
   "/:id",
   deleteService
 );
-
 
 module.exports = router;

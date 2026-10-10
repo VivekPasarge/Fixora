@@ -1,3 +1,4 @@
+
 const express = require("express");
 
 const router = express.Router();
@@ -34,32 +35,20 @@ const {
   getActiveBooking,
   getTechnicianAvailability,
   updateTechnicianAvailability,
-
-  // Technician cancellation
   technicianCancelJob,
-
-  // Technician pre-acceptance decline
   declineAvailableJob,
-
-  // Technician completed job removal
   removeCompletedJob,
-
-  // Customer booking history
   removeBookingFromMyBookings,
   getMyBookingHistory,
-
-  // Booking availability
   getBookedTimeSlots,
+  markCashReceived,
 } = require("../controllers/bookingController");
 
 // =====================================================
 // CUSTOMER ROUTES
 // =====================================================
 
-// ==========================================
-// Create Booking
-// ==========================================
-
+// Create booking
 router.post(
   "/",
   protect,
@@ -67,19 +56,13 @@ router.post(
   createBooking
 );
 
-// ==========================================
-// Check Booked Time Slots
-// ==========================================
-
+// Check booked time slots
 router.get(
   "/availability",
   getBookedTimeSlots
 );
 
-// ==========================================
-// My Bookings
-// ==========================================
-
+// Customer's bookings
 router.get(
   "/my-bookings",
   protect,
@@ -87,10 +70,7 @@ router.get(
   getMyBookings
 );
 
-// ==========================================
-// Customer Booking History
-// ==========================================
-
+// Customer booking history
 router.get(
   "/my-history",
   protect,
@@ -98,10 +78,7 @@ router.get(
   getMyBookingHistory
 );
 
-// ==========================================
-// Remove Booking From My Bookings
-// ==========================================
-
+// Remove booking from customer's list
 router.put(
   "/:id/remove-from-my-bookings",
   protect,
@@ -109,10 +86,7 @@ router.put(
   removeBookingFromMyBookings
 );
 
-// ==========================================
-// Customer Cancel Booking
-// ==========================================
-
+// Customer cancels booking
 router.put(
   "/:id/cancel",
   protect,
@@ -120,10 +94,7 @@ router.put(
   cancelBooking
 );
 
-// ==========================================
-// Customer Payment
-// ==========================================
-
+// Customer payment
 router.put(
   "/:id/pay",
   protect,
@@ -131,157 +102,7 @@ router.put(
   payForBooking
 );
 
-// =====================================================
-// TECHNICIAN ROUTES
-// =====================================================
-
-// ==========================================
-// Available Jobs
-// ==========================================
-
-router.get(
-  "/available",
-  protect,
-  authorizeRoles("technician"),
-  getAvailableJobs
-);
-
-// ==========================================
-// Technician Pre-Acceptance Decline
-// ==========================================
-
-router.put(
-  "/:id/decline",
-  protect,
-  authorizeRoles("technician"),
-  declineAvailableJob
-);
-
-// ==========================================
-// Assigned Jobs
-// ==========================================
-
-router.get(
-  "/technician/assigned",
-  protect,
-  authorizeRoles("technician"),
-  getAssignedBookings
-);
-
-// ==========================================
-// Pending Jobs
-// ==========================================
-
-router.get(
-  "/pending",
-  protect,
-  authorizeRoles("technician"),
-  getPendingBookings
-);
-
-// ==========================================
-// Accept Booking
-// ==========================================
-
-router.put(
-  "/:id/accept",
-  protect,
-  authorizeRoles("technician"),
-  acceptBooking
-);
-
-// ==========================================
-// Update Booking Status
-// ==========================================
-
-router.put(
-  "/:id/status",
-  protect,
-  authorizeRoles("technician"),
-  updateBookingStatus
-);
-
-// ==========================================
-// Verify Customer OTP
-// ==========================================
-
-router.put(
-  "/:id/verify-otp",
-  protect,
-  authorizeRoles("technician"),
-  verifyBookingOTP
-);
-
-// ==========================================
-// Technician Cancel After Accepting
-// ==========================================
-
-router.put(
-  "/:id/technician-cancel",
-  protect,
-  authorizeRoles("technician"),
-  technicianCancelJob
-);
-
-// ==========================================
-// Remove Completed Job
-// ==========================================
-
-router.put(
-  "/:id/remove-completed",
-  protect,
-  authorizeRoles("technician"),
-  removeCompletedJob
-);
-
-// =====================================================
-// COMMON ROUTES
-// =====================================================
-
-// ==========================================
-// Active Booking
-// ==========================================
-
-router.get(
-  "/active",
-  protect,
-  getActiveBooking
-);
-
-// =====================================================
-// TECHNICIAN AVAILABILITY
-// =====================================================
-
-// ==========================================
-// Get Online / Offline Status
-// ==========================================
-
-router.get(
-  "/technician/availability",
-  protect,
-  authorizeRoles("technician"),
-  getTechnicianAvailability
-);
-
-// ==========================================
-// Change Online / Offline Status
-// ==========================================
-
-router.put(
-  "/technician/availability",
-  protect,
-  authorizeRoles("technician"),
-  updateTechnicianAvailability
-);
-
-// =====================================================
-// PAYMENT HISTORY
-// =====================================================
-
-// ==========================================
-// Customer Payment History
-// ==========================================
-
+// Customer payment history
 router.get(
   "/payment-history",
   protect,
@@ -290,13 +111,90 @@ router.get(
 );
 
 // =====================================================
-// TECHNICIAN STATISTICS
+// TECHNICIAN ROUTES
 // =====================================================
 
-// ==========================================
-// Technician Stats
-// ==========================================
+// Available jobs
+router.get(
+  "/available",
+  protect,
+  authorizeRoles("technician"),
+  getAvailableJobs
+);
 
+// Technician declines a job before accepting
+router.put(
+  "/:id/decline",
+  protect,
+  authorizeRoles("technician"),
+  declineAvailableJob
+);
+
+// Assigned jobs
+router.get(
+  "/technician/assigned",
+  protect,
+  authorizeRoles("technician"),
+  getAssignedBookings
+);
+
+// Pending jobs
+router.get(
+  "/pending",
+  protect,
+  authorizeRoles("technician"),
+  getPendingBookings
+);
+
+// Accept booking
+router.put(
+  "/:id/accept",
+  protect,
+  authorizeRoles("technician"),
+  acceptBooking
+);
+
+// Update booking status
+router.put(
+  "/:id/status",
+  protect,
+  authorizeRoles("technician"),
+  updateBookingStatus
+);
+
+// Verify customer OTP
+router.put(
+  "/:id/verify-otp",
+  protect,
+  authorizeRoles("technician"),
+  verifyBookingOTP
+);
+
+// Confirm COD cash collection
+router.put(
+  "/:id/cash-received",
+  protect,
+  authorizeRoles("technician"),
+  markCashReceived
+);
+
+// Technician cancels an accepted job
+router.put(
+  "/:id/technician-cancel",
+  protect,
+  authorizeRoles("technician"),
+  technicianCancelJob
+);
+
+// Remove completed job from technician's list
+router.put(
+  "/:id/remove-completed",
+  protect,
+  authorizeRoles("technician"),
+  removeCompletedJob
+);
+
+// Technician statistics
 router.get(
   "/technician/stats",
   protect,
@@ -304,10 +202,7 @@ router.get(
   getTechnicianStats
 );
 
-// ==========================================
-// Technician Earnings
-// ==========================================
-
+// Technician earnings
 router.get(
   "/technician/earnings",
   protect,
@@ -315,21 +210,38 @@ router.get(
   getTechnicianEarnings
 );
 
+// Get technician availability
+router.get(
+  "/technician/availability",
+  protect,
+  authorizeRoles("technician"),
+  getTechnicianAvailability
+);
+
+// Update technician availability
+router.put(
+  "/technician/availability",
+  protect,
+  authorizeRoles("technician"),
+  updateTechnicianAvailability
+);
+
+// =====================================================
+// COMMON ROUTES
+// =====================================================
+
+// Active booking for the logged-in user
+router.get(
+  "/active",
+  protect,
+  getActiveBooking
+);
+
 // =====================================================
 // ADMIN ROUTES
 // =====================================================
 
-// ==========================================
-// Get All Bookings
-// ==========================================
-//
-// ADMIN ONLY
-//
-// This route is protected so normal customers
-// and technicians cannot access all bookings.
-//
-// ==========================================
-
+// Get all bookings
 router.get(
   "/",
   protect,
@@ -339,19 +251,7 @@ router.get(
 
 // =====================================================
 // SINGLE BOOKING
-// =====================================================
-//
-// IMPORTANT:
-// Keep /:id AFTER all specific GET routes.
-//
-// Otherwise:
-// /payment-history
-// /technician/stats
-// /technician/earnings
-// /active
-//
-// could potentially be interpreted as :id.
-//
+// Keep this route after specific GET routes.
 // =====================================================
 
 router.get(

@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema(
@@ -125,7 +126,6 @@ const bookingSchema = new mongoose.Schema(
 
     status: {
       type: String,
-
       enum: [
         "Pending",
         "Accepted",
@@ -134,7 +134,6 @@ const bookingSchema = new mongoose.Schema(
         "Completed",
         "Cancelled",
       ],
-
       default: "Pending",
     },
 
@@ -144,13 +143,11 @@ const bookingSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-
       enum: [
         "Cash on Service",
         "UPI",
         "Card",
       ],
-
       default: "Cash on Service",
     },
 
@@ -158,30 +155,18 @@ const bookingSchema = new mongoose.Schema(
     // PAYMENT STATUS
     // =====================================================
 
-    // IMPORTANT:
-    // New bookings always start as Pending.
-    //
-    // Creating a Razorpay order also keeps this Pending.
-    //
-    // Only successful Razorpay verification changes
-    // this value to Paid.
-
     paymentStatus: {
       type: String,
-
       enum: [
         "Pending",
         "Paid",
       ],
-
       default: "Pending",
     },
 
     // =====================================================
     // RAZORPAY ORDER ID
     // =====================================================
-
-    // Created when backend creates a Razorpay order.
 
     razorpayOrderId: {
       type: String,
@@ -192,8 +177,6 @@ const bookingSchema = new mongoose.Schema(
     // RAZORPAY PAYMENT ID
     // =====================================================
 
-    // Received after successful Razorpay payment.
-
     razorpayPaymentId: {
       type: String,
       default: null,
@@ -202,8 +185,6 @@ const bookingSchema = new mongoose.Schema(
     // =====================================================
     // RAZORPAY SIGNATURE
     // =====================================================
-
-    // Used by backend to verify payment authenticity.
 
     razorpaySignature: {
       type: String,
@@ -214,10 +195,26 @@ const bookingSchema = new mongoose.Schema(
     // PAYMENT DATE
     // =====================================================
 
-    // Set only after successful payment verification.
-
     paidAt: {
       type: Date,
+      default: null,
+    },
+
+    // =====================================================
+    // COD CASH COLLECTION AUDIT
+    // =====================================================
+
+    // Set only when the assigned technician confirms
+    // cash collection through the protected backend endpoint.
+
+    cashReceivedAt: {
+      type: Date,
+      default: null,
+    },
+
+    cashReceivedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       default: null,
     },
 
@@ -265,7 +262,6 @@ const bookingSchema = new mongoose.Schema(
       default: false,
     },
   },
-
   {
     timestamps: true,
   }

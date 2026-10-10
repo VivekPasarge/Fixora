@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
+
 import { motion } from "framer-motion";
-import { Link, useNavigate, useParams } from "react-router-dom";
+
+import {
+  Link,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 import {
   FiArrowLeft,
@@ -12,7 +18,10 @@ import {
 } from "react-icons/fi";
 
 import api from "../api/axios";
+
 import Navbar from "../components/Navbar/Navbar";
+
+import AvailableTechnicians from "../components/Booking/AvailableTechnicians";
 
 import "./Booking.css";
 
@@ -27,7 +36,9 @@ const Booking = () => {
   // Date Warning Popup
   // ==========================================
 
-  const [showDateWarning, setShowDateWarning] = useState(false);
+  const [showDateWarning, setShowDateWarning] =
+    useState(false);
+
   const [warningDate, setWarningDate] = useState("");
 
   // ==========================================
@@ -56,9 +67,13 @@ const Booking = () => {
 
     const year = today.getFullYear();
 
-    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const month = String(
+      today.getMonth() + 1
+    ).padStart(2, "0");
 
-    const day = String(today.getDate()).padStart(2, "0");
+    const day = String(
+      today.getDate()
+    ).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
   };
@@ -74,9 +89,13 @@ const Booking = () => {
 
     const year = date.getFullYear();
 
-    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const month = String(
+      date.getMonth() + 1
+    ).padStart(2, "0");
 
-    const day = String(date.getDate()).padStart(2, "0");
+    const day = String(
+      date.getDate()
+    ).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
   };
@@ -85,8 +104,11 @@ const Booking = () => {
   // Technician Acceptance Window
   // ==========================================
 
-  const isBookingBeyondTechnicianWindow = (selectedDate) => {
-    const lastAllowedDate = getDateAfterDays(2);
+  const isBookingBeyondTechnicianWindow = (
+    selectedDate
+  ) => {
+    const lastAllowedDate =
+      getDateAfterDays(2);
 
     return selectedDate > lastAllowedDate;
   };
@@ -98,7 +120,10 @@ const Booking = () => {
   const getCurrentTimeInMinutes = () => {
     const now = new Date();
 
-    return now.getHours() * 60 + now.getMinutes();
+    return (
+      now.getHours() * 60 +
+      now.getMinutes()
+    );
   };
 
   // ==========================================
@@ -106,9 +131,13 @@ const Booking = () => {
   // ==========================================
 
   const convertTimeToMinutes = (time) => {
-    if (!time) return null;
+    if (!time) {
+      return null;
+    }
 
-    const [hours, minutes] = time.split(":").map(Number);
+    const [hours, minutes] = time
+      .split(":")
+      .map(Number);
 
     if (
       Number.isNaN(hours) ||
@@ -133,13 +162,18 @@ const Booking = () => {
       return "";
     }
 
-    const date = new Date(`${dateString}T00:00:00`);
+    const date = new Date(
+      `${dateString}T00:00:00`
+    );
 
-    return date.toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
+    return date.toLocaleDateString(
+      "en-IN",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }
+    );
   };
 
   // ==========================================
@@ -149,11 +183,18 @@ const Booking = () => {
   useEffect(() => {
     const fetchService = async () => {
       try {
-        const response = await api.get(`/services/${id}`);
+        const response = await api.get(
+          `/services/${id}`
+        );
 
-        setService(response.data.service);
+        setService(
+          response.data.service
+        );
       } catch (error) {
-        console.error("Failed to fetch service:", error);
+        console.error(
+          "Failed to fetch service:",
+          error
+        );
       } finally {
         setLoading(false);
       }
@@ -176,15 +217,18 @@ const Booking = () => {
     if (name === "date") {
       const today = getTodayDate();
 
-      // Maximum 2 days from today
-      const maxDate = getDateAfterDays(2);
+      const maxDate =
+        getDateAfterDays(2);
 
       // ------------------------------------------
       // Prevent Past Dates
       // ------------------------------------------
 
       if (value < today) {
-        alert("Please select today or a future date.");
+        alert(
+          "Please select today or a future date."
+        );
+
         return;
       }
 
@@ -196,6 +240,7 @@ const Booking = () => {
         alert(
           "You can book a service only up to 2 days from today."
         );
+
         return;
       }
 
@@ -203,22 +248,29 @@ const Booking = () => {
       // If Today, Check Existing Time
       // ------------------------------------------
 
-      if (value === today && bookingData.time) {
-        const selectedTime = convertTimeToMinutes(
-          bookingData.time
-        );
+      if (
+        value === today &&
+        bookingData.time
+      ) {
+        const selectedTime =
+          convertTimeToMinutes(
+            bookingData.time
+          );
 
-        const currentTime = getCurrentTimeInMinutes();
+        const currentTime =
+          getCurrentTimeInMinutes();
 
         if (
           selectedTime !== null &&
           selectedTime <= currentTime
         ) {
-          setBookingData((previous) => ({
-            ...previous,
-            date: value,
-            time: "",
-          }));
+          setBookingData(
+            (previous) => ({
+              ...previous,
+              date: value,
+              time: "",
+            })
+          );
 
           alert(
             "The selected time has already passed. Please choose another time."
@@ -232,16 +284,22 @@ const Booking = () => {
       // Update Date
       // ------------------------------------------
 
-      setBookingData((previous) => ({
-        ...previous,
-        date: value,
-      }));
+      setBookingData(
+        (previous) => ({
+          ...previous,
+          date: value,
+        })
+      );
 
       // ------------------------------------------
       // Technician Window Warning
       // ------------------------------------------
 
-      if (isBookingBeyondTechnicianWindow(value)) {
+      if (
+        isBookingBeyondTechnicianWindow(
+          value
+        )
+      ) {
         setWarningDate(value);
         setShowDateWarning(true);
       } else {
@@ -263,10 +321,17 @@ const Booking = () => {
       // Validate Time Format
       // ------------------------------------------
 
-      const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+      const timePattern =
+        /^([01]\d|2[0-3]):([0-5]\d)$/;
 
-      if (value && !timePattern.test(value)) {
-        alert("Please select a valid time.");
+      if (
+        value &&
+        !timePattern.test(value)
+      ) {
+        alert(
+          "Please select a valid time."
+        );
+
         return;
       }
 
@@ -274,10 +339,15 @@ const Booking = () => {
       // If Booking Is Today
       // ------------------------------------------
 
-      if (bookingData.date === today && value) {
-        const selectedTime = convertTimeToMinutes(value);
+      if (
+        bookingData.date === today &&
+        value
+      ) {
+        const selectedTime =
+          convertTimeToMinutes(value);
 
-        const currentTime = getCurrentTimeInMinutes();
+        const currentTime =
+          getCurrentTimeInMinutes();
 
         if (
           selectedTime !== null &&
@@ -295,10 +365,12 @@ const Booking = () => {
       // Save Time
       // ------------------------------------------
 
-      setBookingData((previous) => ({
-        ...previous,
-        time: value,
-      }));
+      setBookingData(
+        (previous) => ({
+          ...previous,
+          time: value,
+        })
+      );
 
       return;
     }
@@ -307,10 +379,12 @@ const Booking = () => {
     // OTHER FIELDS
     // ==========================================
 
-    setBookingData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
+    setBookingData(
+      (previous) => ({
+        ...previous,
+        [name]: value,
+      })
+    );
   };
 
   // ==========================================
@@ -320,15 +394,18 @@ const Booking = () => {
   const validateBooking = () => {
     const today = getTodayDate();
 
-    // Maximum 2 days from today
-    const maxDate = getDateAfterDays(2);
+    const maxDate =
+      getDateAfterDays(2);
 
     // ------------------------------------------
     // Date Required
     // ------------------------------------------
 
     if (!bookingData.date) {
-      alert("Please select a booking date.");
+      alert(
+        "Please select a booking date."
+      );
+
       return false;
     }
 
@@ -336,8 +413,13 @@ const Booking = () => {
     // Past Date
     // ------------------------------------------
 
-    if (bookingData.date < today) {
-      alert("Booking date cannot be in the past.");
+    if (
+      bookingData.date < today
+    ) {
+      alert(
+        "Booking date cannot be in the past."
+      );
+
       return false;
     }
 
@@ -345,10 +427,13 @@ const Booking = () => {
     // Maximum 2 Days
     // ------------------------------------------
 
-    if (bookingData.date > maxDate) {
+    if (
+      bookingData.date > maxDate
+    ) {
       alert(
         "You can book a service only up to 2 days from today."
       );
+
       return false;
     }
 
@@ -357,7 +442,10 @@ const Booking = () => {
     // ------------------------------------------
 
     if (!bookingData.time) {
-      alert("Please select a booking time.");
+      alert(
+        "Please select a booking time."
+      );
+
       return false;
     }
 
@@ -365,12 +453,18 @@ const Booking = () => {
     // Validate 24-Hour Format
     // ------------------------------------------
 
-    const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    const timePattern =
+      /^([01]\d|2[0-3]):([0-5]\d)$/;
 
-    if (!timePattern.test(bookingData.time)) {
+    if (
+      !timePattern.test(
+        bookingData.time
+      )
+    ) {
       alert(
         "Invalid booking time. Please select a valid 24-hour time."
       );
+
       return false;
     }
 
@@ -378,12 +472,16 @@ const Booking = () => {
     // Prevent Past Time For Today
     // ------------------------------------------
 
-    if (bookingData.date === today) {
-      const selectedTime = convertTimeToMinutes(
-        bookingData.time
-      );
+    if (
+      bookingData.date === today
+    ) {
+      const selectedTime =
+        convertTimeToMinutes(
+          bookingData.time
+        );
 
-      const currentTime = getCurrentTimeInMinutes();
+      const currentTime =
+        getCurrentTimeInMinutes();
 
       if (
         selectedTime === null ||
@@ -414,11 +512,18 @@ const Booking = () => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem(
+          "token"
+        );
 
       if (!token) {
-        alert("Please login before booking a service.");
+        alert(
+          "Please login before booking a service."
+        );
+
         navigate("/login");
+
         return;
       }
 
@@ -426,29 +531,40 @@ const Booking = () => {
       // API Request
       // ------------------------------------------
 
-      const response = await api.post(
-        "/bookings",
-        {
-          service: service._id,
+      const response =
+        await api.post(
+          "/bookings",
+          {
+            service: service._id,
 
-          address: bookingData.address,
+            address:
+              bookingData.address,
 
-          bookingDate: bookingData.date,
+            bookingDate:
+              bookingData.date,
 
-          bookingTime: bookingData.time,
+            bookingTime:
+              bookingData.time,
 
-          paymentMethod: bookingData.paymentMethod,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+            paymentMethod:
+              bookingData.paymentMethod,
           },
-        }
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+      console.log(
+        "Booking Response:",
+        response.data
       );
 
-      console.log("Booking Response:", response.data);
-
-      alert("Booking Created Successfully");
+      alert(
+        "Booking Created Successfully"
+      );
 
       // ------------------------------------------
       // Navigate To Tracking
@@ -458,7 +574,10 @@ const Booking = () => {
         `/track-booking/${response.data.booking._id}`
       );
     } catch (error) {
-      console.error("Booking Error:", error);
+      console.error(
+        "Booking Error:",
+        error
+      );
 
       alert(
         error.response?.data?.message ||
@@ -516,43 +635,54 @@ const Booking = () => {
       {showDateWarning && (
         <div className="date-warning-overlay">
           <div className="date-warning-modal">
+
             <div className="date-warning-icon">
               !
             </div>
 
-            <h2>Booking Date Notice</h2>
+            <h2>
+              Booking Date Notice
+            </h2>
 
             <p>
-              You can book this service for:
+              You can book this service
+              for:
             </p>
 
             <div className="selected-warning-date">
-              {formatBookingDate(warningDate)}
+              {formatBookingDate(
+                warningDate
+              )}
             </div>
 
             <p>
-              However, this service date is more
-              than 2 days away.
+              However, this service date
+              is more than 2 days away.
             </p>
 
             <p>
-              You can still complete the booking,
-              but a technician cannot accept this
-              booking yet.
+              You can still complete the
+              booking, but a technician
+              cannot accept this booking
+              yet.
             </p>
 
             <div className="date-warning-highlight">
-              Your booking will remain pending until
-              it becomes eligible for technician
+              Your booking will remain
+              pending until it becomes
+              eligible for technician
               acceptance.
             </div>
 
             <button
               className="date-warning-btn"
-              onClick={() => setShowDateWarning(false)}
+              onClick={() =>
+                setShowDateWarning(false)
+              }
             >
               Got it
             </button>
+
           </div>
         </div>
       )}
@@ -602,8 +732,9 @@ const Booking = () => {
             </h1>
 
             <p>
-              Fill in your details to confirm your
-              home service booking.
+              Fill in your details to
+              confirm your home service
+              booking.
             </p>
           </motion.div>
 
@@ -620,11 +751,13 @@ const Booking = () => {
               ========================================== */}
 
               <div className="booking-card">
+
                 <h2>
                   Service Details
                 </h2>
 
                 <div className="service-box">
+
                   <div>
                     <h3>
                       {service.name}
@@ -636,6 +769,7 @@ const Booking = () => {
                   </div>
 
                   <div className="service-price">
+
                     <h3>
                       ₹{service.price}
                     </h3>
@@ -643,15 +777,27 @@ const Booking = () => {
                     <p>
                       Starting Price
                     </p>
+
                   </div>
+
                 </div>
+
               </div>
+
+              {/* ==========================================
+                  APPROVED TECHNICIANS
+              ========================================== */}
+
+              <AvailableTechnicians
+                serviceId={service._id}
+              />
 
               {/* ==========================================
                   CUSTOMER DETAILS
               ========================================== */}
 
               <div className="booking-card">
+
                 <h2 className="card-title">
                   <FiUser />
                   Customer Details
@@ -664,8 +810,12 @@ const Booking = () => {
                     name="fullName"
                     placeholder="Full Name"
                     className="form-input"
-                    value={bookingData.fullName}
-                    onChange={handleChange}
+                    value={
+                      bookingData.fullName
+                    }
+                    onChange={
+                      handleChange
+                    }
                   />
 
                   <input
@@ -673,8 +823,12 @@ const Booking = () => {
                     name="phone"
                     placeholder="Phone Number"
                     className="form-input"
-                    value={bookingData.phone}
-                    onChange={handleChange}
+                    value={
+                      bookingData.phone
+                    }
+                    onChange={
+                      handleChange
+                    }
                   />
 
                   <input
@@ -682,11 +836,16 @@ const Booking = () => {
                     name="email"
                     placeholder="Email Address"
                     className="form-input"
-                    value={bookingData.email}
-                    onChange={handleChange}
+                    value={
+                      bookingData.email
+                    }
+                    onChange={
+                      handleChange
+                    }
                   />
 
                 </div>
+
               </div>
 
               {/* ==========================================
@@ -694,6 +853,7 @@ const Booking = () => {
               ========================================== */}
 
               <div className="booking-card">
+
                 <h2 className="card-title">
                   <FiHome />
                   Service Address
@@ -706,8 +866,12 @@ const Booking = () => {
                     name="address"
                     placeholder="Complete Address"
                     className="form-textarea"
-                    value={bookingData.address}
-                    onChange={handleChange}
+                    value={
+                      bookingData.address
+                    }
+                    onChange={
+                      handleChange
+                    }
                   />
 
                   <div className="two-column">
@@ -717,8 +881,12 @@ const Booking = () => {
                       name="city"
                       placeholder="City"
                       className="form-input"
-                      value={bookingData.city}
-                      onChange={handleChange}
+                      value={
+                        bookingData.city
+                      }
+                      onChange={
+                        handleChange
+                      }
                     />
 
                     <input
@@ -726,13 +894,18 @@ const Booking = () => {
                       name="pincode"
                       placeholder="Pincode"
                       className="form-input"
-                      value={bookingData.pincode}
-                      onChange={handleChange}
+                      value={
+                        bookingData.pincode
+                      }
+                      onChange={
+                        handleChange
+                      }
                     />
 
                   </div>
 
                 </div>
+
               </div>
 
               {/* ==========================================
@@ -748,11 +921,10 @@ const Booking = () => {
 
                 <div className="two-column">
 
-                  {/* ==========================================
-                      DATE
-                  ========================================== */}
+                  {/* DATE */}
 
                   <div>
+
                     <label className="form-label">
                       Select Date
                     </label>
@@ -761,30 +933,39 @@ const Booking = () => {
                       type="date"
                       name="date"
                       className="form-input"
-                      value={bookingData.date}
+                      value={
+                        bookingData.date
+                      }
                       min={getTodayDate()}
-                      max={getDateAfterDays(2)}
-                      onChange={handleChange}
+                      max={getDateAfterDays(
+                        2
+                      )}
+                      onChange={
+                        handleChange
+                      }
                     />
 
                     <small
                       style={{
-                        display: "block",
-                        marginTop: "6px",
-                        color: "#64748b",
+                        display:
+                          "block",
+                        marginTop:
+                          "6px",
+                        color:
+                          "#64748b",
                       }}
                     >
-                      You can book from today up to
-                      2 days in advance.
+                      You can book from
+                      today up to 2 days
+                      in advance.
                     </small>
 
                   </div>
 
-                  {/* ==========================================
-                      TIME
-                  ========================================== */}
+                  {/* TIME */}
 
                   <div>
+
                     <label className="form-label">
                       Select Time
                     </label>
@@ -792,9 +973,14 @@ const Booking = () => {
                     <select
                       name="time"
                       className="form-input"
-                      value={bookingData.time}
-                      onChange={handleChange}
+                      value={
+                        bookingData.time
+                      }
+                      onChange={
+                        handleChange
+                      }
                     >
+
                       <option value="">
                         Select Time
                       </option>
@@ -894,22 +1080,27 @@ const Booking = () => {
                       <option value="23:00">
                         23:00
                       </option>
+
                     </select>
 
                     <small
                       style={{
-                        display: "block",
-                        marginTop: "6px",
-                        color: "#64748b",
+                        display:
+                          "block",
+                        marginTop:
+                          "6px",
+                        color:
+                          "#64748b",
                       }}
                     >
-                      Time is displayed in 24-hour
-                      format.
+                      Time is displayed in
+                      24-hour format.
                     </small>
 
                   </div>
 
                 </div>
+
               </div>
 
               {/* ==========================================
@@ -928,8 +1119,12 @@ const Booking = () => {
                   name="instructions"
                   placeholder="Describe your issue or provide additional instructions..."
                   className="form-textarea"
-                  value={bookingData.instructions}
-                  onChange={handleChange}
+                  value={
+                    bookingData.instructions
+                  }
+                  onChange={
+                    handleChange
+                  }
                 />
 
               </div>
@@ -951,6 +1146,7 @@ const Booking = () => {
                 <div className="summary-list">
 
                   <div className="summary-row">
+
                     <span>
                       Service
                     </span>
@@ -958,9 +1154,11 @@ const Booking = () => {
                     <strong>
                       {service.name}
                     </strong>
+
                   </div>
 
                   <div className="summary-row">
+
                     <span>
                       Service Charge
                     </span>
@@ -968,9 +1166,11 @@ const Booking = () => {
                     <strong>
                       ₹{service.price}
                     </strong>
+
                   </div>
 
                   <div className="summary-row">
+
                     <span>
                       Platform Fee
                     </span>
@@ -978,18 +1178,24 @@ const Booking = () => {
                     <strong>
                       ₹49
                     </strong>
+
                   </div>
 
                   <hr />
 
                   <div className="summary-total">
+
                     <span>
                       Total
                     </span>
 
                     <strong>
-                      ₹{Number(service.price) + 49}
+                      ₹
+                      {Number(
+                        service.price
+                      ) + 49}
                     </strong>
+
                   </div>
 
                 </div>
@@ -1010,6 +1216,7 @@ const Booking = () => {
                     {/* CASH */}
 
                     <label className="payment-option">
+
                       <input
                         type="radio"
                         name="paymentMethod"
@@ -1018,17 +1225,21 @@ const Booking = () => {
                           bookingData.paymentMethod ===
                           "Cash on Service"
                         }
-                        onChange={handleChange}
+                        onChange={
+                          handleChange
+                        }
                       />
 
                       <span>
                         Cash on Service
                       </span>
+
                     </label>
 
                     {/* UPI */}
 
                     <label className="payment-option">
+
                       <input
                         type="radio"
                         name="paymentMethod"
@@ -1037,17 +1248,21 @@ const Booking = () => {
                           bookingData.paymentMethod ===
                           "UPI"
                         }
-                        onChange={handleChange}
+                        onChange={
+                          handleChange
+                        }
                       />
 
                       <span>
                         UPI
                       </span>
+
                     </label>
 
                     {/* CARD */}
 
                     <label className="payment-option">
+
                       <input
                         type="radio"
                         name="paymentMethod"
@@ -1056,12 +1271,15 @@ const Booking = () => {
                           bookingData.paymentMethod ===
                           "Card"
                         }
-                        onChange={handleChange}
+                        onChange={
+                          handleChange
+                        }
                       />
 
                       <span>
                         Credit / Debit Card
                       </span>
+
                     </label>
 
                   </div>
