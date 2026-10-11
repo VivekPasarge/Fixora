@@ -610,10 +610,11 @@ const getBookingById = async (req, res) => {
       });
     }
 
-    const booking = await Booking.findById(id)
-      .populate("customer", "name email phone")
-      .populate("service", "name category price")
-      .populate("technician", "name email phone");
+   const booking = await Booking.findById(id)
+  .select("+otp")
+  .populate("customer", "name email phone")
+  .populate("service", "name category price")
+  .populate("technician", "name email phone");
 
     if (!booking) {
       return res.status(404).json({
