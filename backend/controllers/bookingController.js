@@ -860,72 +860,113 @@ const updateBookingStatus = async (req, res) => {
 // VERIFY BOOKING OTP
 // ==========================================================
 
+// ==========================================================
+// VERIFY BOOKING OTP - ASSIGNED TECHNICIAN
+// ==========================================================
+
 const verifyBookingOTP = async (req, res) => {
   try {
     const { id } = req.params;
     const { otp } = req.body;
-    const customerId = req.user?._id || req.user?.id;
 
-    if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({
+    const technicianId = req.user?._id || req.user?.id;
+
+    // Ensure the user is a technician.
+    if (req.user?.role !== "technician") {
+      return res.status(403).json({
         success: false,
-        message: "Invalid booking ID",
+        message: "Only the assigned technician can verify the OTP.",
       });
     }
 
-    const booking = await Booking.findById(id);
+    // Validate booking ID.
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking ID.",
+      });
+    }
+
+    // Validate OTP input.
+    if (!/^\d{4}$/.test(String(otp || ""))) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid 4-digit OTP.",
+      });
+    }
+
+    // Explicitly select OTP because the schema has select: false.
+    const booking = await Booking.findById(id).select("+otp");
 
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: "Booking not found",
+        message: "Booking not found.",
       });
     }
 
-    if (booking.customer.toString() !== customerId.toString()) {
+    // Only the technician assigned to this booking may verify it.
+    if (
+      !booking.technician ||
+      booking.technician.toString() !== technicianId.toString()
+    ) {
       return res.status(403).json({
         success: false,
-        message: "Only the customer can verify the OTP",
+        message: "You are not the technician assigned to this booking.",
       });
     }
 
+    // OTP verification is allowed only while the technician is on the way.
     if (booking.status !== "On The Way") {
       return res.status(400).json({
         success: false,
-        message: "The technician must be on the way before OTP verification",
+        message: "The booking must be On The Way before OTP verification.",
       });
     }
 
     if (booking.otpVerified) {
       return res.status(400).json({
         success: false,
-        message: "OTP has already been verified",
+        message: "OTP has already been verified.",
       });
     }
 
-    if (String(booking.otp) !== String(otp)) {
+    if (!booking.otp || String(booking.otp) !== String(otp)) {
       return res.status(400).json({
         success: false,
-        message: "Incorrect OTP",
+        message: "Incorrect OTP. Please ask the customer to confirm it.",
       });
     }
 
+    // Mark OTP as verified and move the booking to In Progress.
     booking.otpVerified = true;
-    booking.otp = undefined;
+    booking.otpVerifiedAt = new Date();
+    booking.status = "In Progress";
+    booking.trackingActive = true;
+
+    // Remove the OTP after successful verification.
+    booking.otp = "";
 
     await booking.save();
 
     return res.status(200).json({
       success: true,
-      message: "OTP verified successfully",
-      booking,
+      message: "OTP verified successfully. Service is now In Progress.",
+      booking: {
+        _id: booking._id,
+        bookingId: booking.bookingId,
+        status: booking.status,
+        otpVerified: booking.otpVerified,
+        otpVerifiedAt: booking.otpVerifiedAt,
+        trackingActive: booking.trackingActive,
+      },
     });
   } catch (error) {
     console.error("Verify Booking OTP Error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to verify OTP",
+      message: "Failed to verify OTP.",
     });
   }
 };
