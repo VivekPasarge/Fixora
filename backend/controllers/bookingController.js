@@ -1,5 +1,5 @@
-
 const mongoose = require("mongoose");
+
 const Booking = require("../models/Booking");
 const Service = require("../models/Service");
 const Review = require("../models/reviewModel");
@@ -44,7 +44,7 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // Use India-local calendar dates.
+    // Today's date in India, always YYYY-MM-DD.
     const todayString = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Asia/Kolkata",
       year: "numeric",
@@ -52,93 +52,108 @@ const createBooking = async (req, res) => {
       day: "2-digit",
     }).format(new Date());
 
-   
-const normalizedBookingDate =
-  typeof bookingDate === "string"
-    ? bookingDate.trim()
-    : "";
+    // Accept DD-MM-YYYY, DD/MM/YYYY, or YYYY-MM-DD.
+    // Convert the date to YYYY-MM-DD for reliable comparisons.
+    let normalizedBookingDate = "";
 
-const dateMatch = normalizedBookingDate.match(
-  /^(\d{4})-(\d{2})-(\d{2})$/
-);
+    if (typeof bookingDate === "string") {
+      const value = bookingDate.trim();
 
-if (!dateMatch) {
-  console.log("Invalid bookingDate received:", bookingDate);
+      let match = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
 
-  return res.status(400).json({
-    success: false,
-    message: "Invalid booking date",
-  });
-}
+      if (!match) {
+        match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      }
 
-const year = Number(dateMatch[1]);
-const month = Number(dateMatch[2]);
-const day = Number(dateMatch[3]);
+      if (match) {
+        const day = match[1];
+        const month = match[2];
+        const year = match[3];
 
-const calendarDate = new Date(
-  Date.UTC(year, month - 1, day)
-);
+        normalizedBookingDate = `${year}-${month}-${day}`;
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        normalizedBookingDate = value;
+      }
+    }
 
-if (
-  calendarDate.getUTCFullYear() !== year ||
-  calendarDate.getUTCMonth() !== month - 1 ||
-  calendarDate.getUTCDate() !== day
-) {
-  return res.status(400).json({
-    success: false,
-    message: "Invalid booking date",
-  });
-}
+    console.log("[FIXORA DATE DEBUG]", {
+      receivedDate: bookingDate,
+      normalizedDate: normalizedBookingDate,
+      today: todayString,
+    });
 
-const normalizedDate = normalizedBookingDate;
-
-
-    const selectedDate = new Date(`${bookingDate}T00:00:00+05:30`);
-
-    if (
-      Number.isNaN(selectedDate.getTime()) ||
-      selectedDate.toISOString().slice(0, 10) !== bookingDate
-    ) {
+    if (!normalizedBookingDate) {
       return res.status(400).json({
         success: false,
-        message: "Invalid booking date",
+        message: "Invalid booking date. Use DD-MM-YYYY format.",
+        receivedDate: bookingDate,
       });
     }
 
-    if (bookingDate < todayString) {
+    const [year, month, day] =
+      normalizedBookingDate.split("-").map(Number);
+
+    // Validate the actual calendar date.
+    const calendarDate = new Date(
+      Date.UTC(year, month - 1, day)
+    );
+
+    if (
+      calendarDate.getUTCFullYear() !== year ||
+      calendarDate.getUTCMonth() !== month - 1 ||
+      calendarDate.getUTCDate() !== day
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid calendar date.",
+        receivedDate: bookingDate,
+      });
+    }
+
+    // Reject dates in the past.
+    if (normalizedBookingDate < todayString) {
       return res.status(400).json({
         success: false,
         message: "Booking date cannot be in the past",
       });
     }
 
-    const today = new Date(`${todayString}T00:00:00+05:30`);
-    today.setUTCDate(today.getUTCDate() + 2);
+    // Permit booking today and up to two days ahead.
+    const [todayYear, todayMonth, todayDay] =
+      todayString.split("-").map(Number);
 
-    const maxBookingDateString = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(today);
+    const maxDate = new Date(
+      Date.UTC(todayYear, todayMonth - 1, todayDay + 2)
+    );
 
-    if (bookingDate > maxBookingDateString) {
+    const maxBookingDateString = [
+      maxDate.getUTCFullYear(),
+      String(maxDate.getUTCMonth() + 1).padStart(2, "0"),
+      String(maxDate.getUTCDate()).padStart(2, "0"),
+    ].join("-");
+
+    if (normalizedBookingDate > maxBookingDateString) {
       return res.status(400).json({
         success: false,
         message: "You can book a service only up to 2 days from today.",
       });
     }
 
+    // Validate time in HH:mm format.
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
-    if (typeof bookingTime !== "string" || !timeRegex.test(bookingTime)) {
+    if (
+      typeof bookingTime !== "string" ||
+      !timeRegex.test(bookingTime)
+    ) {
       return res.status(400).json({
         success: false,
         message: "Please select a valid booking time",
       });
     }
 
-    if (bookingDate === todayString) {
+    // Reject past times when booking for today.
+    if (normalizedBookingDate === todayString) {
       const indiaTime = new Intl.DateTimeFormat("en-GB", {
         timeZone: "Asia/Kolkata",
         hour: "2-digit",
@@ -146,8 +161,11 @@ const normalizedDate = normalizedBookingDate;
         hour12: false,
       }).format(new Date());
 
-      const [currentHour, currentMinute] = indiaTime.split(":").map(Number);
-      const [selectedHour, selectedMinute] = bookingTime.split(":").map(Number);
+      const [currentHour, currentMinute] =
+        indiaTime.split(":").map(Number);
+
+      const [selectedHour, selectedMinute] =
+        bookingTime.split(":").map(Number);
 
       if (
         selectedHour * 60 + selectedMinute <=
@@ -160,6 +178,7 @@ const normalizedDate = normalizedBookingDate;
       }
     }
 
+    // Validate customer location when supplied.
     let savedCustomerLocation;
 
     if (customerLocation != null) {
@@ -192,9 +211,13 @@ const normalizedDate = normalizedBookingDate;
         });
       }
 
-      savedCustomerLocation = { latitude, longitude };
+      savedCustomerLocation = {
+        latitude,
+        longitude,
+      };
     }
 
+    // Find the service.
     const serviceData = await Service.findById(service);
 
     if (!serviceData) {
@@ -204,9 +227,15 @@ const normalizedDate = normalizedBookingDate;
       });
     }
 
-    const allowedPaymentMethods = ["Cash on Service", "UPI", "Card"];
+    // Validate payment method.
+    const allowedPaymentMethods = [
+      "Cash on Service",
+      "UPI",
+      "Card",
+    ];
 
-    const selectedPaymentMethod = paymentMethod || "Cash on Service";
+    const selectedPaymentMethod =
+      paymentMethod || "Cash on Service";
 
     if (!allowedPaymentMethods.includes(selectedPaymentMethod)) {
       return res.status(400).json({
@@ -215,8 +244,7 @@ const normalizedDate = normalizedBookingDate;
       });
     }
 
-    // The existing sequential ID approach is retained for compatibility.
-    // For high concurrency, replace this with an atomic counter collection.
+    // Generate booking ID using the existing format.
     const lastBooking = await Booking.findOne()
       .sort({ createdAt: -1, _id: -1 })
       .select("bookingId");
@@ -232,9 +260,9 @@ const normalizedDate = normalizedBookingDate;
       }
     }
 
-    const bookingId = `FXR-${new Date().getFullYear()}-${String(
-      bookingNumber
-    ).padStart(6, "0")}`;
+    const bookingId =
+      `FXR-${new Date().getFullYear()}-` +
+      String(bookingNumber).padStart(6, "0");
 
     const otp = String(
       Math.floor(1000 + Math.random() * 9000)
@@ -245,7 +273,10 @@ const normalizedDate = normalizedBookingDate;
       customer,
       service,
       address: address.trim(),
-      bookingDate,
+
+      // Store the normalized date to keep comparisons consistent.
+      bookingDate: normalizedBookingDate,
+
       bookingTime,
       price: serviceData.price,
       paymentMethod: selectedPaymentMethod,
@@ -360,18 +391,14 @@ const removeBookingFromMyBookings = async (req, res) => {
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({
         success: false,
-        message: "Valid booking ID is required",
+        message: "Invalid booking ID",
       });
     }
 
-    if (!customerId) {
-      return res.status(401).json({
-        success: false,
-        message: "Customer authentication required",
-      });
-    }
-
-    const booking = await Booking.findById(id);
+    const booking = await Booking.findOne({
+      _id: id,
+      customer: customerId,
+    });
 
     if (!booking) {
       return res.status(404).json({
@@ -380,17 +407,10 @@ const removeBookingFromMyBookings = async (req, res) => {
       });
     }
 
-    if (booking.customer.toString() !== customerId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "You are not authorized to remove this booking",
-      });
-    }
-
-    if (booking.customerRemoved === true) {
+    if (!["Completed", "Cancelled"].includes(booking.status)) {
       return res.status(400).json({
         success: false,
-        message: "Booking is already in booking history",
+        message: "Only completed or cancelled bookings can be removed",
       });
     }
 
@@ -401,8 +421,8 @@ const removeBookingFromMyBookings = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Booking moved to booking history successfully",
-      bookingId: booking._id,
+      message: "Booking removed from My Bookings",
+      booking,
     });
   } catch (error) {
     console.error("Remove Booking Error:", error);
@@ -415,7 +435,7 @@ const removeBookingFromMyBookings = async (req, res) => {
 };
 
 // ==========================================================
-// GET CUSTOMER BOOKING HISTORY
+// GET MY BOOKING HISTORY - CUSTOMER
 // ==========================================================
 
 const getMyBookingHistory = async (req, res) => {
@@ -431,14 +451,14 @@ const getMyBookingHistory = async (req, res) => {
 
     const bookings = await Booking.find({
       customer: customerId,
-      customerRemoved: true,
+      $or: [
+        { customerRemoved: true },
+        { status: { $in: ["Completed", "Cancelled"] } },
+      ],
     })
-      .select(
-        "bookingId service technician address bookingDate bookingTime status paymentStatus price createdAt updatedAt technicianCancelled technicianCancellation customerRemoved customerRemovedAt paymentMethod razorpayOrderId razorpayPaymentId paidAt"
-      )
       .populate("service", "name category price image")
       .populate("technician", "name phone profession profilePhoto")
-      .sort({ customerRemovedAt: -1 })
+      .sort({ updatedAt: -1 })
       .lean();
 
     return res.status(200).json({
@@ -447,7 +467,7 @@ const getMyBookingHistory = async (req, res) => {
       bookings,
     });
   } catch (error) {
-    console.error("Get Customer Booking History Error:", error);
+    console.error("Get Booking History Error:", error);
 
     return res.status(500).json({
       success: false,
@@ -534,14 +554,12 @@ const getTechnicianEarnings = async (req, res) => {
       0
     );
 
-    const today = new Date();
-
     const todayString = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Asia/Kolkata",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-    }).format(today);
+    }).format(new Date());
 
     const todayEarnings = completedBookings
       .filter((booking) => {
@@ -790,7 +808,8 @@ const updateBookingStatus = async (req, res) => {
       "In Progress": ["Completed"],
     };
 
-    const permittedNextStatuses = validTransitions[booking.status] || [];
+    const permittedNextStatuses =
+      validTransitions[booking.status] || [];
 
     if (!permittedNextStatuses.includes(status)) {
       return res.status(400).json({
@@ -798,14 +817,13 @@ const updateBookingStatus = async (req, res) => {
         message: `Cannot change booking status from ${booking.status} to ${status}`,
       });
     }
-    
-if (status === "In Progress" && !booking.otpVerified) {
-  return res.status(400).json({
-    success: false,
-    message: "Verify the customer OTP before starting the service",
-  });
-}
 
+    if (status === "In Progress" && !booking.otpVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Verify the customer OTP before starting the service",
+      });
+    }
 
     if (status === "Completed" && !booking.otpVerified) {
       return res.status(400).json({
@@ -841,38 +859,39 @@ if (status === "In Progress" && !booking.otpVerified) {
 // VERIFY BOOKING OTP
 // ==========================================================
 
-
 const verifyBookingOTP = async (req, res) => {
   try {
     const { id } = req.params;
     const { otp } = req.body;
-    const technicianId = req.user?._id || req.user?.id;
+    const customerId = req.user?._id || req.user?.id;
 
-    if (!otp || !/^\d{4}$/.test(String(otp).trim())) {
+    if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({
         success: false,
-        message: "Please enter the valid four-digit customer OTP",
+        message: "Invalid booking ID",
       });
     }
 
-    const booking = await Booking.findOne({
-      _id: id,
-      technician: technicianId,
-    }).select("+otp");
+    const booking = await Booking.findById(id);
 
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: "Booking not found or not assigned to you",
+        message: "Booking not found",
       });
     }
 
-    // OTP must be verified after the technician reaches the customer.
+    if (booking.customer.toString() !== customerId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the customer can verify the OTP",
+      });
+    }
+
     if (booking.status !== "On The Way") {
       return res.status(400).json({
         success: false,
-        message:
-          "Reach the customer and update the booking to On The Way before verifying OTP",
+        message: "The technician must be on the way before OTP verification",
       });
     }
 
@@ -883,7 +902,7 @@ const verifyBookingOTP = async (req, res) => {
       });
     }
 
-    if (!booking.otp || String(booking.otp) !== String(otp).trim()) {
+    if (String(booking.otp) !== String(otp)) {
       return res.status(400).json({
         success: false,
         message: "Incorrect OTP",
@@ -891,13 +910,13 @@ const verifyBookingOTP = async (req, res) => {
     }
 
     booking.otpVerified = true;
-    booking.otpVerifiedAt = new Date();
+    booking.otp = undefined;
 
     await booking.save();
 
     return res.status(200).json({
       success: true,
-      message: "Customer OTP verified successfully. You can now start the service.",
+      message: "OTP verified successfully",
       booking,
     });
   } catch (error) {
@@ -905,29 +924,26 @@ const verifyBookingOTP = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to verify booking OTP",
+      message: "Failed to verify OTP",
     });
   }
 };
 
-
 // ==========================================================
-// SELECT PAYMENT METHOD FOR EXISTING BOOKING
-// Online payments must use the Razorpay controller.
+// PAY FOR BOOKING
+// IMPORTANT: This endpoint must not mark an online payment
+// as paid without verified payment-provider confirmation.
 // ==========================================================
 
 const payForBooking = async (req, res) => {
   try {
     const { id } = req.params;
-    const { paymentMethod } = req.body;
     const customerId = req.user?._id || req.user?.id;
 
-    const allowedMethods = ["Cash on Service", "UPI", "Card"];
-
-    if (!allowedMethods.includes(paymentMethod)) {
+    if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid payment method",
+        message: "Invalid booking ID",
       });
     }
 
@@ -944,37 +960,30 @@ const payForBooking = async (req, res) => {
     }
 
     if (booking.paymentStatus === "Paid") {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
         message: "This booking has already been paid",
       });
     }
 
-    if (paymentMethod !== "Cash on Service") {
+    if (booking.paymentMethod === "Cash on Service") {
       return res.status(400).json({
         success: false,
-        message:
-          "Online payments must be completed through the Razorpay payment flow",
+        message: "This booking uses cash payment",
       });
     }
 
-    booking.paymentMethod = "Cash on Service";
-    booking.paymentStatus = "Pending";
-
-    await booking.save();
-
-    return res.status(200).json({
-      success: true,
+    return res.status(400).json({
+      success: false,
       message:
-        "Cash on Service selected. Payment remains pending until the technician confirms receipt.",
-      booking,
+        "Online payment must be completed through the payment provider and verified by the backend.",
     });
   } catch (error) {
     console.error("Pay For Booking Error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to update payment method",
+      message: "Failed to process payment",
     });
   }
 };
@@ -985,26 +994,19 @@ const payForBooking = async (req, res) => {
 
 const getPaymentHistory = async (req, res) => {
   try {
-    const userId = req.user?._id || req.user?.id;
-    const role = req.user?.role;
+    const customerId = req.user?._id || req.user?.id;
 
-    const filter =
-      role === "technician"
-        ? { technician: userId }
-        : { customer: userId };
-
-    const bookings = await Booking.find(filter)
+    const bookings = await Booking.find({
+      customer: customerId,
+    })
       .select(
-        "bookingId customer technician service price paymentMethod paymentStatus paidAt cashReceivedAt createdAt"
+        "bookingId service price paymentMethod paymentStatus razorpayOrderId razorpayPaymentId paidAt createdAt"
       )
-      .populate("customer", "name email")
-      .populate("technician", "name email")
-      .populate("service", "name")
+      .populate("service", "name category")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
-      count: bookings.length,
       payments: bookings,
     });
   } catch (error) {
@@ -1018,85 +1020,17 @@ const getPaymentHistory = async (req, res) => {
 };
 
 // ==========================================================
-// GET BOOKED TIME SLOTS
-// ==========================================================
-
-const getBookedTimeSlots = async (req, res) => {
-  try {
-    const { date, service } = req.query;
-
-    if (!date || !service) {
-      return res.status(400).json({
-        success: false,
-        message: "Date and service are required",
-      });
-    }
-
-    if (!mongoose.isValidObjectId(service)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid service ID",
-      });
-    }
-
-    const bookings = await Booking.find({
-      bookingDate: date,
-      service,
-      status: { $ne: "Cancelled" },
-    }).select("bookingTime");
-
-    return res.status(200).json({
-      success: true,
-      date,
-      bookedSlots: bookings.map((booking) => booking.bookingTime),
-    });
-  } catch (error) {
-    console.error("Get Booked Time Slots Error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch booked time slots",
-    });
-  }
-};
-
-// ==========================================================
-// GET PENDING BOOKINGS - TECHNICIAN
+// GET PENDING BOOKINGS
 // ==========================================================
 
 const getPendingBookings = async (req, res) => {
   try {
-    const technicianId = req.user?._id || req.user?.id;
-
-    const technician = await User.findById(technicianId).select(
-      "isAvailable availability"
-    );
-
-    if (!technician) {
-      return res.status(404).json({
-        success: false,
-        message: "Technician not found",
-      });
-    }
-
-    if (
-      technician.isAvailable === false ||
-      technician.availability === false
-    ) {
-      return res.status(200).json({
-        success: true,
-        count: 0,
-        bookings: [],
-      });
-    }
-
     const bookings = await Booking.find({
       status: "Pending",
       technician: null,
-      declinedTechnicians: { $ne: technicianId },
     })
       .populate("customer", "name phone")
-      .populate("service", "name category price image")
+      .populate("service", "name category price")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -1124,14 +1058,11 @@ const getAssignedBookings = async (req, res) => {
 
     const bookings = await Booking.find({
       technician: technicianId,
-      technicianRemoved: { $ne: true },
-      status: {
-        $in: ["Accepted", "On The Way", "In Progress", "Completed"],
-      },
+      status: { $nin: ["Cancelled"] },
     })
-      .populate("customer", "name phone email")
-      .populate("service", "name category price image")
-      .sort({ updatedAt: -1 });
+      .populate("customer", "name phone")
+      .populate("service", "name category price")
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -1149,6 +1080,164 @@ const getAssignedBookings = async (req, res) => {
 };
 
 // ==========================================================
+// CANCEL BOOKING - CUSTOMER
+// ==========================================================
+
+const cancelBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const customerId = req.user?._id || req.user?.id;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking ID",
+      });
+    }
+
+    const booking = await Booking.findOne({
+      _id: id,
+      customer: customerId,
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    if (["Completed", "Cancelled"].includes(booking.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "This booking cannot be cancelled",
+      });
+    }
+
+    booking.status = "Cancelled";
+    booking.trackingActive = false;
+
+    await booking.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Booking cancelled successfully",
+      booking,
+    });
+  } catch (error) {
+    console.error("Cancel Booking Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to cancel booking",
+    });
+  }
+};
+
+// ==========================================================
+// TECHNICIAN CANCEL JOB
+// ==========================================================
+
+const technicianCancelJob = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const technicianId = req.user?._id || req.user?.id;
+
+    const booking = await Booking.findOne({
+      _id: id,
+      technician: technicianId,
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Assigned booking not found",
+      });
+    }
+
+    if (["Completed", "Cancelled"].includes(booking.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "This booking cannot be cancelled",
+      });
+    }
+
+    booking.technicianCancelled = true;
+    booking.technicianCancellation = {
+      reason: req.body?.reason || "Cancelled by technician",
+      cancelledAt: new Date(),
+    };
+    booking.technician = null;
+    booking.status = "Pending";
+    booking.trackingActive = false;
+
+    await booking.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Job released successfully",
+      booking,
+    });
+  } catch (error) {
+    console.error("Technician Cancel Job Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to release job",
+    });
+  }
+};
+
+// ==========================================================
+// DECLINE AVAILABLE JOB
+// ==========================================================
+
+const declineAvailableJob = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const technicianId = req.user?._id || req.user?.id;
+
+    const booking = await Booking.findOne({
+      _id: id,
+      status: "Pending",
+      technician: null,
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Available booking not found",
+      });
+    }
+
+    const declined = (booking.declinedTechnicians || []).some(
+      (value) => value.toString() === technicianId.toString()
+    );
+
+    if (!declined) {
+      booking.declinedTechnicians = [
+        ...(booking.declinedTechnicians || []),
+        technicianId,
+      ];
+
+      await booking.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Job declined successfully",
+    });
+  } catch (error) {
+    console.error("Decline Available Job Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to decline job",
+    });
+  }
+};
+
+// ==========================================================
 // GET AVAILABLE JOBS
 // ==========================================================
 
@@ -1156,34 +1245,13 @@ const getAvailableJobs = async (req, res) => {
   try {
     const technicianId = req.user?._id || req.user?.id;
 
-    const technician = await User.findById(technicianId);
-
-    if (!technician) {
-      return res.status(404).json({
-        success: false,
-        message: "Technician not found",
-      });
-    }
-
-    if (
-      technician.isAvailable === false ||
-      technician.availability === false
-    ) {
-      return res.status(200).json({
-        success: true,
-        count: 0,
-        bookings: [],
-        message: "You are currently unavailable for new jobs",
-      });
-    }
-
     const bookings = await Booking.find({
       status: "Pending",
       technician: null,
       declinedTechnicians: { $ne: technicianId },
     })
       .populate("customer", "name phone")
-      .populate("service", "name category price image")
+      .populate("service", "name category price")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({
@@ -1207,19 +1275,26 @@ const getAvailableJobs = async (req, res) => {
 
 const getActiveBooking = async (req, res) => {
   try {
-    const technicianId = req.user?._id || req.user?.id;
+    const userId = req.user?._id || req.user?.id;
+    const role = req.user?.role;
 
-    const booking = await Booking.findOne({
-      technician: technicianId,
-      status: { $in: ["Accepted", "On The Way", "In Progress"] },
-    })
+    const filter =
+      role === "technician"
+        ? { technician: userId }
+        : { customer: userId };
+
+    filter.status = {
+      $in: ["Accepted", "On The Way", "In Progress"],
+    };
+
+    const booking = await Booking.findOne(filter)
       .populate("customer", "name phone")
-      .populate("service", "name category price")
-      .sort({ updatedAt: -1 });
+      .populate("technician", "name phone")
+      .populate("service", "name category price");
 
     return res.status(200).json({
       success: true,
-      booking: booking || null,
+      booking,
     });
   } catch (error) {
     console.error("Get Active Booking Error:", error);
@@ -1250,21 +1325,17 @@ const getTechnicianAvailability = async (req, res) => {
       });
     }
 
-    const isAvailable =
-      technician.isAvailable !== undefined
-        ? technician.isAvailable
-        : technician.availability !== false;
-
     return res.status(200).json({
       success: true,
-      isAvailable,
+      isAvailable:
+        technician.isAvailable ?? technician.availability ?? true,
     });
   } catch (error) {
     console.error("Get Technician Availability Error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch technician availability",
+      message: "Failed to fetch availability",
     });
   }
 };
@@ -1308,9 +1379,7 @@ const updateTechnicianAvailability = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: isAvailable
-        ? "You are now available for jobs"
-        : "You are now unavailable for jobs",
+      message: "Availability updated successfully",
       isAvailable,
     });
   } catch (error) {
@@ -1318,189 +1387,13 @@ const updateTechnicianAvailability = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to update technician availability",
+      message: "Failed to update availability",
     });
   }
 };
 
 // ==========================================================
-// DECLINE AVAILABLE JOB
-// ==========================================================
-
-const declineAvailableJob = async (req, res) => {
-  try {
-    const technicianId = req.user?._id || req.user?.id;
-    const { id } = req.params;
-
-    const booking = await Booking.findOneAndUpdate(
-      {
-        _id: id,
-        status: "Pending",
-        technician: null,
-        declinedTechnicians: { $ne: technicianId },
-      },
-      {
-        $addToSet: {
-          declinedTechnicians: technicianId,
-        },
-      },
-      {
-        new: true,
-      }
-    );
-
-    if (!booking) {
-      const existingBooking = await Booking.findById(id);
-
-      if (!existingBooking) {
-        return res.status(404).json({
-          success: false,
-          message: "Booking not found",
-        });
-      }
-
-      if (existingBooking.technician) {
-        return res.status(409).json({
-          success: false,
-          message: "This booking has already been accepted",
-        });
-      }
-
-      return res.status(409).json({
-        success: false,
-        message: "This booking is no longer available or was already declined",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Booking declined successfully",
-    });
-  } catch (error) {
-    console.error("Decline Available Job Error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to decline booking",
-    });
-  }
-};
-
-// ==========================================================
-// CANCEL BOOKING - CUSTOMER
-// ==========================================================
-
-const cancelBooking = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const customerId = req.user?._id || req.user?.id;
-
-    const booking = await Booking.findOne({
-      _id: id,
-      customer: customerId,
-    });
-
-    if (!booking) {
-      return res.status(404).json({
-        success: false,
-        message: "Booking not found",
-      });
-    }
-
-    if (["Completed", "Cancelled"].includes(booking.status)) {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot cancel a ${booking.status.toLowerCase()} booking`,
-      });
-    }
-
-    if (booking.paymentStatus === "Paid") {
-      return res.status(400).json({
-        success: false,
-        message:
-          "This booking has already been paid. Process a refund before cancelling.",
-      });
-    }
-
-    booking.status = "Cancelled";
-    booking.trackingActive = false;
-
-    await booking.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Booking cancelled successfully",
-      booking,
-    });
-  } catch (error) {
-    console.error("Cancel Booking Error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to cancel booking",
-    });
-  }
-};
-
-// ==========================================================
-// CANCEL JOB - TECHNICIAN
-// ==========================================================
-
-const technicianCancelJob = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const technicianId = req.user?._id || req.user?.id;
-
-    const booking = await Booking.findOne({
-      _id: id,
-      technician: technicianId,
-    });
-
-    if (!booking) {
-      return res.status(404).json({
-        success: false,
-        message: "Assigned booking not found",
-      });
-    }
-
-    if (["Completed", "Cancelled"].includes(booking.status)) {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot cancel a ${booking.status.toLowerCase()} booking`,
-      });
-    }
-
-    if (booking.paymentStatus === "Paid") {
-      return res.status(400).json({
-        success: false,
-        message:
-          "This booking has already been paid. Resolve the payment before cancelling.",
-      });
-    }
-
-    booking.status = "Cancelled";
-    booking.technicianCancelled = true;
-    booking.trackingActive = false;
-
-    await booking.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Job cancelled successfully",
-      booking,
-    });
-  } catch (error) {
-    console.error("Technician Cancel Job Error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to cancel job",
-    });
-  }
-};
-
-// ==========================================================
-// REMOVE COMPLETED JOB - TECHNICIAN
+// REMOVE COMPLETED JOB
 // ==========================================================
 
 const removeCompletedJob = async (req, res) => {
@@ -1511,19 +1404,13 @@ const removeCompletedJob = async (req, res) => {
     const booking = await Booking.findOne({
       _id: id,
       technician: technicianId,
+      status: "Completed",
     });
 
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: "Booking not found or not assigned to you",
-      });
-    }
-
-    if (booking.status !== "Completed") {
-      return res.status(400).json({
-        success: false,
-        message: "Only completed jobs can be removed from your list",
+        message: "Completed job not found",
       });
     }
 
@@ -1547,129 +1434,142 @@ const removeCompletedJob = async (req, res) => {
 };
 
 // ==========================================================
-// MARK CASH RECEIVED - TECHNICIAN
+// GET BOOKED TIME SLOTS
 // ==========================================================
 
-const markCashReceived = async (req, res) => {
-  let session;
-
+const getBookedTimeSlots = async (req, res) => {
   try {
-    const technicianId = req.user?._id || req.user?.id;
-    const bookingId = req.params.id;
+    const { date, service } = req.query;
 
-    if (!mongoose.isValidObjectId(bookingId)) {
+    if (!date) {
       return res.status(400).json({
         success: false,
-        message: "Invalid booking ID",
+        message: "Booking date is required",
       });
     }
 
-    session = await mongoose.startSession();
-    session.startTransaction();
+    const filter = {
+      bookingDate: date,
+      status: { $nin: ["Cancelled"] },
+    };
 
-    const now = new Date();
+    if (service && mongoose.isValidObjectId(service)) {
+      filter.service = service;
+    }
 
-    const booking = await Booking.findOneAndUpdate(
-      {
-        _id: bookingId,
-        technician: technicianId,
-        status: "Completed",
-        paymentMethod: "Cash on Service",
-        paymentStatus: "Pending",
-        cashReceivedAt: null,
-      },
-      {
-        $set: {
-          paymentStatus: "Paid",
-          paidAt: now,
-          cashReceivedAt: now,
-          cashReceivedBy: technicianId,
-        },
-      },
-      {
-        new: true,
-        runValidators: true,
-        session,
-      }
+    const bookings = await Booking.find(filter).select(
+      "bookingTime status"
     );
 
-    if (!booking) {
-      await session.abortTransaction();
+    return res.status(200).json({
+      success: true,
+      bookedTimeSlots: bookings.map((booking) => booking.bookingTime),
+    });
+  } catch (error) {
+    console.error("Get Booked Time Slots Error:", error);
 
-      const existingBooking = await Booking.findById(bookingId);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch booked time slots",
+    });
+  }
+};
 
-      if (!existingBooking) {
+// ==========================================================
+// MARK CASH RECEIVED
+// ==========================================================
+
+const markCashReceived = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const technicianId = req.user?._id || req.user?.id;
+
+    const session = await mongoose.startSession();
+
+    try {
+      session.startTransaction();
+
+      const booking = await Booking.findOne({
+        _id: id,
+        technician: technicianId,
+      }).session(session);
+
+      if (!booking) {
+        await session.abortTransaction();
+
         return res.status(404).json({
           success: false,
           message: "Booking not found",
         });
       }
 
-      if (
-        !existingBooking.technician ||
-        existingBooking.technician.toString() !== technicianId.toString()
-      ) {
-        return res.status(403).json({
-          success: false,
-          message: "This booking is not assigned to you",
-        });
-      }
+      if (booking.paymentMethod !== "Cash on Service") {
+        await session.abortTransaction();
 
-      if (existingBooking.paymentStatus === "Paid") {
-        return res.status(409).json({
-          success: false,
-          message: "This booking has already been paid",
-        });
-      }
-
-      if (existingBooking.paymentMethod !== "Cash on Service") {
         return res.status(400).json({
           success: false,
           message: "This booking is not a cash payment",
         });
       }
 
-      if (existingBooking.status !== "Completed") {
+      if (booking.status !== "Completed") {
+        await session.abortTransaction();
+
         return res.status(400).json({
           success: false,
           message: "Complete the service before confirming cash collection",
         });
       }
 
-      return res.status(409).json({
-        success: false,
-        message: "Cash collection could not be confirmed. Refresh and try again.",
+      if (booking.paymentStatus === "Paid") {
+        await session.abortTransaction();
+
+        return res.status(409).json({
+          success: false,
+          message: "Cash payment has already been recorded",
+        });
+      }
+
+      booking.paymentStatus = "Paid";
+      booking.paidAt = new Date();
+
+      await booking.save({ session });
+
+      await WalletTransaction.create(
+        [
+          {
+            technician: technicianId,
+            booking: booking._id,
+            type: "EARNING",
+            amount: Number(booking.price),
+            direction: "CREDIT",
+            status: "COMPLETED",
+            description: `Earnings for booking ${booking.bookingId}`,
+            reference: `booking:${booking._id}:earning`,
+            processedAt: new Date(),
+          },
+        ],
+        { session }
+      );
+
+      await session.commitTransaction();
+
+      return res.status(200).json({
+        success: true,
+        message: "Cash collection recorded successfully",
+        booking,
       });
+    } catch (error) {
+      if (session.inTransaction()) {
+        await session.abortTransaction();
+      }
+
+      throw error;
+    } finally {
+      await session.endSession();
     }
-
-    await WalletTransaction.create(
-      [
-        {
-          technician: technicianId,
-          booking: booking._id,
-          type: "EARNING",
-          amount: Number(booking.price),
-          direction: "CREDIT",
-          status: "COMPLETED",
-          description: `Earnings for booking ${booking.bookingId}`,
-          reference: `booking:${booking._id}:earning`,
-          processedAt: now,
-        },
-      ],
-      { session }
-    );
-
-    await session.commitTransaction();
-
-    return res.status(200).json({
-      success: true,
-      message: "Cash collection recorded and wallet credited successfully",
-      booking,
-    });
   } catch (error) {
-    if (session && session.inTransaction()) {
-      await session.abortTransaction();
-    }
+    console.error("Mark Cash Received Error:", error);
 
     if (error.code === 11000) {
       return res.status(409).json({
@@ -1678,16 +1578,10 @@ const markCashReceived = async (req, res) => {
       });
     }
 
-    console.error("Mark Cash Received Error:", error);
-
     return res.status(500).json({
       success: false,
-      message: "Failed to record cash collection and wallet transaction",
+      message: "Failed to record cash collection",
     });
-  } finally {
-    if (session) {
-      await session.endSession();
-    }
   }
 };
 

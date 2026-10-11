@@ -4,27 +4,27 @@ import { motion } from "framer-motion";
 
 import {
 
-  Link,
+Link,
 
-  useNavigate,
+useNavigate,
 
-  useParams,
+useParams,
 
 } from "react-router-dom";
 
 import {
 
-  FiArrowLeft,
+FiArrowLeft,
 
-  FiCalendar,
+FiCalendar,
 
-  FiCreditCard,
+FiCreditCard,
 
-  FiHome,
+FiHome,
 
-  FiMapPin,
+FiMapPin,
 
-  FiUser,
+FiUser,
 
 } from "react-icons/fi";
 
@@ -35,17 +35,19 @@ import Navbar from "../components/Navbar/Navbar";
 import AvailableTechnicians from "../components/Booking/AvailableTechnicians";
 
 import "./Booking.css";
+
 import "./BookingLocation.css";
 
 const Booking = () => {
 
-  const navigate = useNavigate();
+const navigate = useNavigate();
 
-  const { id } = useParams();
+const { id } = useParams();
 
-  const [service, setService] = useState(null);
+const [service, setService] = useState(null);
 
-  const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(true);
+const [isSubmitting, setIsSubmitting] = useState(false);
 
 const [customerLocation, setCustomerLocation] = useState(null);
 
@@ -53,2060 +55,2096 @@ const [locationLoading, setLocationLoading] = useState(false);
 
 const [locationMessage, setLocationMessage] = useState("");
 
-  // ==========================================
+// ==========================================
 
-  // Date Warning Popup
+// Date Warning Popup
 
-  // ==========================================
+// ==========================================
 
-  const [showDateWarning, setShowDateWarning] =
+const [showDateWarning, setShowDateWarning] =
 
-    useState(false);
+useState(false);
 
-  const [warningDate, setWarningDate] = useState("");
+const [warningDate, setWarningDate] = useState("");
 
-  // ==========================================
+// ==========================================
 
-  // Booking Data
+// Booking Data
 
-  // ==========================================
+// ==========================================
 
-  const [bookingData, setBookingData] = useState({
+const [bookingData, setBookingData] = useState({
 
-    fullName: "",
+fullName: "",
 
-    phone: "",
+phone: "",
 
-    email: "",
+email: "",
 
-    address: "",
+address: "",
 
-    city: "",
+city: "",
 
-    pincode: "",
+pincode: "",
 
-    date: "",
+date: "",
 
-    time: "",
+time: "",
 
-    instructions: "",
+instructions: "",
 
-    paymentMethod: "Cash on Service",
+paymentMethod: "Cash on Service",
 
-  });
+});
 
-  // ==========================================
+// ==========================================
 
-  // Get Today's Date
+// Get Today's Date
 
-  // ==========================================
+// ==========================================
 
-  const getTodayDate = () => {
+const getTodayDate = () => {
+  // Use India-local calendar dates, regardless of the device timezone.
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+};
 
-    const today = new Date();
+// ==========================================
 
-    const year = today.getFullYear();
+// Get Date After N Days
 
-    const month = String(
+// ==========================================
 
-      today.getMonth() + 1
+const getDateAfterDays = (days) => {
+  // Do date arithmetic on the YYYY-MM-DD calendar date, not device-local time.
+  const [year, month, day] = getTodayDate().split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day + days));
 
-    ).padStart(2, "0");
+  return [
+    date.getUTCFullYear(),
+    String(date.getUTCMonth() + 1).padStart(2, "0"),
+    String(date.getUTCDate()).padStart(2, "0"),
+  ].join("-");
+};
 
-    const day = String(
+// ==========================================
 
-      today.getDate()
+// Technician Acceptance Window
 
-    ).padStart(2, "0");
+// ==========================================
 
-    return `${year}-${month}-${day}`;
+const isBookingBeyondTechnicianWindow = (
 
-  };
+selectedDate
 
-  // ==========================================
+) => {
 
-  // Get Date After N Days
+const lastAllowedDate =
 
-  // ==========================================
+getDateAfterDays(2);
 
-  const getDateAfterDays = (days) => {
-
-    const date = new Date();
-
-    date.setDate(date.getDate() + days);
-
-    const year = date.getFullYear();
-
-    const month = String(
-
-      date.getMonth() + 1
-
-    ).padStart(2, "0");
-
-    const day = String(
-
-      date.getDate()
-
-    ).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-
-  };
-
-  // ==========================================
-
-  // Technician Acceptance Window
-
-  // ==========================================
-
-  const isBookingBeyondTechnicianWindow = (
-
-    selectedDate
-
-  ) => {
-
-    const lastAllowedDate =
-
-      getDateAfterDays(2);
-
-    return selectedDate > lastAllowedDate;
-
-  };
-
-  // ==========================================
-
-  // Get Current Time In Minutes
-
-  // ==========================================
-
-  const getCurrentTimeInMinutes = () => {
-
-    const now = new Date();
-
-    return (
-
-      now.getHours() * 60 +
-
-      now.getMinutes()
-
-    );
-
-  };
-
-  // ==========================================
-
-  // Convert 24-Hour Time To Minutes
-
-  // ==========================================
-
-  const convertTimeToMinutes = (time) => {
-
-    if (!time) {
-
-      return null;
-
-    }
-
-    const [hours, minutes] = time
-
-      .split(":")
-
-      .map(Number);
-
-    if (
-
-      Number.isNaN(hours) ||
-
-      Number.isNaN(minutes) ||
-
-      hours < 0 ||
-
-      hours > 23 ||
-
-      minutes < 0 ||
-
-      minutes > 59
-
-    ) {
-
-      return null;
-
-    }
-
-    return hours * 60 + minutes;
-
-  };
-
-  // ==========================================
-
-  // Format Date For Popup
-
-  // ==========================================
-
-  const formatBookingDate = (dateString) => {
-
-    if (!dateString) {
-
-      return "";
-
-    }
-
-    const date = new Date(
-
-      `${dateString}T00:00:00`
-
-    );
-
-    return date.toLocaleDateString(
-
-      "en-IN",
-
-      {
-
-        day: "numeric",
-
-        month: "long",
-
-        year: "numeric",
-
-      }
-
-    );
-
-  };
-
-  // ==========================================
-
-  // Fetch Service
-
-  // ==========================================
-
-  useEffect(() => {
-
-    const fetchService = async () => {
-
-      try {
-
-        const response = await api.get(
-
-          `/services/${id}`
-
-        );
-
-        setService(
-
-          response.data.service
-
-        );
-
-      } catch (error) {
-
-        console.error(
-
-          "Failed to fetch service:",
-
-          error
-
-        );
-
-      } finally {
-
-        setLoading(false);
-
-      }
-
-    };
-
-    fetchService();
-
-  }, [id]);
-
-  // ==========================================
-
-  // Handle Input Changes
-
-  // ==========================================
-
-  const handleChange = (e) => {
-
-    const { name, value } = e.target;
-
-    // ==========================================
-
-    // DATE
-
-    // ==========================================
-
-    if (name === "date") {
-
-      const today = getTodayDate();
-
-      const maxDate =
-
-        getDateAfterDays(2);
-
-      // ------------------------------------------
-
-      // Prevent Past Dates
-
-      // ------------------------------------------
-
-      if (value < today) {
-
-        alert(
-
-          "Please select today or a future date."
-
-        );
-
-        return;
-
-      }
-
-      // ------------------------------------------
-
-      // Prevent More Than 2 Days
-
-      // ------------------------------------------
-
-      if (value > maxDate) {
-
-        alert(
-
-          "You can book a service only up to 2 days from today."
-
-        );
-
-        return;
-
-      }
-
-      // ------------------------------------------
-
-      // If Today, Check Existing Time
-
-      // ------------------------------------------
-
-      if (
-
-        value === today &&
-
-        bookingData.time
-
-      ) {
-
-        const selectedTime =
-
-          convertTimeToMinutes(
-
-            bookingData.time
-
-          );
-
-        const currentTime =
-
-          getCurrentTimeInMinutes();
-
-        if (
-
-          selectedTime !== null &&
-
-          selectedTime <= currentTime
-
-        ) {
-
-          setBookingData(
-
-            (previous) => ({
-
-              ...previous,
-
-              date: value,
-
-              time: "",
-
-            })
-
-          );
-
-          alert(
-
-            "The selected time has already passed. Please choose another time."
-
-          );
-
-          return;
-
-        }
-
-      }
-
-      // ------------------------------------------
-
-      // Update Date
-
-      // ------------------------------------------
-
-      setBookingData(
-
-        (previous) => ({
-
-          ...previous,
-
-          date: value,
-
-        })
-
-      );
-
-      // ------------------------------------------
-
-      // Technician Window Warning
-
-      // ------------------------------------------
-
-      if (
-
-        isBookingBeyondTechnicianWindow(
-
-          value
-
-        )
-
-      ) {
-
-        setWarningDate(value);
-
-        setShowDateWarning(true);
-
-      } else {
-
-        setWarningDate("");
-
-        setShowDateWarning(false);
-
-      }
-
-      return;
-
-    }
-
-    // ==========================================
-
-    // TIME - 24 HOUR FORMAT
-
-    // ==========================================
-
-    if (name === "time") {
-
-      const today = getTodayDate();
-
-      // ------------------------------------------
-
-      // Validate Time Format
-
-      // ------------------------------------------
-
-      const timePattern =
-
-        /^([01]\d|2[0-3]):([0-5]\d)$/;
-
-      if (
-
-        value &&
-
-        !timePattern.test(value)
-
-      ) {
-
-        alert(
-
-          "Please select a valid time."
-
-        );
-
-        return;
-
-      }
-
-      // ------------------------------------------
-
-      // If Booking Is Today
-
-      // ------------------------------------------
-
-      if (
-
-        bookingData.date === today &&
-
-        value
-
-      ) {
-
-        const selectedTime =
-
-          convertTimeToMinutes(value);
-
-        const currentTime =
-
-          getCurrentTimeInMinutes();
-
-        if (
-
-          selectedTime !== null &&
-
-          selectedTime <= currentTime
-
-        ) {
-
-          alert(
-
-            "This time has already passed. Please select a future time."
-
-          );
-
-          return;
-
-        }
-
-      }
-
-      // ------------------------------------------
-
-      // Save Time
-
-      // ------------------------------------------
-
-      setBookingData(
-
-        (previous) => ({
-
-          ...previous,
-
-          time: value,
-
-        })
-
-      );
-
-      return;
-
-    }
-
-    // ==========================================
-
-    // OTHER FIELDS
-
-    // ==========================================
-
-    setBookingData(
-
-      (previous) => ({
-
-        ...previous,
-
-        [name]: value,
-
-      })
-
-    );
-
-  };
-
-  // ==========================================
-
-  // Validate Booking
-
-  // ==========================================
-
-  const validateBooking = () => {
-
-    const today = getTodayDate();
-
-    const maxDate =
-
-      getDateAfterDays(2);
-
-    // ------------------------------------------
-
-    // Date Required
-
-    // ------------------------------------------
-
-    if (!bookingData.date) {
-
-      alert(
-
-        "Please select a booking date."
-
-      );
-
-      return false;
-
-    }
-
-    // ------------------------------------------
-
-    // Past Date
-
-    // ------------------------------------------
-
-    if (
-
-      bookingData.date < today
-
-    ) {
-
-      alert(
-
-        "Booking date cannot be in the past."
-
-      );
-
-      return false;
-
-    }
-
-    // ------------------------------------------
-
-    // Maximum 2 Days
-
-    // ------------------------------------------
-
-    if (
-
-      bookingData.date > maxDate
-
-    ) {
-
-      alert(
-
-        "You can book a service only up to 2 days from today."
-
-      );
-
-      return false;
-
-    }
-
-    // ------------------------------------------
-
-    // Time Required
-
-    // ------------------------------------------
-
-    if (!bookingData.time) {
-
-      alert(
-
-        "Please select a booking time."
-
-      );
-
-      return false;
-
-    }
-
-    // ------------------------------------------
-
-    // Validate 24-Hour Format
-
-    // ------------------------------------------
-
-    const timePattern =
-
-      /^([01]\d|2[0-3]):([0-5]\d)$/;
-
-    if (
-
-      !timePattern.test(
-
-        bookingData.time
-
-      )
-
-    ) {
-
-      alert(
-
-        "Invalid booking time. Please select a valid 24-hour time."
-
-      );
-
-      return false;
-
-    }
-
-    // ------------------------------------------
-
-    // Prevent Past Time For Today
-
-    // ------------------------------------------
-
-    if (
-
-      bookingData.date === today
-
-    ) {
-
-      const selectedTime =
-
-        convertTimeToMinutes(
-
-          bookingData.time
-
-        );
-
-      const currentTime =
-
-        getCurrentTimeInMinutes();
-
-      if (
-
-        selectedTime === null ||
-
-        selectedTime <= currentTime
-
-      ) {
-
-        alert(
-
-          "The selected booking time has already passed. Please select a future time."
-
-        );
-
-        return false;
-
-      }
-
-    }
-
-    if (!customerLocation) {
-      alert("Please capture your current location before confirming the booking.");
-      return false;
-    }
-
-    return true;
-
-  };
-
-const handleGetCustomerLocation = () => {
-
-  if (!navigator.geolocation) {
-
-    setLocationMessage("Your browser does not support location access.");
-
-    return;
-
-  }
-
-  setLocationLoading(true);
-
-  setLocationMessage("Getting your current location...");
-
-  navigator.geolocation.getCurrentPosition(
-
-    (position) => {
-
-      setCustomerLocation({
-
-        latitude: position.coords.latitude,
-
-        longitude: position.coords.longitude,
-
-      });
-
-      setLocationLoading(false);
-
-      setLocationMessage("Customer location captured successfully.");
-
-    },
-
-    (error) => {
-
-      setLocationLoading(false);
-
-      if (error.code === error.PERMISSION_DENIED) {
-
-        setLocationMessage("Location permission denied. Please allow location access.");
-
-      } else {
-
-        setLocationMessage("Unable to get location. Please try again.");
-
-      }
-
-    },
-
-    {
-
-      enableHighAccuracy: true,
-
-      timeout: 15000,
-
-      maximumAge: 0,
-
-    }
-
-  );
+return selectedDate > lastAllowedDate;
 
 };
 
-  // ==========================================
+// ==========================================
 
-  // Create Booking
+// Get Current Time In Minutes
 
-  // ==========================================
+// ==========================================
 
-  const handleBooking = async () => {
+const getCurrentTimeInMinutes = () => {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date());
 
-    // ------------------------------------------
+  const hours = Number(parts.find((part) => part.type === "hour")?.value);
+  const minutes = Number(parts.find((part) => part.type === "minute")?.value);
 
-    // Validate
+  return hours * 60 + minutes;
+};
 
-    // ------------------------------------------
+// ==========================================
 
-    if (!validateBooking()) {
+// Convert 24-Hour Time To Minutes
 
-      return;
+// ==========================================
 
-    }
+const convertTimeToMinutes = (time) => {
 
-    try {
+if (!time) {
 
-      const token =
+return null;
 
-        localStorage.getItem(
+}
 
-          "token"
+const [hours, minutes] = time
 
-        );
+.split(":")
 
-      if (!token) {
+.map(Number);
 
-        alert(
+if (
 
-          "Please login before booking a service."
+Number.isNaN(hours) ||
 
-        );
+Number.isNaN(minutes) ||
 
-        navigate("/login");
+hours < 0 ||
 
-        return;
+hours > 23 ||
 
-      }
+minutes < 0 ||
 
-      // ------------------------------------------
+minutes > 59
 
-      // API Request
+) {
 
-      // ------------------------------------------
+return null;
 
-    const response = await api.post("/bookings", {
-  service: service._id,
-  address: bookingData.address,
-  bookingDate: bookingData.date,
-  bookingTime: bookingData.time,
-  paymentMethod: bookingData.paymentMethod,
-  ...(customerLocation && {
-    customerLocation: {
-      latitude: customerLocation.latitude,
-      longitude: customerLocation.longitude,
-    },
-  }),
+}
+
+return hours * 60 + minutes;
+
+};
+
+// ==========================================
+
+// Format Date For Popup
+
+// ==========================================
+
+const formatBookingDate = (dateString) => {
+
+if (!dateString) {
+
+return "";
+
+}
+
+const date = new Date(
+
+`${dateString}T00:00:00`
+
+);
+
+return date.toLocaleDateString(
+
+"en-IN",
+
+{
+
+day: "numeric",
+
+month: "long",
+
+year: "numeric",
+
+}
+
+);
+
+};
+
+// ==========================================
+
+// Fetch Service
+
+// ==========================================
+
+useEffect(() => {
+
+const fetchService = async () => {
+
+try {
+
+const response = await api.get(
+
+`/services/${id}`
+
+);
+
+setService(
+
+response.data.service
+
+);
+
+} catch (error) {
+
+console.error(
+
+"Failed to fetch service:",
+
+error
+
+);
+
+} finally {
+
+setLoading(false);
+
+}
+
+};
+
+fetchService();
+
+}, [id]);
+
+// ==========================================
+
+// Handle Input Changes
+
+// ==========================================
+
+const handleChange = (e) => {
+
+const { name, value } = e.target;
+
+// ==========================================
+
+// DATE
+
+// ==========================================
+
+if (name === "date") {
+
+const today = getTodayDate();
+
+const maxDate =
+
+getDateAfterDays(2);
+
+// ------------------------------------------
+
+// Prevent Past Dates
+
+// ------------------------------------------
+
+if (value < today) {
+
+alert(
+
+"Please select today or a future date."
+
+);
+
+return;
+
+}
+
+// ------------------------------------------
+
+// Prevent More Than 2 Days
+
+// ------------------------------------------
+
+if (value > maxDate) {
+
+alert(
+
+"You can book a service only up to 2 days from today."
+
+);
+
+return;
+
+}
+
+// ------------------------------------------
+
+// If Today, Check Existing Time
+
+// ------------------------------------------
+
+if (
+
+value === today &&
+
+bookingData.time
+
+) {
+
+const selectedTime =
+
+convertTimeToMinutes(
+
+bookingData.time
+
+);
+
+const currentTime =
+
+getCurrentTimeInMinutes();
+
+if (
+
+selectedTime !== null &&
+
+selectedTime <= currentTime
+
+) {
+
+setBookingData(
+
+(previous) => ({
+
+...previous,
+
+date: value,
+
+time: "",
+
+})
+
+);
+
+alert(
+
+"The selected time has already passed. Please choose another time."
+
+);
+
+return;
+
+}
+
+}
+
+// ------------------------------------------
+
+// Update Date
+
+// ------------------------------------------
+
+setBookingData(
+
+(previous) => ({
+
+...previous,
+
+date: value,
+
+})
+
+);
+
+// ------------------------------------------
+
+// Technician Window Warning
+
+// ------------------------------------------
+
+if (
+
+isBookingBeyondTechnicianWindow(
+
+value
+
+)
+
+) {
+
+setWarningDate(value);
+
+setShowDateWarning(true);
+
+} else {
+
+setWarningDate("");
+
+setShowDateWarning(false);
+
+}
+
+return;
+
+}
+
+// ==========================================
+
+// TIME - 24 HOUR FORMAT
+
+// ==========================================
+
+if (name === "time") {
+
+const today = getTodayDate();
+
+// ------------------------------------------
+
+// Validate Time Format
+
+// ------------------------------------------
+
+const timePattern =
+
+/^([01]\d|2[0-3]):([0-5]\d)$/;
+
+if (
+
+value &&
+
+!timePattern.test(value)
+
+) {
+
+alert(
+
+"Please select a valid time."
+
+);
+
+return;
+
+}
+
+// ------------------------------------------
+
+// If Booking Is Today
+
+// ------------------------------------------
+
+if (
+
+bookingData.date === today &&
+
+value
+
+) {
+
+const selectedTime =
+
+convertTimeToMinutes(value);
+
+const currentTime =
+
+getCurrentTimeInMinutes();
+
+if (
+
+selectedTime !== null &&
+
+selectedTime <= currentTime
+
+) {
+
+alert(
+
+"This time has already passed. Please select a future time."
+
+);
+
+return;
+
+}
+
+}
+
+// ------------------------------------------
+
+// Save Time
+
+// ------------------------------------------
+
+setBookingData(
+
+(previous) => ({
+
+...previous,
+
+time: value,
+
+})
+
+);
+
+return;
+
+}
+
+// ==========================================
+
+// OTHER FIELDS
+
+// ==========================================
+
+setBookingData(
+
+(previous) => ({
+
+...previous,
+
+[name]: value,
+
+})
+
+);
+
+};
+
+// ==========================================
+
+// Validate Booking
+
+// ==========================================
+
+const validateBooking = () => {
+
+const today = getTodayDate();
+
+const maxDate =
+
+getDateAfterDays(2);
+
+// ------------------------------------------
+
+// Date Required
+
+// ------------------------------------------
+
+if (!bookingData.date) {
+
+alert(
+
+"Please select a booking date."
+
+);
+
+return false;
+
+}
+
+// ------------------------------------------
+
+// Past Date
+
+// ------------------------------------------
+
+if (
+
+bookingData.date < today
+
+) {
+
+alert(
+
+"Booking date cannot be in the past."
+
+);
+
+return false;
+
+}
+
+// ------------------------------------------
+
+// Maximum 2 Days
+
+// ------------------------------------------
+
+if (
+
+bookingData.date > maxDate
+
+) {
+
+alert(
+
+"You can book a service only up to 2 days from today."
+
+);
+
+return false;
+
+}
+
+// ------------------------------------------
+
+// Time Required
+
+// ------------------------------------------
+
+if (!bookingData.time) {
+
+alert(
+
+"Please select a booking time."
+
+);
+
+return false;
+
+}
+
+// ------------------------------------------
+
+// Validate 24-Hour Format
+
+// ------------------------------------------
+
+const timePattern =
+
+/^([01]\d|2[0-3]):([0-5]\d)$/;
+
+if (
+
+!timePattern.test(
+
+bookingData.time
+
+)
+
+) {
+
+alert(
+
+"Invalid booking time. Please select a valid 24-hour time."
+
+);
+
+return false;
+
+}
+
+// ------------------------------------------
+
+// Prevent Past Time For Today
+
+// ------------------------------------------
+
+if (
+
+bookingData.date === today
+
+) {
+
+const selectedTime =
+
+convertTimeToMinutes(
+
+bookingData.time
+
+);
+
+const currentTime =
+
+getCurrentTimeInMinutes();
+
+if (
+
+selectedTime === null ||
+
+selectedTime <= currentTime
+
+) {
+
+alert(
+
+"The selected booking time has already passed. Please select a future time."
+
+);
+
+return false;
+
+}
+
+}
+
+if (!customerLocation) {
+
+alert("Please capture your current location before confirming the booking.");
+
+return false;
+
+}
+
+return true;
+
+};
+
+const handleGetCustomerLocation = () => {
+
+if (!navigator.geolocation) {
+
+setLocationMessage("Your browser does not support location access.");
+
+return;
+
+}
+
+setLocationLoading(true);
+
+setLocationMessage("Getting your current location...");
+
+navigator.geolocation.getCurrentPosition(
+
+(position) => {
+
+setCustomerLocation({
+
+latitude: position.coords.latitude,
+
+longitude: position.coords.longitude,
+
 });
 
-      // ------------------------------------------
+setLocationLoading(false);
 
-      // Navigate To Tracking
+setLocationMessage("Customer location captured successfully.");
 
-      // ------------------------------------------
+},
 
-      navigate(
+(error) => {
 
-        `/track-booking/${response.data.booking._id}`
+setLocationLoading(false);
 
-      );
+if (error.code === error.PERMISSION_DENIED) {
 
-    } catch (error) {
+setLocationMessage("Location permission denied. Please allow location access.");
 
-      console.error(
+} else {
 
-        "Booking Error:",
+setLocationMessage("Unable to get location. Please try again.");
 
-        error
+}
 
-      );
+},
 
-      alert(
+{
 
-        error.response?.data?.message ||
+enableHighAccuracy: true,
 
-          "Booking Failed"
+timeout: 15000,
 
-      );
+maximumAge: 0,
 
-    }
+}
 
-  };
+);
 
-  // ==========================================
+};
 
-  // Loading
+// ==========================================
 
-  // ==========================================
+// Create Booking
 
-  if (loading) {
+// ==========================================
 
-    return (
+const handleBooking = async () => {
+if (isSubmitting) return;
 
-      <h2
+if (!validateBooking()) {
 
-        style={{
+return;
 
-          textAlign: "center",
+}
 
-          marginTop: "100px",
+setIsSubmitting(true);
 
-        }}
+try {
 
-      >
+const token = localStorage.getItem("token");
 
-        Loading...
+if (!token) {
 
-      </h2>
+alert("Please login before booking a service.");
 
-    );
+navigate("/login");
 
-  }
+return;
 
-  // ==========================================
+}
 
-  // Service Not Found
+if (!service?._id) {
 
-  // ==========================================
+alert("Service details are missing. Please refresh and try again.");
 
-  if (!service) {
+return;
 
-    return (
+}
 
-      <h2
+const payload = {
 
-        style={{
+service: service._id,
 
-          textAlign: "center",
+address: bookingData.address.trim(),
 
-          marginTop: "100px",
+bookingDate: bookingData.date,
 
-        }}
+bookingTime: bookingData.time,
 
-      >
+paymentMethod: bookingData.paymentMethod,
 
-        Service Not Found
+...(customerLocation && {
 
-      </h2>
+customerLocation: {
 
-    );
+latitude: customerLocation.latitude,
 
-  }
+longitude: customerLocation.longitude,
 
-  // ==========================================
+},
 
-  // UI
+}),
 
-  // ==========================================
+};
 
-  return (
+console.log("Booking payload:", payload);
 
-    <>
+// Make the booking request only once.
 
-      <Navbar />
+const response = await api.post("/bookings", payload);
 
-      {/* ==========================================
+console.log("Booking created successfully:", response.data);
 
-          DATE WARNING POPUP
+const bookingId = response.data?.booking?._id;
 
-      ========================================== */}
+if (!bookingId) {
 
-      {showDateWarning && (
+throw new Error(
 
-        <div className="date-warning-overlay">
+"The server did not return a booking ID."
 
-          <div className="date-warning-modal">
+);
 
-            <div className="date-warning-icon">
+}
 
-              !
+navigate(`/track-booking/${bookingId}`);
 
-            </div>
+} catch (error) {
 
-            <h2>
+console.error(
 
-              Booking Date Notice
+"Booking error response:",
 
-            </h2>
+error.response?.data
 
-            <p>
+);
 
-              You can book this service
+console.error(
 
-              for:
+"Booking status:",
 
-            </p>
+error.response?.status
 
-            <div className="selected-warning-date">
+);
 
-              {formatBookingDate(
+console.error("Booking error:", error);
 
-                warningDate
+alert(
 
-              )}
+error.response?.data?.message ||
 
-            </div>
+error.message ||
 
-            <p>
+"Booking failed. Please try again."
 
-              However, this service date
+);
 
-              is more than 2 days away.
+} finally {
+  setIsSubmitting(false);
+}
 
-            </p>
+};
 
-            <p>
+// ==========================================
 
-              You can still complete the
+// Loading
 
-              booking, but a technician
+// ==========================================
 
-              cannot accept this booking
+if (loading) {
 
-              yet.
+return (
 
-            </p>
+<h2
 
-            <div className="date-warning-highlight">
+style={{
 
-              Your booking will remain
+textAlign: "center",
 
-              pending until it becomes
+marginTop: "100px",
 
-              eligible for technician
+}}
 
-              acceptance.
+>
 
-            </div>
+Loading...
 
-            <button
+</h2>
 
-              className="date-warning-btn"
+);
 
-              onClick={() =>
+}
 
-                setShowDateWarning(false)
+// ==========================================
 
-              }
+// Service Not Found
 
-            >
+// ==========================================
 
-              Got it
+if (!service) {
 
-            </button>
+return (
 
-          </div>
+<h2
 
-        </div>
+style={{
 
-      )}
+textAlign: "center",
 
-      {/* ==========================================
+marginTop: "100px",
 
-          BOOKING PAGE
+}}
 
-      ========================================== */}
+>
 
-      <main className="booking-page">
+Service Not Found
 
-        <div className="booking-container">
+</h2>
 
-          {/* ==========================================
+);
 
-              BACK BUTTON
+}
 
-          ========================================== */}
+// ==========================================
 
-          <Link
+// UI
 
-            to={`/services/${service._id}`}
+// ==========================================
 
-            className="back-btn"
+return (
 
-          >
+<>
 
-            <FiArrowLeft />
+<Navbar />
 
-            <span>
+{/* ==========================================
 
-              Back to Service
+DATE WARNING POPUP
 
-            </span>
+========================================== */}
 
-          </Link>
+{showDateWarning && (
 
-          {/* ==========================================
+<div className="date-warning-overlay">
 
-              HEADER
+<div className="date-warning-modal">
 
-          ========================================== */}
+<div className="date-warning-icon">
 
-          <motion.div
+!
 
-            initial={{
+</div>
 
-              opacity: 0,
+<h2>
 
-              y: 25,
+Booking Date Notice
 
-            }}
+</h2>
 
-            animate={{
+<p>
 
-              opacity: 1,
+You can book this service
 
-              y: 0,
+for:
 
-            }}
+</p>
 
-            transition={{
+<div className="selected-warning-date">
 
-              duration: 0.6,
+{formatBookingDate(
 
-            }}
+warningDate
 
-            className="booking-header"
+)}
 
-          >
+</div>
 
-            <h1>
+<p>
 
-              Complete Your Booking
+However, this service date
 
-            </h1>
+is more than 2 days away.
 
-            <p>
+</p>
 
-              Fill in your details to
+<p>
 
-              confirm your home service
+You can still complete the
 
-              booking.
+booking, but a technician
 
-            </p>
+cannot accept this booking
 
-          </motion.div>
+yet.
 
-          <div className="booking-grid">
+</p>
 
-            {/* ==========================================
+<div className="date-warning-highlight">
 
-                LEFT SIDE
+Your booking will remain
 
-            ========================================== */}
+pending until it becomes
 
-            <div className="booking-left">
+eligible for technician
 
-              {/* ==========================================
+acceptance.
 
-                  SERVICE DETAILS
+</div>
 
-              ========================================== */}
+<button
 
-              <div className="booking-card">
+className="date-warning-btn"
 
-                <h2>
+onClick={() =>
 
-                  Service Details
+setShowDateWarning(false)
 
-                </h2>
+}
 
-                <div className="service-box">
+>
 
-                  <div>
+Got it
 
-                    <h3>
+</button>
 
-                      {service.name}
+</div>
 
-                    </h3>
+</div>
 
-                    <p>
+)}
 
-                      {service.description}
+{/* ==========================================
 
-                    </p>
+BOOKING PAGE
 
-                  </div>
+========================================== */}
 
-                  <div className="service-price">
+<main className="booking-page">
 
-                    <h3>
+<div className="booking-container">
 
-                      ₹{service.price}
+{/* ==========================================
 
-                    </h3>
+BACK BUTTON
 
-                    <p>
+========================================== */}
 
-                      Starting Price
+<Link
 
-                    </p>
+to={`/services/${service._id}`}
 
-                  </div>
+className="back-btn"
 
-                </div>
+>
 
-              </div>
+<FiArrowLeft />
 
-              {/* ==========================================
+<span>
 
-                  APPROVED TECHNICIANS
+Back to Service
 
-              ========================================== */}
+</span>
 
-              <AvailableTechnicians
+</Link>
 
-                serviceId={service._id}
+{/* ==========================================
 
-              />
+HEADER
 
-              {/* ==========================================
+========================================== */}
 
-                  CUSTOMER DETAILS
+<motion.div
 
-              ========================================== */}
+initial={{
 
-              <div className="booking-card">
+opacity: 0,
 
-                <h2 className="card-title">
+y: 25,
 
-                  <FiUser />
+}}
 
-                  Customer Details
+animate={{
 
-                </h2>
+opacity: 1,
 
-                <div className="form-group">
+y: 0,
 
-                  <input
+}}
 
-                    type="text"
+transition={{
 
-                    name="fullName"
+duration: 0.6,
 
-                    placeholder="Full Name"
+}}
 
-                    className="form-input"
+className="booking-header"
 
-                    value={
+>
 
-                      bookingData.fullName
+<h1>
 
-                    }
+Complete Your Booking
 
-                    onChange={
+</h1>
 
-                      handleChange
+<p>
 
-                    }
+Fill in your details to
 
-                  />
+confirm your home service
 
-                  <input
+booking.
 
-                    type="tel"
+</p>
 
-                    name="phone"
+</motion.div>
 
-                    placeholder="Phone Number"
+<div className="booking-grid">
 
-                    className="form-input"
+{/* ==========================================
 
-                    value={
+LEFT SIDE
 
-                      bookingData.phone
+========================================== */}
 
-                    }
+<div className="booking-left">
 
-                    onChange={
+{/* ==========================================
 
-                      handleChange
+SERVICE DETAILS
 
-                    }
+========================================== */}
 
-                  />
+<div className="booking-card">
 
-                  <input
+<h2>
 
-                    type="email"
+Service Details
 
-                    name="email"
+</h2>
 
-                    placeholder="Email Address"
+<div className="service-box">
 
-                    className="form-input"
+<div>
 
-                    value={
+<h3>
 
-                      bookingData.email
+{service.name}
 
-                    }
+</h3>
 
-                    onChange={
+<p>
 
-                      handleChange
+{service.description}
 
-                    }
+</p>
 
-                  />
+</div>
 
-                </div>
+<div className="service-price">
 
-              </div>
+<h3>
 
-              {/* ==========================================
+₹{service.price}
 
-                  SERVICE ADDRESS
+</h3>
 
-              ========================================== */}
+<p>
 
-              <div className="booking-card">
+Starting Price
 
-                <h2 className="card-title">
+</p>
 
-                  <FiHome />
+</div>
 
-                  Service Address
+</div>
 
-                </h2>
+</div>
 
-                <div className="form-group">
+{/* ==========================================
 
-                  <textarea
+APPROVED TECHNICIANS
 
-                    rows="4"
+========================================== */}
 
-                    name="address"
+<AvailableTechnicians
 
-                    placeholder="Complete Address"
+serviceId={service._id}
 
-                    className="form-textarea"
+/>
 
-                    value={
+{/* ==========================================
 
-                      bookingData.address
+CUSTOMER DETAILS
 
-                    }
+========================================== */}
 
-                    onChange={
+<div className="booking-card">
 
-                      handleChange
+<h2 className="card-title">
 
-                    }
+<FiUser />
 
-                  />
+Customer Details
 
-                  <div className="customer-location-box">
-                    <button
-                      type="button"
-                      className="customer-location-btn"
-                      onClick={handleGetCustomerLocation}
-                      disabled={locationLoading}
-                    >
-                      <FiMapPin />
-                      {locationLoading
-                        ? "Getting Location..."
-                        : customerLocation
-                        ? "Update My Location"
-                        : "Use My Current Location"}
-                    </button>
+</h2>
 
-                    {locationMessage && (
-                      <p
-                        className={`customer-location-message ${
-                          customerLocation ? "location-success" : ""
-                        }`}
-                        role="status"
-                      >
-                        {locationMessage}
-                      </p>
-                    )}
+<div className="form-group">
 
-                    {customerLocation && (
-                      <div className="customer-coordinates">
-                        <span>
-                          Latitude: {customerLocation.latitude.toFixed(6)}
-                        </span>
-                        <span>
-                          Longitude: {customerLocation.longitude.toFixed(6)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+<input
 
-                  <div className="two-column">
+type="text"
 
-                    <input
+name="fullName"
 
-                      type="text"
+placeholder="Full Name"
 
-                      name="city"
+className="form-input"
 
-                      placeholder="City"
+value={
 
-                      className="form-input"
+bookingData.fullName
 
-                      value={
+}
 
-                        bookingData.city
+onChange={
 
-                      }
+handleChange
 
-                      onChange={
+}
 
-                        handleChange
+/>
 
-                      }
+<input
 
-                    />
+type="tel"
 
-                    <input
+name="phone"
 
-                      type="text"
+placeholder="Phone Number"
 
-                      name="pincode"
+className="form-input"
 
-                      placeholder="Pincode"
+value={
 
-                      className="form-input"
+bookingData.phone
 
-                      value={
+}
 
-                        bookingData.pincode
+onChange={
 
-                      }
+handleChange
 
-                      onChange={
+}
 
-                        handleChange
+/>
 
-                      }
+<input
 
-                    />
+type="email"
 
-                  </div>
+name="email"
 
-                </div>
+placeholder="Email Address"
 
-              </div>
+className="form-input"
 
-              {/* ==========================================
+value={
 
-                  SCHEDULE
+bookingData.email
 
-              ========================================== */}
+}
 
-              <div className="booking-card">
+onChange={
 
-                <h2 className="card-title">
+handleChange
 
-                  <FiCalendar />
+}
 
-                  Schedule Service
+/>
 
-                </h2>
+</div>
 
-                <div className="two-column">
+</div>
 
-                  {/* DATE */}
+{/* ==========================================
 
-                  <div>
+SERVICE ADDRESS
 
-                    <label className="form-label">
+========================================== */}
 
-                      Select Date
+<div className="booking-card">
 
-                    </label>
+<h2 className="card-title">
 
-                    <input
+<FiHome />
 
-                      type="date"
+Service Address
 
-                      name="date"
+</h2>
 
-                      className="form-input"
+<div className="form-group">
 
-                      value={
+<textarea
 
-                        bookingData.date
+rows="4"
 
-                      }
+name="address"
 
-                      min={getTodayDate()}
+placeholder="Complete Address"
 
-                      max={getDateAfterDays(
+className="form-textarea"
 
-                        2
+value={
 
-                      )}
+bookingData.address
 
-                      onChange={
+}
 
-                        handleChange
+onChange={
 
-                      }
+handleChange
 
-                    />
+}
 
-                    <small
+/>
 
-                      style={{
+<div className="customer-location-box">
 
-                        display:
+<button
 
-                          "block",
+type="button"
 
-                        marginTop:
+className="customer-location-btn"
 
-                          "6px",
+onClick={handleGetCustomerLocation}
 
-                        color:
+disabled={locationLoading}
 
-                          "#64748b",
+>
 
-                      }}
+<FiMapPin />
 
-                    >
+{locationLoading
 
-                      You can book from
+? "Getting Location..."
 
-                      today up to 2 days
+: customerLocation
 
-                      in advance.
+? "Update My Location"
 
-                    </small>
+: "Use My Current Location"}
 
-                  </div>
+</button>
 
-                  {/* TIME */}
+{locationMessage && (
 
-                  <div>
+<p
 
-                    <label className="form-label">
+className={`customer-location-message ${
 
-                      Select Time
+customerLocation ? "location-success" : ""
 
-                    </label>
+}`}
 
-                    <select
+role="status"
 
-                      name="time"
+>
 
-                      className="form-input"
+{locationMessage}
 
-                      value={
+</p>
 
-                        bookingData.time
+)}
 
-                      }
+{customerLocation && (
 
-                      onChange={
+<div className="customer-coordinates">
 
-                        handleChange
+<span>
 
-                      }
+Latitude: {customerLocation.latitude.toFixed(6)}
 
-                    >
+</span>
 
-                      <option value="">
+<span>
 
-                        Select Time
+Longitude: {customerLocation.longitude.toFixed(6)}
 
-                      </option>
+</span>
 
-                      <option value="00:00">
+</div>
 
-                        00:00
+)}
 
-                      </option>
+</div>
 
-                      <option value="01:00">
+<div className="two-column">
 
-                        01:00
+<input
 
-                      </option>
+type="text"
 
-                      <option value="02:00">
+name="city"
 
-                        02:00
+placeholder="City"
 
-                      </option>
+className="form-input"
 
-                      <option value="03:00">
+value={
 
-                        03:00
+bookingData.city
 
-                      </option>
+}
 
-                      <option value="04:00">
+onChange={
 
-                        04:00
+handleChange
 
-                      </option>
+}
 
-                      <option value="05:00">
+/>
 
-                        05:00
+<input
 
-                      </option>
+type="text"
 
-                      <option value="06:00">
+name="pincode"
 
-                        06:00
+placeholder="Pincode"
 
-                      </option>
+className="form-input"
 
-                      <option value="07:00">
+value={
 
-                        07:00
+bookingData.pincode
 
-                      </option>
+}
 
-                      <option value="08:00">
+onChange={
 
-                        08:00
+handleChange
 
-                      </option>
+}
 
-                      <option value="09:00">
+/>
 
-                        09:00
+</div>
 
-                      </option>
+</div>
 
-                      <option value="10:00">
+</div>
 
-                        10:00
+{/* ==========================================
 
-                      </option>
+SCHEDULE
 
-                      <option value="11:00">
+========================================== */}
 
-                        11:00
+<div className="booking-card">
 
-                      </option>
+<h2 className="card-title">
 
-                      <option value="12:00">
+<FiCalendar />
 
-                        12:00
+Schedule Service
 
-                      </option>
+</h2>
 
-                      <option value="13:00">
+<div className="two-column">
 
-                        13:00
+{/* DATE */}
 
-                      </option>
+<div>
 
-                      <option value="14:00">
+<label className="form-label">
 
-                        14:00
+Select Date
 
-                      </option>
+</label>
 
-                      <option value="15:00">
+<input
 
-                        15:00
+type="date"
 
-                      </option>
+name="date"
 
-                      <option value="16:00">
+className="form-input"
 
-                        16:00
+value={
 
-                      </option>
+bookingData.date
 
-                      <option value="17:00">
+}
 
-                        17:00
+min={getTodayDate()}
 
-                      </option>
+max={getDateAfterDays(
 
-                      <option value="18:00">
+2
 
-                        18:00
+)}
 
-                      </option>
+onChange={
 
-                      <option value="19:00">
+handleChange
 
-                        19:00
+}
 
-                      </option>
+/>
 
-                      <option value="20:00">
+<small
 
-                        20:00
+style={{
 
-                      </option>
+display:
 
-                      <option value="21:00">
+"block",
 
-                        21:00
+marginTop:
 
-                      </option>
+"6px",
 
-                      <option value="22:00">
+color:
 
-                        22:00
+"#64748b",
 
-                      </option>
+}}
 
-                      <option value="23:00">
+>
 
-                        23:00
+You can book from
 
-                      </option>
+today up to 2 days
 
-                    </select>
+in advance.
 
-                    <small
+</small>
 
-                      style={{
+</div>
 
-                        display:
+{/* TIME */}
 
-                          "block",
+<div>
 
-                        marginTop:
+<label className="form-label">
 
-                          "6px",
+Select Time
 
-                        color:
+</label>
 
-                          "#64748b",
+<select
 
-                      }}
+name="time"
 
-                    >
+className="form-input"
 
-                      Time is displayed in
+value={
 
-                      24-hour format.
+bookingData.time
 
-                    </small>
+}
 
-                  </div>
+onChange={
 
-                </div>
+handleChange
 
-              </div>
+}
 
-              {/* ==========================================
+>
 
-                  SPECIAL INSTRUCTIONS
+<option value="">
 
-              ========================================== */}
+Select Time
 
-              <div className="booking-card">
+</option>
 
-                <h2 className="card-title">
+<option value="00:00">
 
-                  <FiMapPin />
+00:00
 
-                  Special Instructions
+</option>
 
-                </h2>
+<option value="01:00">
 
-                <textarea
+01:00
 
-                  rows="5"
+</option>
 
-                  name="instructions"
+<option value="02:00">
 
-                  placeholder="Describe your issue or provide additional instructions..."
+02:00
 
-                  className="form-textarea"
+</option>
 
-                  value={
+<option value="03:00">
 
-                    bookingData.instructions
+03:00
 
-                  }
+</option>
 
-                  onChange={
+<option value="04:00">
 
-                    handleChange
+04:00
 
-                  }
+</option>
 
-                />
+<option value="05:00">
 
-              </div>
+05:00
 
-            </div>
+</option>
 
-            {/* ==========================================
+<option value="06:00">
 
-                RIGHT SIDE
+06:00
 
-            ========================================== */}
+</option>
 
-            <div className="booking-right">
+<option value="07:00">
 
-              <div className="summary-card">
+07:00
 
-                <h2>
+</option>
 
-                  Booking Summary
+<option value="08:00">
 
-                </h2>
+08:00
 
-                <div className="summary-list">
+</option>
 
-                  <div className="summary-row">
+<option value="09:00">
 
-                    <span>
+09:00
 
-                      Service
+</option>
 
-                    </span>
+<option value="10:00">
 
-                    <strong>
+10:00
 
-                      {service.name}
+</option>
 
-                    </strong>
+<option value="11:00">
 
-                  </div>
+11:00
 
-                  <div className="summary-row">
+</option>
 
-                    <span>
+<option value="12:00">
 
-                      Service Charge
+12:00
 
-                    </span>
+</option>
 
-                    <strong>
+<option value="13:00">
 
-                      ₹{service.price}
+13:00
 
-                    </strong>
+</option>
 
-                  </div>
+<option value="14:00">
 
-                  <div className="summary-row">
+14:00
 
-                    <span>
+</option>
 
-                      Platform Fee
+<option value="15:00">
 
-                    </span>
+15:00
 
-                    <strong>
+</option>
 
-                      ₹49
+<option value="16:00">
 
-                    </strong>
+16:00
 
-                  </div>
+</option>
 
-                  <hr />
+<option value="17:00">
 
-                  <div className="summary-total">
+17:00
 
-                    <span>
+</option>
 
-                      Total
+<option value="18:00">
 
-                    </span>
+18:00
 
-                    <strong>
+</option>
 
-                      ₹
+<option value="19:00">
 
-                      {Number(
+19:00
 
-                        service.price
+</option>
 
-                      ) + 49}
+<option value="20:00">
 
-                    </strong>
+20:00
 
-                  </div>
+</option>
 
-                </div>
+<option value="21:00">
 
-                {/* ==========================================
+21:00
 
-                    PAYMENT
+</option>
 
-                ========================================== */}
+<option value="22:00">
 
-                <div className="payment-section">
+22:00
 
-                  <h3 className="card-title">
+</option>
 
-                    <FiCreditCard />
+<option value="23:00">
 
-                    Payment Method
+23:00
 
-                  </h3>
+</option>
 
-                  <div className="payment-options">
+</select>
 
-                    {/* CASH */}
+<small
 
-                    <label className="payment-option">
+style={{
 
-                      <input
+display:
 
-                        type="radio"
+"block",
 
-                        name="paymentMethod"
+marginTop:
 
-                        value="Cash on Service"
+"6px",
 
-                        checked={
+color:
 
-                          bookingData.paymentMethod ===
+"#64748b",
 
-                          "Cash on Service"
+}}
 
-                        }
+>
 
-                        onChange={
+Time is displayed in
 
-                          handleChange
+24-hour format.
 
-                        }
+</small>
 
-                      />
+</div>
 
-                      <span>
+</div>
 
-                        Cash on Service
+</div>
 
-                      </span>
+{/* ==========================================
 
-                    </label>
+SPECIAL INSTRUCTIONS
 
-                    {/* UPI */}
+========================================== */}
 
-                    <label className="payment-option">
+<div className="booking-card">
 
-                      <input
+<h2 className="card-title">
 
-                        type="radio"
+<FiMapPin />
 
-                        name="paymentMethod"
+Special Instructions
 
-                        value="UPI"
+</h2>
 
-                        checked={
+<textarea
 
-                          bookingData.paymentMethod ===
+rows="5"
 
-                          "UPI"
+name="instructions"
 
-                        }
+placeholder="Describe your issue or provide additional instructions..."
 
-                        onChange={
+className="form-textarea"
 
-                          handleChange
+value={
 
-                        }
+bookingData.instructions
 
-                      />
+}
 
-                      <span>
+onChange={
 
-                        UPI
+handleChange
 
-                      </span>
+}
 
-                    </label>
+/>
 
-                    {/* CARD */}
+</div>
 
-                    <label className="payment-option">
+</div>
 
-                      <input
+{/* ==========================================
 
-                        type="radio"
+RIGHT SIDE
 
-                        name="paymentMethod"
+========================================== */}
 
-                        value="Card"
+<div className="booking-right">
 
-                        checked={
+<div className="summary-card">
 
-                          bookingData.paymentMethod ===
+<h2>
 
-                          "Card"
+Booking Summary
 
-                        }
+</h2>
 
-                        onChange={
+<div className="summary-list">
 
-                          handleChange
+<div className="summary-row">
 
-                        }
+<span>
 
-                      />
+Service
 
-                      <span>
+</span>
 
-                        Credit / Debit Card
+<strong>
 
-                      </span>
+{service.name}
 
-                    </label>
+</strong>
 
-                  </div>
+</div>
 
-                </div>
+<div className="summary-row">
 
-                {/* ==========================================
+<span>
 
-                    CONFIRM BOOKING
+Service Charge
 
-                ========================================== */}
+</span>
 
-                <button
+<strong>
 
-                  className="confirm-btn"
+₹{service.price}
 
-                  onClick={handleBooking}
+</strong>
 
-                >
+</div>
 
-                  Confirm Booking
+<div className="summary-row">
 
-                </button>
+<span>
 
-              </div>
+Platform Fee
 
-            </div>
+</span>
 
-          </div>
+<strong>
 
-        </div>
+₹49
 
-      </main>
+</strong>
 
-    </>
+</div>
 
-  );
+<hr />
+
+<div className="summary-total">
+
+<span>
+
+Total
+
+</span>
+
+<strong>
+
+₹
+
+{Number(
+
+service.price
+
+) + 49}
+
+</strong>
+
+</div>
+
+</div>
+
+{/* ==========================================
+
+PAYMENT
+
+========================================== */}
+
+<div className="payment-section">
+
+<h3 className="card-title">
+
+<FiCreditCard />
+
+Payment Method
+
+</h3>
+
+<div className="payment-options">
+
+{/* CASH */}
+
+<label className="payment-option">
+
+<input
+
+type="radio"
+
+name="paymentMethod"
+
+value="Cash on Service"
+
+checked={
+
+bookingData.paymentMethod ===
+
+"Cash on Service"
+
+}
+
+onChange={
+
+handleChange
+
+}
+
+/>
+
+<span>
+
+Cash on Service
+
+</span>
+
+</label>
+
+{/* UPI */}
+
+<label className="payment-option">
+
+<input
+
+type="radio"
+
+name="paymentMethod"
+
+value="UPI"
+
+checked={
+
+bookingData.paymentMethod ===
+
+"UPI"
+
+}
+
+onChange={
+
+handleChange
+
+}
+
+/>
+
+<span>
+
+UPI
+
+</span>
+
+</label>
+
+{/* CARD */}
+
+<label className="payment-option">
+
+<input
+
+type="radio"
+
+name="paymentMethod"
+
+value="Card"
+
+checked={
+
+bookingData.paymentMethod ===
+
+"Card"
+
+}
+
+onChange={
+
+handleChange
+
+}
+
+/>
+
+<span>
+
+Credit / Debit Card
+
+</span>
+
+</label>
+
+</div>
+
+</div>
+
+{/* ==========================================
+
+CONFIRM BOOKING
+
+========================================== */}
+
+<button
+
+className="confirm-btn"
+disabled={isSubmitting}
+onClick={handleBooking}
+
+>
+
+{isSubmitting ? "Confirming..." : "Confirm Booking"}
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</main>
+
+</>
+
+);
 
 };
 
