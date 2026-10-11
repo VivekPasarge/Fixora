@@ -52,15 +52,46 @@ const createBooking = async (req, res) => {
       day: "2-digit",
     }).format(new Date());
 
-    if (
-      typeof bookingDate !== "string" ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(bookingDate)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid booking date",
-      });
-    }
+   
+const normalizedBookingDate =
+  typeof bookingDate === "string"
+    ? bookingDate.trim()
+    : "";
+
+const dateMatch = normalizedBookingDate.match(
+  /^(\d{4})-(\d{2})-(\d{2})$/
+);
+
+if (!dateMatch) {
+  console.log("Invalid bookingDate received:", bookingDate);
+
+  return res.status(400).json({
+    success: false,
+    message: "Invalid booking date",
+  });
+}
+
+const year = Number(dateMatch[1]);
+const month = Number(dateMatch[2]);
+const day = Number(dateMatch[3]);
+
+const calendarDate = new Date(
+  Date.UTC(year, month - 1, day)
+);
+
+if (
+  calendarDate.getUTCFullYear() !== year ||
+  calendarDate.getUTCMonth() !== month - 1 ||
+  calendarDate.getUTCDate() !== day
+) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid booking date",
+  });
+}
+
+const normalizedDate = normalizedBookingDate;
+
 
     const selectedDate = new Date(`${bookingDate}T00:00:00+05:30`);
 
