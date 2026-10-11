@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 
@@ -7,7 +8,8 @@ import ServiceDetails from "./pages/ServiceDetails";
 import Booking from "./pages/Booking";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-
+import ProtectedRoute from "./components/ProtectedRoute";
+import TechnicianTrack from "./pages/TechnicianTrack";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import TechnicianDashboard from "./pages/TechnicianDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -34,296 +36,255 @@ import CustomerManagement from "./pages/CustomerManagement";
 import BookingManagement from "./pages/BookingManagement";
 import ServiceManagement from "./pages/ServiceManagement";
 import TechnicianWallet from "./pages/TechnicianWallet";
-import socket from "./socket";
 import TechnicianReviews from "./pages/TechnicianReviews";
 
 import BookingHistory from "./pages/BookingHistory";
+import TechnicianHome from "./pages/TechnicianHome";
 
+import socket from "./socket";
 
 function App() {
-
-  // ==========================================
-  // Socket Connection
-  // ==========================================
-
   useEffect(() => {
-
-    socket.on("connect", () => {
-      console.log(
-        "✅ Connected:",
-        socket.id
-      );
-    });
-
-    return () => {
-      socket.off("connect");
+    const handleConnect = () => {
+      console.log("Connected:", socket.id);
     };
 
+    socket.on("connect", handleConnect);
+
+    return () => {
+      socket.off("connect", handleConnect);
+    };
   }, []);
 
-
   return (
-
     <Routes>
+      {/* Public pages */}
+      <Route path="/" element={<Home />} />
+      <Route path="/services" element={<Services />} />
+      <Route path="/services/:id" element={<ServiceDetails />} />
 
-      {/* ======================================
-          HOME
-      ====================================== */}
+      {/* Authentication */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/choose-account" element={<ChooseAccount />} />
 
-      <Route
-        path="/"
-        element={<Home />}
-      />
-
-
-      {/* ======================================
-          SERVICES
-      ====================================== */}
-
-      <Route
-        path="/services"
-        element={<Services />}
-      />
-
-      <Route
-        path="/services/:id"
-        element={<ServiceDetails />}
-      />
-
-
-      {/* ======================================
-          BOOKING
-      ====================================== */}
-
-      <Route
-        path="/booking/:id"
-        element={<Booking />}
-      />
-
-      <Route
-        path="/booking-success"
-        element={<BookingSuccess />}
-      />
-
-      <Route
-        path="/booking-details"
-        element={<BookingDetails />}
-      />
-
-      <Route
-        path="/payment/:id"
-        element={<Payment />}
-      />
-
-
-      {/* ======================================
-          AUTHENTICATION
-      ====================================== */}
-
-      <Route
-        path="/login"
-        element={<Login />}
-      />
-
-      <Route
-        path="/register"
-        element={<Register />}
-      />
-
-      <Route
-        path="/choose-account"
-        element={<ChooseAccount />}
-      />
-
+      {/* Profile completion */}
       <Route
         path="/complete-profile"
-        element={<CompleteProfile />}
+        element={
+          <ProtectedRoute allowedRoles={["technician"]}>
+            <CompleteProfile />
+          </ProtectedRoute>
+        }
       />
 
-
-      {/* ======================================
-          CUSTOMER DASHBOARD
-      ====================================== */}
-
+      {/* Customer dashboard */}
       <Route
         path="/customer"
-        element={<CustomerDashboard />}
+        element={
+          <ProtectedRoute allowedRoles={["customer"]}>
+            <CustomerDashboard />
+          </ProtectedRoute>
+        }
       />
 
       <Route
         path="/customer-dashboard"
-        element={<CustomerDashboard />}
+        element={
+          <ProtectedRoute allowedRoles={["customer"]}>
+            <CustomerDashboard />
+          </ProtectedRoute>
+        }
       />
 
-
-      {/* ======================================
-          TECHNICIAN DASHBOARD
-      ====================================== */}
+      {/* Technician pages */}
+      <Route
+        path="/technician-home"
+        element={
+          <ProtectedRoute allowedRoles={["technician"]}>
+            <TechnicianHome />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/technician-dashboard"
-        element={<TechnicianDashboard />}
+        element={
+          <ProtectedRoute allowedRoles={["technician"]}>
+            <TechnicianDashboard />
+          </ProtectedRoute>
+        }
       />
-
-
-      {/* ======================================
-          ADMIN DASHBOARD
-      ====================================== */}
-
-      <Route
-        path="/admin-dashboard"
-        element={<AdminDashboard />}
-      />
-
-
-      {/* ======================================
-          MY BOOKINGS
-      ====================================== */}
-
-      <Route
-        path="/my-bookings"
-        element={<MyBookings />}
-      />
-      <Route
-  path="/booking-history"
-  element={<BookingHistory />}
-/>
-
-
-      {/* ======================================
-          TRACKING
-      ====================================== */}
-
-      {/* Track without booking ID */}
-
-      <Route
-        path="/track"
-        element={<TrackBooking />}
-      />
-
-      {/* Track without booking ID */}
-
-      <Route
-        path="/track-booking"
-        element={<TrackBooking />}
-      />
-
-      {/* Track specific booking */}
-
-      <Route
-        path="/track-booking/:id"
-        element={<TrackBooking />}
-      />
-
-      {/* Also support /track/:id */}
-
-      <Route
-        path="/track/:id"
-        element={<TrackBooking />}
-      />
-
-
-      {/* ======================================
-          ABOUT / CONTACT
-      ====================================== */}
-
-      <Route
-        path="/about"
-        element={<About />}
-      />
-
-      <Route
-        path="/contact"
-        element={<Contact />}
-      />
-
-
-      {/* ======================================
-          PROFILE
-      ====================================== */}
-
-      <Route
-        path="/profile"
-        element={<Profile />}
-      />
-
-
-      {/* ======================================
-          BECOME PARTNER
-      ====================================== */}
-
-      <Route
-        path="/become-partner"
-        element={<BecomePartner />}
-      />
-
-
-      {/* ======================================
-          TECHNICIAN PROFILE
-      ====================================== */}
 
       <Route
         path="/technician-profile"
-        element={<TechnicianProfile />}
+        element={
+          <ProtectedRoute allowedRoles={["technician"]}>
+            <TechnicianProfile />
+          </ProtectedRoute>
+        }
       />
-
-
-      {/* ======================================
-          REVIEW
-      ====================================== */}
 
       <Route
-        path="/review"
-        element={<Review />}
+        path="/technician/wallet"
+        element={
+          <ProtectedRoute allowedRoles={["technician"]}>
+            <TechnicianWallet />
+          </ProtectedRoute>
+        }
       />
 
+      <Route
+        path="/technician/reviews"
+        element={
+          <ProtectedRoute allowedRoles={["technician"]}>
+            <TechnicianReviews />
+          </ProtectedRoute>
+        }
+      />
 
-      {/* ======================================
-          ADMIN MANAGEMENT
-      ====================================== */}
+      {/* Admin pages */}
+      <Route
+        path="/admin-dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/customer-management"
-        element={<CustomerManagement />}
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <CustomerManagement />
+          </ProtectedRoute>
+        }
       />
 
       <Route
         path="/technician-management"
-        element={<TechnicianManagement />}
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <TechnicianManagement />
+          </ProtectedRoute>
+        }
       />
 
       <Route
         path="/booking-management"
-        element={<BookingManagement />}
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <BookingManagement />
+          </ProtectedRoute>
+        }
       />
 
       <Route
         path="/service-management"
-        element={<ServiceManagement />}
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <ServiceManagement />
+          </ProtectedRoute>
+        }
       />
 
-
-      {/* ======================================
-          404
-      ====================================== */}
+      {/* Booking pages */}
+      <Route
+        path="/booking/:id"
+        element={
+          <ProtectedRoute allowedRoles={["customer"]}>
+            <Booking />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
-        path="*"
-        element={<NotFound />}
+        path="/booking-success"
+        element={
+          <ProtectedRoute allowedRoles={["customer"]}>
+            <BookingSuccess />
+          </ProtectedRoute>
+        }
       />
 
+      <Route
+        path="/booking-details"
+        element={
+          <ProtectedRoute allowedRoles={["customer"]}>
+            <BookingDetails />
+          </ProtectedRoute>
+        }
+      />
 
-<Route
-  path="/technician/wallet"
-  element={<TechnicianWallet />}
+      <Route
+        path="/payment/:id"
+        element={
+          <ProtectedRoute allowedRoles={["customer"]}>
+            <Payment />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/my-bookings"
+        element={
+          <ProtectedRoute allowedRoles={["customer"]}>
+            <MyBookings />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/booking-history"
+        element={
+          <ProtectedRoute allowedRoles={["customer"]}>
+            <BookingHistory />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Tracking */}
+      <Route path="/track" element={<TrackBooking />} />
+      <Route path="/track-booking" element={<TrackBooking />} />
+      <Route path="/track-booking/:id" element={<TrackBooking />} />
+      <Route path="/track/:id" element={<TrackBooking />} />
+
+      {/* General pages */}
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute allowedRoles={["customer", "technician", "admin"]}>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="/become-partner" element={<BecomePartner />} />
+
+      <Route
+        path="/review"
+        element={
+          <ProtectedRoute allowedRoles={["customer"]}>
+            <Review />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+  path="/technician-track"
+  element={
+    <ProtectedRoute allowedRoles={["technician"]}>
+      <TechnicianTrack />
+    </ProtectedRoute>
+  }
 />
 
-<Route
-  path="/technician/reviews"
-  element={<TechnicianReviews />}
-/>
+      {/* 404 */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
-
   );
 }
 

@@ -1,6 +1,9 @@
-import "./TechnicianDashboard.css";
+
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 import DashboardHero from "../components/TechnicianDashboard/DashboardHero";
+import TechnicianStats from "../components/TechnicianDashboard/TechnicianStats";
 import ActiveJob from "../components/TechnicianDashboard/ActiveJob";
 import TodaySchedule from "../components/TechnicianDashboard/TodaySchedule";
 import EarningsCard from "../components/TechnicianDashboard/EarningsCard";
@@ -9,123 +12,87 @@ import ReviewsCard from "../components/TechnicianDashboard/ReviewsCard";
 import WalletCard from "../components/TechnicianDashboard/WalletCard";
 import AvailableJobs from "../components/TechnicianDashboard/AvailableJobs";
 import AssignedJobs from "../components/TechnicianDashboard/AssignedJobs";
-import TechnicianStats from "../components/TechnicianDashboard/TechnicianStats";
+
+import "./TechnicianDashboard.css";
 
 const TechnicianDashboard = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const sectionId =
+      location.state?.scrollToSection ||
+      location.hash.replace(/^#/, "");
+
+    if (!sectionId) return;
+
+    let attempts = 0;
+    let frameId;
+
+    const scrollToSection = () => {
+      const section = document.getElementById(sectionId);
+
+      if (section) {
+        section.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+        return;
+      }
+
+      // Retry briefly if the section has not rendered yet.
+      if (attempts < 10) {
+        attempts += 1;
+        frameId = requestAnimationFrame(scrollToSection);
+      }
+    };
+
+    frameId = requestAnimationFrame(scrollToSection);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
+  }, [location.key, location.hash, location.state]);
+
   return (
     <main className="technician-dashboard">
+      <DashboardHero />
 
-      {/* =====================================================
-          HERO
-      ===================================================== */}
+      <TechnicianStats />
 
-      <section className="tech-hero">
-        <DashboardHero />
+      <section
+        id="active-job"
+        className="dashboard-section"
+        style={{ scrollMarginTop: "100px" }}
+      >
+        <ActiveJob />
       </section>
 
-
-      {/* =====================================================
-          STATS
-      ===================================================== */}
-
-      <section className="tech-stats">
-        <TechnicianStats />
+      <section className="dashboard-overview">
+        <TodaySchedule />
+        <EarningsCard />
       </section>
 
+      <AvailabilityCard />
 
-      {/* =====================================================
-          MAIN WORK AREA
-      ===================================================== */}
+      <ReviewsCard />
 
-      <section className="tech-main-grid">
+      <WalletCard />
 
-        {/* ================================================
-            ACTIVE JOB
-        ================================================ */}
-
-        <div
-          id="active-job"
-          className="tech-card-area tech-active-job"
-        >
-          <ActiveJob />
-        </div>
-
-
-        {/* ================================================
-            AVAILABILITY
-        ================================================ */}
-
-        <div className="tech-card-area tech-availability">
-
-          <AvailabilityCard />
-
-        </div>
-
-
-        {/* ================================================
-            TODAY'S SCHEDULE
-        ================================================ */}
-
-        <div className="tech-card-area">
-
-          <TodaySchedule />
-
-        </div>
-
-
-        {/* ================================================
-            EARNINGS
-        ================================================ */}
-
-        <div
-          id="earnings"
-          className="tech-card-area"
-        >
-
-          <EarningsCard />
-
-        </div>
-
+      <section
+        id="available-jobs"
+        className="dashboard-section"
+        style={{ scrollMarginTop: "100px" }}
+      >
+        <AvailableJobs />
       </section>
 
-
-     {/* JOB MANAGEMENT */}
-<section className="tech-section-heading">
-  <div>
-    <span>WORK MANAGEMENT</span>
-    <h2>Your Jobs</h2>
-    <p>
-      Find new service requests and manage your assigned work.
-    </p>
-  </div>
-</section>
-
-<section className="tech-jobs-grid">
-  <div
-    id="available-jobs"
-    className="tech-card-area"
-  >
-    <AvailableJobs />
-  </div>
-
-  <div className="tech-card-area">
-    <WalletCard />
-  </div>
-</section>
-
-{/* ASSIGNED JOBS */}
-<section
-  id="assigned-jobs"
-  className="tech-full-section"
->
-  <AssignedJobs />
-</section>
-
-{/* REVIEWS */}
-<section className="tech-full-section">
-  <ReviewsCard />
-</section>
-
+      {/* AssignedJobs already has id="assigned-jobs". */}
+      <section
+        className="dashboard-section"
+        style={{ scrollMarginTop: "100px" }}
+      >
+        <AssignedJobs />
+      </section>
     </main>
   );
 };

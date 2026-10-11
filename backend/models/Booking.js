@@ -23,6 +23,29 @@ const bookingSchema = new mongoose.Schema(
     },
 
     // =====================================================
+    // CUSTOMER LOCATION (DESTINATION)
+    // =====================================================
+
+    // Coordinates of the customer's service address.
+    // Optional so existing bookings remain compatible.
+
+    customerLocation: {
+      latitude: {
+        type: Number,
+        min: -90,
+        max: 90,
+        default: null,
+      },
+
+      longitude: {
+        type: Number,
+        min: -180,
+        max: 180,
+        default: null,
+      },
+    },
+
+    // =====================================================
     // TECHNICIAN
     // =====================================================
 
@@ -143,11 +166,7 @@ const bookingSchema = new mongoose.Schema(
 
     paymentMethod: {
       type: String,
-      enum: [
-        "Cash on Service",
-        "UPI",
-        "Card",
-      ],
+      enum: ["Cash on Service", "UPI", "Card"],
       default: "Cash on Service",
     },
 
@@ -157,10 +176,7 @@ const bookingSchema = new mongoose.Schema(
 
     paymentStatus: {
       type: String,
-      enum: [
-        "Pending",
-        "Paid",
-      ],
+      enum: ["Pending", "Paid"],
       default: "Pending",
     },
 
@@ -204,9 +220,6 @@ const bookingSchema = new mongoose.Schema(
     // COD CASH COLLECTION AUDIT
     // =====================================================
 
-    // Set only when the assigned technician confirms
-    // cash collection through the protected backend endpoint.
-
     cashReceivedAt: {
       type: Date,
       default: null,
@@ -225,6 +238,7 @@ const bookingSchema = new mongoose.Schema(
     otp: {
       type: String,
       default: "",
+      select: false,
     },
 
     otpVerified: {
@@ -232,9 +246,17 @@ const bookingSchema = new mongoose.Schema(
       default: false,
     },
 
+    otpVerifiedAt: {
+      type: Date,
+      default: null,
+    },
+
     // =====================================================
     // LIVE TECHNICIAN TRACKING
     // =====================================================
+
+    // Updated by your existing technician GPS tracking logic.
+    // Keep this separate from customerLocation.
 
     technicianLocation: {
       latitude: {
@@ -271,7 +293,4 @@ const bookingSchema = new mongoose.Schema(
 // MODEL
 // =========================================================
 
-module.exports = mongoose.model(
-  "Booking",
-  bookingSchema
-);
+module.exports = mongoose.model("Booking", bookingSchema);

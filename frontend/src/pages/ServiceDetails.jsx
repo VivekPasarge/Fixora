@@ -1,8 +1,8 @@
+
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 
 import api from "../api/axios";
-
 import Navbar from "../components/Navbar/Navbar";
 
 import ServiceHero from "../components/ServiceDetails/ServiceHero";
@@ -17,29 +17,89 @@ const ServiceDetails = () => {
 
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const token = localStorage.getItem("token");
+
+  let user = null;
+
+  try {
+    const storedUser = localStorage.getItem("user");
+    user = storedUser ? JSON.parse(storedUser) : null;
+  } catch {
+    user = null;
+  }
+
+  const role = String(user?.role || "").toLowerCase();
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchService = async () => {
       try {
-        const response = await api.get(`/services/${id}`);
+        setLoading(true);
+        setError("");
+        setService(null);
 
-        setService(response.data.service);
-      } catch (error) {
-        console.error(error);
+        const response = await api.get(
+          `/services/${encodeURIComponent(id)}`
+        );
+
+        if (!cancelled) {
+          setService(response.data?.service || null);
+        }
+      } catch (err) {
+        console.error("Service details error:", err);
+
+        if (!cancelled) {
+          setError(
+            err.response?.data?.message ||
+              "Unable to load this service."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchService();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
+  if (token && role === "admin") {
+    return <Navigate to="/admin-dashboard" replace />;
+  }
+
   if (loading) {
-    return <h2 style={{ textAlign: "center" }}>Loading...</h2>;
+    return (
+      <>
+        <Navbar />
+        <main className="service-details-page">
+          <h2 style={{ textAlign: "center", padding: "80px 20px" }}>
+            Loading service...
+          </h2>
+        </main>
+      </>
+    );
   }
 
   if (!service) {
-    return <h2 style={{ textAlign: "center" }}>Service Not Found</h2>;
+    return (
+      <>
+        <Navbar />
+        <main className="service-details-page">
+          <div style={{ textAlign: "center", padding: "80px 20px" }}>
+            <h2>{error || "Service not found"}</h2>
+            <Link to="/services">Back to Services</Link>
+          </div>
+        </main>
+      </>
+    );
   }
 
   return (
@@ -47,31 +107,33 @@ const ServiceDetails = () => {
       <Navbar />
 
       <main className="service-details-page">
-
         <ServiceHero service={service} />
 
         <section className="service-details-section">
-
           <div className="service-details-container">
-
             <div className="service-details-left">
-
               <ServiceOverview service={service} />
-
               <IncludedServices service={service} />
-
             </div>
 
             <div className="service-details-right">
-
-              <BookingCard service={service} />
-
+              {role === "technician" ? (
+                <div className="technician-service-notice">
+                  <h3>Professional Service Details</h3>
+                  <p>
+                    You can explore this service, but customer bookings must
+                    be made from a customer account.
+                  </p>
+                  <Link to="/technician-dashboard#available-jobs">
+                    View Available Jobs
+                  </Link>
+                </div>
+              ) : (
+                <BookingCard service={service} />
+              )}
             </div>
-
           </div>
-
         </section>
-
       </main>
     </>
   );

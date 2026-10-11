@@ -1,3 +1,5 @@
+
+const mongoose = require("mongoose");
 const Booking = require("../models/Booking");
 const Service = require("../models/Service");
 const Review = require("../models/reviewModel");
@@ -16,35 +18,33 @@ const createBooking = async (req, res) => {
       bookingDate,
       bookingTime,
       paymentMethod,
+      customerLocation,
     } = req.body;
 
-    const customer = req.user.id;
+    const customer = req.user?._id || req.user?.id;
 
-    // VALIDATE REQUIRED FIELDS
-    if (
-      !customer ||
-      !service ||
-      !address ||
-      !bookingDate ||
-      !bookingTime
-    ) {
+    if (!customer || !service || !address || !bookingDate || !bookingTime) {
       return res.status(400).json({
         success: false,
         message: "Please fill all required fields",
       });
     }
 
-    // VALIDATE BOOKING DATE
-    const selectedDate = new Date(bookingDate);
-
-    if (Number.isNaN(selectedDate.getTime())) {
+    if (!mongoose.isValidObjectId(service)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid booking date",
+        message: "Invalid service ID",
       });
     }
 
-    // GET TODAY'S DATE IN INDIA
+    if (typeof address !== "string" || !address.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid address",
+      });
+    }
+
+    // Use India-local calendar dates.
     const todayString = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Asia/Kolkata",
       year: "numeric",
@@ -52,7 +52,28 @@ const createBooking = async (req, res) => {
       day: "2-digit",
     }).format(new Date());
 
-    // PREVENT PAST DATE
+    if (
+      typeof bookingDate !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(bookingDate)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking date",
+      });
+    }
+
+    const selectedDate = new Date(`${bookingDate}T00:00:00+05:30`);
+
+    if (
+      Number.isNaN(selectedDate.getTime()) ||
+      selectedDate.toISOString().slice(0, 10) !== bookingDate
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking date",
+      });
+    }
+
     if (bookingDate < todayString) {
       return res.status(400).json({
         success: false,
@@ -60,79 +81,89 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // ALLOW TODAY, TOMORROW, AND THE DAY AFTER TOMORROW
-    const maxBookingDate = new Date(
-      `${todayString}T00:00:00+05:30`
-    );
+    const today = new Date(`${todayString}T00:00:00+05:30`);
+    today.setUTCDate(today.getUTCDate() + 2);
 
-    maxBookingDate.setDate(
-      maxBookingDate.getDate() + 2
-    );
-
-    const maxBookingDateString =
-      new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Kolkata",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }).format(maxBookingDate);
+    const maxBookingDateString = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(today);
 
     if (bookingDate > maxBookingDateString) {
       return res.status(400).json({
         success: false,
-        message:
-          "You can book a service only up to 2 days from today.",
+        message: "You can book a service only up to 2 days from today.",
       });
     }
 
-    // VALIDATE 24-HOUR BOOKING TIME
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
-    if (!timeRegex.test(bookingTime)) {
+    if (typeof bookingTime !== "string" || !timeRegex.test(bookingTime)) {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid booking time. Please select a valid 24-hour time.",
+        message: "Please select a valid booking time",
       });
     }
 
-    // PREVENT PAST TIME FOR TODAY
     if (bookingDate === todayString) {
-      const now = new Date();
+      const indiaTime = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Kolkata",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(new Date());
 
-      const [hours, minutes] = bookingTime
-        .split(":")
-        .map(Number);
+      const [currentHour, currentMinute] = indiaTime.split(":").map(Number);
+      const [selectedHour, selectedMinute] = bookingTime.split(":").map(Number);
 
-      const bookingMinutes = hours * 60 + minutes;
-
-      const indiaTimeParts =
-        new Intl.DateTimeFormat("en-US", {
-          timeZone: "Asia/Kolkata",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        })
-          .formatToParts(now)
-          .reduce((acc, part) => {
-            acc[part.type] = part.value;
-            return acc;
-          }, {});
-
-      const currentMinutes =
-        Number(indiaTimeParts.hour) * 60 +
-        Number(indiaTimeParts.minute);
-
-      if (bookingMinutes <= currentMinutes) {
+      if (
+        selectedHour * 60 + selectedMinute <=
+        currentHour * 60 + currentMinute
+      ) {
         return res.status(400).json({
           success: false,
-          message:
-            "The selected booking time has already passed. Please select a future time.",
+          message: "The selected booking time has already passed",
         });
       }
     }
 
-    // FIND SERVICE
+    let savedCustomerLocation;
+
+    if (customerLocation != null) {
+      if (
+        customerLocation.latitude === "" ||
+        customerLocation.longitude === "" ||
+        customerLocation.latitude == null ||
+        customerLocation.longitude == null
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid customer location coordinates",
+        });
+      }
+
+      const latitude = Number(customerLocation.latitude);
+      const longitude = Number(customerLocation.longitude);
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude) ||
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid customer location coordinates",
+        });
+      }
+
+      savedCustomerLocation = { latitude, longitude };
+    }
+
     const serviceData = await Service.findById(service);
 
     if (!serviceData) {
@@ -142,58 +173,68 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // GENERATE BOOKING ID
-    const lastBooking = await Booking.findOne().sort({
-      createdAt: -1,
-    });
+    const allowedPaymentMethods = ["Cash on Service", "UPI", "Card"];
+
+    const selectedPaymentMethod = paymentMethod || "Cash on Service";
+
+    if (!allowedPaymentMethods.includes(selectedPaymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment method",
+      });
+    }
+
+    // The existing sequential ID approach is retained for compatibility.
+    // For high concurrency, replace this with an atomic counter collection.
+    const lastBooking = await Booking.findOne()
+      .sort({ createdAt: -1, _id: -1 })
+      .select("bookingId");
 
     let bookingNumber = 1;
 
-    if (lastBooking && lastBooking.bookingId) {
+    if (lastBooking?.bookingId) {
       const parts = lastBooking.bookingId.split("-");
       const lastNumber = Number(parts[2]);
 
-      if (!Number.isNaN(lastNumber)) {
+      if (Number.isSafeInteger(lastNumber) && lastNumber > 0) {
         bookingNumber = lastNumber + 1;
       }
     }
 
-    const bookingId =
-      `FXR-${new Date().getFullYear()}-${String(
-        bookingNumber
-      ).padStart(6, "0")}`;
+    const bookingId = `FXR-${new Date().getFullYear()}-${String(
+      bookingNumber
+    ).padStart(6, "0")}`;
 
-    // GENERATE OTP
-    const otp = Math.floor(
-      1000 + Math.random() * 9000
-    ).toString();
+    const otp = String(
+      Math.floor(1000 + Math.random() * 9000)
+    );
 
-    // CREATE BOOKING
-    const booking = await Booking.create({
+    const bookingData = {
       bookingId,
       customer,
       service,
-      address,
+      address: address.trim(),
       bookingDate,
       bookingTime,
       price: serviceData.price,
-
-      paymentMethod:
-        paymentMethod || "Cash on Service",
-
-      // Every booking begins as unpaid.
-      // Online payments must be verified by Razorpay.
+      paymentMethod: selectedPaymentMethod,
       paymentStatus: "Pending",
-
       otp,
       declinedTechnicians: [],
       customerRemoved: false,
       customerRemovedAt: null,
-    });
+      trackingActive: false,
+    };
+
+    if (savedCustomerLocation) {
+      bookingData.customerLocation = savedCustomerLocation;
+    }
+
+    const booking = await Booking.create(bookingData);
 
     return res.status(201).json({
       success: true,
-      message: "Booking Created Successfully",
+      message: "Booking created successfully",
       booking,
       otp,
     });
@@ -208,10 +249,9 @@ const createBooking = async (req, res) => {
   }
 };
 
-// Continue with Part 2 below this line.
- // ==========================================================
- // GET ALL BOOKINGS — ADMIN
- // ==========================================================
+// ==========================================================
+// GET ALL BOOKINGS - ADMIN
+// ==========================================================
 
 const getAllBookings = async (req, res) => {
   try {
@@ -230,18 +270,18 @@ const getAllBookings = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to fetch bookings",
     });
   }
 };
 
 // ==========================================================
-// GET MY BOOKINGS — CUSTOMER
+// GET MY BOOKINGS - CUSTOMER
 // ==========================================================
 
 const getMyBookings = async (req, res) => {
   try {
-    const customerId = req.user.id;
+    const customerId = req.user?._id || req.user?.id;
 
     if (!customerId) {
       return res.status(401).json({
@@ -258,10 +298,7 @@ const getMyBookings = async (req, res) => {
         "bookingId service technician address bookingDate bookingTime status paymentStatus price createdAt technicianCancelled technicianCancellation customerRemoved customerRemovedAt paymentMethod razorpayOrderId razorpayPaymentId paidAt"
       )
       .populate("service", "name category price image")
-      .populate(
-        "technician",
-        "name phone profession profilePhoto"
-      )
+      .populate("technician", "name phone profession profilePhoto")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -275,7 +312,7 @@ const getMyBookings = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to fetch your bookings",
     });
   }
 };
@@ -287,12 +324,12 @@ const getMyBookings = async (req, res) => {
 const removeBookingFromMyBookings = async (req, res) => {
   try {
     const { id } = req.params;
-    const customerId = req.user.id;
+    const customerId = req.user?._id || req.user?.id;
 
-    if (!id) {
+    if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({
         success: false,
-        message: "Booking ID is required",
+        message: "Valid booking ID is required",
       });
     }
 
@@ -312,22 +349,17 @@ const removeBookingFromMyBookings = async (req, res) => {
       });
     }
 
-    if (
-      booking.customer.toString() !==
-      customerId.toString()
-    ) {
+    if (booking.customer.toString() !== customerId.toString()) {
       return res.status(403).json({
         success: false,
-        message:
-          "You are not authorized to remove this booking.",
+        message: "You are not authorized to remove this booking",
       });
     }
 
     if (booking.customerRemoved === true) {
       return res.status(400).json({
         success: false,
-        message:
-          "Booking is already in booking history.",
+        message: "Booking is already in booking history",
       });
     }
 
@@ -338,21 +370,15 @@ const removeBookingFromMyBookings = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message:
-        "Booking removed from My Bookings successfully.",
+      message: "Booking moved to booking history successfully",
       bookingId: booking._id,
     });
   } catch (error) {
-    console.error(
-      "Remove Booking From My Bookings Error:",
-      error
-    );
+    console.error("Remove Booking Error:", error);
 
     return res.status(500).json({
       success: false,
-      message:
-        "Failed to remove booking from My Bookings.",
-      error: error.message,
+      message: "Failed to remove booking",
     });
   }
 };
@@ -363,7 +389,7 @@ const removeBookingFromMyBookings = async (req, res) => {
 
 const getMyBookingHistory = async (req, res) => {
   try {
-    const customerId = req.user.id;
+    const customerId = req.user?._id || req.user?.id;
 
     if (!customerId) {
       return res.status(401).json({
@@ -380,10 +406,7 @@ const getMyBookingHistory = async (req, res) => {
         "bookingId service technician address bookingDate bookingTime status paymentStatus price createdAt updatedAt technicianCancelled technicianCancellation customerRemoved customerRemovedAt paymentMethod razorpayOrderId razorpayPaymentId paidAt"
       )
       .populate("service", "name category price image")
-      .populate(
-        "technician",
-        "name phone profession profilePhoto"
-      )
+      .populate("technician", "name phone profession profilePhoto")
       .sort({ customerRemovedAt: -1 })
       .lean();
 
@@ -393,27 +416,22 @@ const getMyBookingHistory = async (req, res) => {
       bookings,
     });
   } catch (error) {
-    console.error(
-      "Get Customer Booking History Error:",
-      error
-    );
+    console.error("Get Customer Booking History Error:", error);
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to fetch booking history",
     });
   }
 };
 
-// End of Part 2.
-// Paste Part 3 after this section.
- // ==========================================================
+// ==========================================================
 // GET TECHNICIAN STATS
 // ==========================================================
 
 const getTechnicianStats = async (req, res) => {
   try {
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
 
     const assignedJobs = await Booking.countDocuments({
       technician: technicianId,
@@ -428,7 +446,7 @@ const getTechnicianStats = async (req, res) => {
       technician: technicianId,
       status: "Completed",
       paymentStatus: "Paid",
-    });
+    }).select("price");
 
     const totalEarnings = completedBookings.reduce(
       (sum, booking) => sum + Number(booking.price || 0),
@@ -437,18 +455,15 @@ const getTechnicianStats = async (req, res) => {
 
     const reviews = await Review.find({
       technician: technicianId,
-    });
+    }).select("rating");
 
-    let averageRating = 0;
-
-    if (reviews.length > 0) {
-      const totalRating = reviews.reduce(
-        (sum, review) => sum + Number(review.rating || 0),
-        0
-      );
-
-      averageRating = totalRating / reviews.length;
-    }
+    const averageRating =
+      reviews.length > 0
+        ? reviews.reduce(
+            (sum, review) => sum + Number(review.rating || 0),
+            0
+          ) / reviews.length
+        : 0;
 
     return res.status(200).json({
       success: true,
@@ -473,7 +488,7 @@ const getTechnicianStats = async (req, res) => {
 
 const getTechnicianEarnings = async (req, res) => {
   try {
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
 
     const completedBookings = await Booking.find({
       technician: technicianId,
@@ -490,20 +505,29 @@ const getTechnicianEarnings = async (req, res) => {
 
     const today = new Date();
 
+    const todayString = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(today);
+
     const todayEarnings = completedBookings
       .filter((booking) => {
-        const date = new Date(booking.updatedAt);
+        const date = booking.updatedAt || booking.paidAt;
+
+        if (!date) return false;
 
         return (
-          date.getDate() === today.getDate() &&
-          date.getMonth() === today.getMonth() &&
-          date.getFullYear() === today.getFullYear()
+          new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Asia/Kolkata",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          }).format(new Date(date)) === todayString
         );
       })
-      .reduce(
-        (sum, booking) => sum + Number(booking.price || 0),
-        0
-      );
+      .reduce((sum, booking) => sum + Number(booking.price || 0), 0);
 
     return res.status(200).json({
       success: true,
@@ -522,10 +546,22 @@ const getTechnicianEarnings = async (req, res) => {
   }
 };
 
-// Continue with Part 4 below this line.
+// ==========================================================
+// GET BOOKING BY ID
+// ==========================================================
+
 const getBookingById = async (req, res) => {
   try {
-    const booking = await Booking.findById(req.params.id)
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking ID",
+      });
+    }
+
+    const booking = await Booking.findById(id)
       .populate("customer", "name email phone")
       .populate("service", "name category price")
       .populate("technician", "name email phone");
@@ -537,16 +573,18 @@ const getBookingById = async (req, res) => {
       });
     }
 
-    const userId = req.user._id || req.user.id;
-    const role = req.user.role;
+    const userId = req.user?._id || req.user?.id;
+    const role = req.user?.role;
 
     const isAdmin = role === "admin";
+
     const isCustomer =
       booking.customer &&
-      booking.customer._id.toString() === userId.toString();
+      booking.customer._id.toString() === userId?.toString();
+
     const isTechnician =
       booking.technician &&
-      booking.technician._id.toString() === userId.toString();
+      booking.technician._id.toString() === userId?.toString();
 
     if (!isAdmin && !isCustomer && !isTechnician) {
       return res.status(403).json({
@@ -569,10 +607,42 @@ const getBookingById = async (req, res) => {
   }
 };
 
+// ==========================================================
+// ACCEPT BOOKING - TECHNICIAN
+// ==========================================================
+
 const acceptBooking = async (req, res) => {
   try {
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
     const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking ID",
+      });
+    }
+
+    const technician = await User.findById(technicianId).select(
+      "role isAvailable availability"
+    );
+
+    if (!technician) {
+      return res.status(404).json({
+        success: false,
+        message: "Technician not found",
+      });
+    }
+
+    if (
+      technician.isAvailable === false ||
+      technician.availability === false
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You are unavailable for new jobs",
+      });
+    }
 
     const booking = await Booking.findOneAndUpdate(
       {
@@ -640,11 +710,16 @@ const acceptBooking = async (req, res) => {
     });
   }
 };
+
+// ==========================================================
+// UPDATE BOOKING STATUS - TECHNICIAN
+// ==========================================================
+
 const updateBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
 
     const allowedStatuses = [
       "On The Way",
@@ -671,10 +746,10 @@ const updateBookingStatus = async (req, res) => {
       });
     }
 
-    if (booking.status === "Cancelled") {
+    if (["Cancelled", "Completed"].includes(booking.status)) {
       return res.status(400).json({
         success: false,
-        message: "Cancelled booking cannot be updated",
+        message: `${booking.status} booking cannot be updated`,
       });
     }
 
@@ -684,8 +759,7 @@ const updateBookingStatus = async (req, res) => {
       "In Progress": ["Completed"],
     };
 
-    const permittedNextStatuses =
-      validTransitions[booking.status] || [];
+    const permittedNextStatuses = validTransitions[booking.status] || [];
 
     if (!permittedNextStatuses.includes(status)) {
       return res.status(400).json({
@@ -693,12 +767,19 @@ const updateBookingStatus = async (req, res) => {
         message: `Cannot change booking status from ${booking.status} to ${status}`,
       });
     }
+    
+if (status === "In Progress" && !booking.otpVerified) {
+  return res.status(400).json({
+    success: false,
+    message: "Verify the customer OTP before starting the service",
+  });
+}
+
 
     if (status === "Completed" && !booking.otpVerified) {
       return res.status(400).json({
         success: false,
-        message:
-          "Verify the customer OTP before completing this booking",
+        message: "Verify the customer OTP before completing this booking",
       });
     }
 
@@ -725,16 +806,21 @@ const updateBookingStatus = async (req, res) => {
   }
 };
 
+// ==========================================================
+// VERIFY BOOKING OTP
+// ==========================================================
+
+
 const verifyBookingOTP = async (req, res) => {
   try {
     const { id } = req.params;
     const { otp } = req.body;
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
 
-    if (!otp) {
+    if (!otp || !/^\d{4}$/.test(String(otp).trim())) {
       return res.status(400).json({
         success: false,
-        message: "Please enter the customer OTP",
+        message: "Please enter the valid four-digit customer OTP",
       });
     }
 
@@ -750,11 +836,12 @@ const verifyBookingOTP = async (req, res) => {
       });
     }
 
-    if (booking.status !== "In Progress") {
+    // OTP must be verified after the technician reaches the customer.
+    if (booking.status !== "On The Way") {
       return res.status(400).json({
         success: false,
         message:
-          "OTP can only be verified while the service is in progress",
+          "Reach the customer and update the booking to On The Way before verifying OTP",
       });
     }
 
@@ -765,10 +852,7 @@ const verifyBookingOTP = async (req, res) => {
       });
     }
 
-    if (
-      !booking.otp ||
-      String(booking.otp) !== String(otp).trim()
-    ) {
+    if (!booking.otp || String(booking.otp) !== String(otp).trim()) {
       return res.status(400).json({
         success: false,
         message: "Incorrect OTP",
@@ -782,7 +866,7 @@ const verifyBookingOTP = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Customer OTP verified successfully",
+      message: "Customer OTP verified successfully. You can now start the service.",
       booking,
     });
   } catch (error) {
@@ -794,11 +878,18 @@ const verifyBookingOTP = async (req, res) => {
     });
   }
 };
+
+
+// ==========================================================
+// SELECT PAYMENT METHOD FOR EXISTING BOOKING
+// Online payments must use the Razorpay controller.
+// ==========================================================
+
 const payForBooking = async (req, res) => {
   try {
     const { id } = req.params;
     const { paymentMethod } = req.body;
-    const customerId = req.user._id || req.user.id;
+    const customerId = req.user?._id || req.user?.id;
 
     const allowedMethods = ["Cash on Service", "UPI", "Card"];
 
@@ -857,10 +948,14 @@ const payForBooking = async (req, res) => {
   }
 };
 
+// ==========================================================
+// GET PAYMENT HISTORY
+// ==========================================================
+
 const getPaymentHistory = async (req, res) => {
   try {
-    const userId = req.user._id || req.user.id;
-    const role = req.user.role;
+    const userId = req.user?._id || req.user?.id;
+    const role = req.user?.role;
 
     const filter =
       role === "technician"
@@ -891,6 +986,10 @@ const getPaymentHistory = async (req, res) => {
   }
 };
 
+// ==========================================================
+// GET BOOKED TIME SLOTS
+// ==========================================================
+
 const getBookedTimeSlots = async (req, res) => {
   try {
     const { date, service } = req.query;
@@ -902,18 +1001,23 @@ const getBookedTimeSlots = async (req, res) => {
       });
     }
 
+    if (!mongoose.isValidObjectId(service)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid service ID",
+      });
+    }
+
     const bookings = await Booking.find({
       bookingDate: date,
       service,
-      status: { $nin: ["Cancelled"] },
+      status: { $ne: "Cancelled" },
     }).select("bookingTime");
 
     return res.status(200).json({
       success: true,
       date,
-      bookedSlots: bookings.map(
-        (booking) => booking.bookingTime
-      ),
+      bookedSlots: bookings.map((booking) => booking.bookingTime),
     });
   } catch (error) {
     console.error("Get Booked Time Slots Error:", error);
@@ -924,18 +1028,29 @@ const getBookedTimeSlots = async (req, res) => {
     });
   }
 };
+
+// ==========================================================
+// GET PENDING BOOKINGS - TECHNICIAN
+// ==========================================================
+
 const getPendingBookings = async (req, res) => {
   try {
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
 
     const technician = await User.findById(technicianId).select(
       "isAvailable availability"
     );
 
+    if (!technician) {
+      return res.status(404).json({
+        success: false,
+        message: "Technician not found",
+      });
+    }
+
     if (
-      technician &&
-      (technician.isAvailable === false ||
-        technician.availability === false)
+      technician.isAvailable === false ||
+      technician.availability === false
     ) {
       return res.status(200).json({
         success: true,
@@ -968,19 +1083,19 @@ const getPendingBookings = async (req, res) => {
   }
 };
 
+// ==========================================================
+// GET ASSIGNED BOOKINGS - TECHNICIAN
+// ==========================================================
+
 const getAssignedBookings = async (req, res) => {
   try {
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
 
     const bookings = await Booking.find({
       technician: technicianId,
+      technicianRemoved: { $ne: true },
       status: {
-        $in: [
-          "Accepted",
-          "On The Way",
-          "In Progress",
-          "Completed",
-        ],
+        $in: ["Accepted", "On The Way", "In Progress", "Completed"],
       },
     })
       .populate("customer", "name phone email")
@@ -1002,9 +1117,13 @@ const getAssignedBookings = async (req, res) => {
   }
 };
 
+// ==========================================================
+// GET AVAILABLE JOBS
+// ==========================================================
+
 const getAvailableJobs = async (req, res) => {
   try {
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
 
     const technician = await User.findById(technicianId);
 
@@ -1050,15 +1169,18 @@ const getAvailableJobs = async (req, res) => {
     });
   }
 };
+
+// ==========================================================
+// GET ACTIVE BOOKING
+// ==========================================================
+
 const getActiveBooking = async (req, res) => {
   try {
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
 
     const booking = await Booking.findOne({
       technician: technicianId,
-      status: {
-        $in: ["Accepted", "On The Way", "In Progress"],
-      },
+      status: { $in: ["Accepted", "On The Way", "In Progress"] },
     })
       .populate("customer", "name phone")
       .populate("service", "name category price")
@@ -1078,9 +1200,13 @@ const getActiveBooking = async (req, res) => {
   }
 };
 
+// ==========================================================
+// GET TECHNICIAN AVAILABILITY
+// ==========================================================
+
 const getTechnicianAvailability = async (req, res) => {
   try {
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
 
     const technician = await User.findById(technicianId).select(
       "isAvailable availability"
@@ -1103,10 +1229,7 @@ const getTechnicianAvailability = async (req, res) => {
       isAvailable,
     });
   } catch (error) {
-    console.error(
-      "Get Technician Availability Error:",
-      error
-    );
+    console.error("Get Technician Availability Error:", error);
 
     return res.status(500).json({
       success: false,
@@ -1115,9 +1238,13 @@ const getTechnicianAvailability = async (req, res) => {
   }
 };
 
+// ==========================================================
+// UPDATE TECHNICIAN AVAILABILITY
+// ==========================================================
+
 const updateTechnicianAvailability = async (req, res) => {
   try {
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
     const { isAvailable } = req.body;
 
     if (typeof isAvailable !== "boolean") {
@@ -1156,10 +1283,7 @@ const updateTechnicianAvailability = async (req, res) => {
       isAvailable,
     });
   } catch (error) {
-    console.error(
-      "Update Technician Availability Error:",
-      error
-    );
+    console.error("Update Technician Availability Error:", error);
 
     return res.status(500).json({
       success: false,
@@ -1168,9 +1292,13 @@ const updateTechnicianAvailability = async (req, res) => {
   }
 };
 
+// ==========================================================
+// DECLINE AVAILABLE JOB
+// ==========================================================
+
 const declineAvailableJob = async (req, res) => {
   try {
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
     const { id } = req.params;
 
     const booking = await Booking.findOneAndUpdate(
@@ -1209,8 +1337,7 @@ const declineAvailableJob = async (req, res) => {
 
       return res.status(409).json({
         success: false,
-        message:
-          "This booking is no longer available or was already declined",
+        message: "This booking is no longer available or was already declined",
       });
     }
 
@@ -1227,10 +1354,15 @@ const declineAvailableJob = async (req, res) => {
     });
   }
 };
+
+// ==========================================================
+// CANCEL BOOKING - CUSTOMER
+// ==========================================================
+
 const cancelBooking = async (req, res) => {
   try {
     const { id } = req.params;
-    const customerId = req.user._id || req.user.id;
+    const customerId = req.user?._id || req.user?.id;
 
     const booking = await Booking.findOne({
       _id: id,
@@ -1244,9 +1376,7 @@ const cancelBooking = async (req, res) => {
       });
     }
 
-    if (
-      ["Completed", "Cancelled"].includes(booking.status)
-    ) {
+    if (["Completed", "Cancelled"].includes(booking.status)) {
       return res.status(400).json({
         success: false,
         message: `Cannot cancel a ${booking.status.toLowerCase()} booking`,
@@ -1257,7 +1387,7 @@ const cancelBooking = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "This booking has already been paid. Please process a refund before cancelling.",
+          "This booking has already been paid. Process a refund before cancelling.",
       });
     }
 
@@ -1281,10 +1411,14 @@ const cancelBooking = async (req, res) => {
   }
 };
 
+// ==========================================================
+// CANCEL JOB - TECHNICIAN
+// ==========================================================
+
 const technicianCancelJob = async (req, res) => {
   try {
     const { id } = req.params;
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
 
     const booking = await Booking.findOne({
       _id: id,
@@ -1298,9 +1432,7 @@ const technicianCancelJob = async (req, res) => {
       });
     }
 
-    if (
-      ["Completed", "Cancelled"].includes(booking.status)
-    ) {
+    if (["Completed", "Cancelled"].includes(booking.status)) {
       return res.status(400).json({
         success: false,
         message: `Cannot cancel a ${booking.status.toLowerCase()} booking`,
@@ -1336,10 +1468,14 @@ const technicianCancelJob = async (req, res) => {
   }
 };
 
+// ==========================================================
+// REMOVE COMPLETED JOB - TECHNICIAN
+// ==========================================================
+
 const removeCompletedJob = async (req, res) => {
   try {
     const { id } = req.params;
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
 
     const booking = await Booking.findOne({
       _id: id,
@@ -1378,15 +1514,29 @@ const removeCompletedJob = async (req, res) => {
     });
   }
 };
+
+// ==========================================================
+// MARK CASH RECEIVED - TECHNICIAN
+// ==========================================================
+
 const markCashReceived = async (req, res) => {
   let session;
 
   try {
-    const technicianId = req.user._id || req.user.id;
+    const technicianId = req.user?._id || req.user?.id;
     const bookingId = req.params.id;
 
-    session = await Booking.startSession();
+    if (!mongoose.isValidObjectId(bookingId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking ID",
+      });
+    }
+
+    session = await mongoose.startSession();
     session.startTransaction();
+
+    const now = new Date();
 
     const booking = await Booking.findOneAndUpdate(
       {
@@ -1400,8 +1550,8 @@ const markCashReceived = async (req, res) => {
       {
         $set: {
           paymentStatus: "Paid",
-          paidAt: new Date(),
-          cashReceivedAt: new Date(),
+          paidAt: now,
+          cashReceivedAt: now,
           cashReceivedBy: technicianId,
         },
       },
@@ -1420,47 +1570,44 @@ const markCashReceived = async (req, res) => {
       if (!existingBooking) {
         return res.status(404).json({
           success: false,
-          message: "Booking not found.",
+          message: "Booking not found",
         });
       }
 
       if (
         !existingBooking.technician ||
-        existingBooking.technician.toString() !==
-          technicianId.toString()
+        existingBooking.technician.toString() !== technicianId.toString()
       ) {
         return res.status(403).json({
           success: false,
-          message: "This booking is not assigned to you.",
+          message: "This booking is not assigned to you",
         });
       }
 
       if (existingBooking.paymentStatus === "Paid") {
         return res.status(409).json({
           success: false,
-          message: "This booking has already been paid.",
+          message: "This booking has already been paid",
         });
       }
 
       if (existingBooking.paymentMethod !== "Cash on Service") {
         return res.status(400).json({
           success: false,
-          message: "This booking is not a cash payment.",
+          message: "This booking is not a cash payment",
         });
       }
 
       if (existingBooking.status !== "Completed") {
         return res.status(400).json({
           success: false,
-          message:
-            "Complete the service before confirming cash collection.",
+          message: "Complete the service before confirming cash collection",
         });
       }
 
       return res.status(409).json({
         success: false,
-        message:
-          "Cash collection could not be confirmed. Refresh and try again.",
+        message: "Cash collection could not be confirmed. Refresh and try again.",
       });
     }
 
@@ -1475,7 +1622,7 @@ const markCashReceived = async (req, res) => {
           status: "COMPLETED",
           description: `Earnings for booking ${booking.bookingId}`,
           reference: `booking:${booking._id}:earning`,
-          processedAt: new Date(),
+          processedAt: now,
         },
       ],
       { session }
@@ -1485,8 +1632,7 @@ const markCashReceived = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message:
-        "Cash collection recorded and wallet credited successfully.",
+      message: "Cash collection recorded and wallet credited successfully",
       booking,
     });
   } catch (error) {
@@ -1497,8 +1643,7 @@ const markCashReceived = async (req, res) => {
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
-        message:
-          "A wallet transaction already exists for this booking.",
+        message: "A wallet transaction already exists for this booking",
       });
     }
 
@@ -1506,8 +1651,7 @@ const markCashReceived = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message:
-        "Failed to record cash collection and wallet transaction.",
+      message: "Failed to record cash collection and wallet transaction",
     });
   } finally {
     if (session) {
@@ -1515,6 +1659,10 @@ const markCashReceived = async (req, res) => {
     }
   }
 };
+
+// ==========================================================
+// EXPORT CONTROLLER FUNCTIONS
+// ==========================================================
 
 module.exports = {
   createBooking,

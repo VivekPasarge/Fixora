@@ -294,3 +294,30 @@
     font-size: 14px;
   }
 }
+
+
+.dashboard-home-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 18px;
+  padding: 10px 20px;
+  border: 1px solid #dbe5f4;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #245fe8;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.dashboard-home-btn:hover {
+  background: #edf4ff;
+  transform: translateY(-1px);
+}
+
+.dashboard-home-btn:focus-visible {
+  outline: 2px solid #245fe8;
+  outline-offset: 3px;
+}

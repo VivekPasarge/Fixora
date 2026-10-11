@@ -1,30 +1,53 @@
+
+import { Navigate } from "react-router-dom";
+
 import Navbar from "../components/Navbar/Navbar";
 import Hero from "../components/Hero/Hero";
 import TrustBar from "../components/TrustBar/TrustBar";
-import Services from "../components/Services/Services";
-import LiveTracking from "../components/LiveTracking/LiveTracking";
 import Footer from "../components/Footer/Footer";
-import Contact from "../components/Contact/Contact";
-import About from "../components/About/About";
 import api from "../api/axios";
 
-
 const Home = () => {
+  const token = localStorage.getItem("token");
+  const storedUser = localStorage.getItem("user");
+
+  if (token && storedUser) {
+    try {
+      const user = JSON.parse(storedUser);
+      const role = String(user?.role || "").toLowerCase();
+
+      if (role === "technician") {
+        return (
+          <Navigate
+            to={
+              user.profileCompleted
+                ? "/technician-home"
+                : "/complete-profile"
+            }
+            replace
+          />
+        );
+      }
+
+      if (role === "admin") {
+        return <Navigate to="/admin-dashboard" replace />;
+      }
+    } catch {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    }
+  }
+
   return (
     <>
       <Navbar />
       <Hero />
       <TrustBar />
-      {/* <Services /> */}
-      {/* <LiveTracking />
-      
-      <About/>
-      <Contact/> */}
-
-      <Footer/>
+      <Footer />
     </>
   );
 };
+
 console.log(api.defaults.baseURL);
 
 export default Home;

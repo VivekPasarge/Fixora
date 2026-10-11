@@ -1,0 +1,82 @@
+/* Customer destination location controls on the booking form */
+
+.customer-location-box {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.customer-location-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 18px;
+  border: 1px solid #2563eb;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.customer-location-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.customer-location-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none;
+}
+
+.customer-location-btn svg {
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.customer-location-message {
+  margin: 12px 0 0;
+  color: #b45309;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.customer-location-message.location-success {
+  color: #15803d;
+}
+
+.customer-coordinates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #dbeafe;
+  color: #475569;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  .customer-location-box {
+    padding: 12px;
+  }
+
+  .customer-location-btn {
+    padding: 11px 12px;
+    font-size: 13px;
+  }
+
+  .customer-coordinates {
+    flex-direction: column;
+    gap: 6px;
+  }
+}

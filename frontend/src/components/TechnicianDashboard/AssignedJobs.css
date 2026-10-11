@@ -824,3 +824,52 @@
   }
 
 }
+
+
+/* Customer Destination */
+.job-destination {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.job-destination-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.job-destination-info > strong {
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.destination-map-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 16px;
+  border-radius: 9px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.destination-map-btn:hover {
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.destination-unavailable {
+  margin: 0;
+  color: #b45309;
+  font-size: 13px;
+  line-height: 1.5;
+}

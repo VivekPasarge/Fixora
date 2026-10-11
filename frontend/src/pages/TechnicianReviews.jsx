@@ -145,7 +145,7 @@ const TechnicianReviews = () => {
         <button
           type="button"
           className="reviews-back-btn"
-          onClick={() => navigate("/technician/dashboard")}
+          onClick={() => navigate("/technician-dashboard")}
         >
           <FiArrowLeft />
           Back to Dashboard

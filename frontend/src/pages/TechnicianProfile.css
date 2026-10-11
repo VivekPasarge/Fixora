@@ -1,156 +1,173 @@
-.technician-profile-page{
-    min-height:100vh;
-    padding:120px 20px 60px;
-    background:linear-gradient(135deg,#f8fafc,#eef4ff);
+
+/* =========================================
+   FIXORA - TECHNICIAN PROFILE PAGE
+========================================= */
+
+.profile-page {
+  min-height: calc(100vh - 80px);
+  padding: 48px 24px 70px;
+  background: #f3f6fb;
+  color: #17233b;
+  box-sizing: border-box;
 }
 
-.technician-profile-card{
-    max-width:1100px;
-    margin:auto;
-    background:#fff;
-    border-radius:24px;
-    padding:40px;
-    box-shadow:0 20px 50px rgba(15,23,42,.08);
-    border:1px solid #e2e8f0;
+.profile-card {
+  width: 100%;
+  max-width: 1050px;
+  margin: 0 auto;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  box-shadow: 0 16px 45px rgba(15, 23, 42, 0.08);
 }
 
-.technician-header{
-    display:flex;
-    align-items:center;
-    gap:30px;
-    padding-bottom:30px;
-    border-bottom:1px solid #e2e8f0;
-    margin-bottom:35px;
+/* Profile identity header */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 34px 38px;
+  background: linear-gradient(135deg, #07162c 0%, #142b4b 100%);
+  color: #ffffff;
 }
 
-.technician-avatar{
-    width:110px;
-    height:110px;
-    border-radius:50%;
-    background:linear-gradient(135deg,#2563eb,#1d4ed8);
-    color:#fff;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:42px;
-    font-weight:700;
-    box-shadow:0 15px 35px rgba(37,99,235,.35);
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 86px;
+  height: 86px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  background: linear-gradient(135deg, #0878ff, #12c5d9);
+  color: #ffffff;
+  font-size: 36px;
+  font-weight: 800;
+  text-transform: uppercase;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.15);
 }
 
-.technician-header h1{
-    font-size:34px;
-    color:#0f172a;
-    margin-bottom:8px;
+.profile-header h1 {
+  margin: 0 0 8px;
+  color: #ffffff;
+  font-size: clamp(25px, 4vw, 34px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+  overflow-wrap: anywhere;
 }
 
-.technician-header p{
-    color:#64748b;
-    font-size:18px;
-    margin-bottom:15px;
+.profile-header p {
+  margin: 0;
+  color: #c4d5ed;
+  font-size: 16px;
+  font-weight: 500;
+  text-transform: capitalize;
 }
 
-.availability{
-    display:inline-block;
-    padding:8px 18px;
-    border-radius:30px;
-    font-size:14px;
-    font-weight:600;
+/* Profile information */
+.profile-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 26px;
+  padding: 36px 38px;
 }
 
-.available{
-    background:#dcfce7;
-    color:#15803d;
+.profile-body label {
+  display: block;
+  margin-bottom: -13px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.busy{
-    background:#fee2e2;
-    color:#dc2626;
+.profile-body input,
+.profile-body textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 13px 15px;
+  border: 1px solid #dce4ef;
+  border-radius: 12px;
+  outline: none;
+  background: #f8fafc;
+  color: #26364f;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  box-sizing: border-box;
+  opacity: 1;
+  -webkit-text-fill-color: #26364f;
+  cursor: default;
 }
 
-.technician-details{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:22px;
+.profile-body input {
+  min-height: 49px;
 }
 
-.detail-card{
-    background:#f8fafc;
-    border:1px solid #e2e8f0;
-    border-radius:18px;
-    padding:22px;
-    transition:.3s;
+.profile-body textarea {
+  min-height: 125px;
+  resize: vertical;
 }
 
-.detail-card:hover{
-    transform:translateY(-5px);
-    box-shadow:0 12px 30px rgba(15,23,42,.08);
+/* About field spans both columns */
+.profile-body label:has(+ textarea),
+.profile-body label:has(+ textarea) + textarea {
+  grid-column: 1 / -1;
 }
 
-.detail-card h4{
-    color:#64748b;
-    font-size:14px;
-    margin-bottom:10px;
-    font-weight:600;
+/* Make the About label visually consistent */
+.profile-body label:has(+ textarea) {
+  margin-bottom: -13px;
 }
 
-.detail-card p{
-    color:#0f172a;
-    font-size:17px;
-    font-weight:600;
-    line-height:1.6;
-    word-break:break-word;
+/* Subtle hover effect */
+.profile-body input:hover,
+.profile-body textarea:hover {
+  border-color: #bdcde2;
+  background: #ffffff;
 }
 
-.full-width{
-    grid-column:1/-1;
+/* Loading state */
+.profile-page > h2 {
+  color: #172b49;
 }
 
-.edit-profile-btn{
-    width:100%;
-    margin-top:35px;
-    padding:16px;
-    border:none;
-    border-radius:14px;
-    background:linear-gradient(135deg,#2563eb,#1d4ed8);
-    color:#fff;
-    font-size:17px;
-    font-weight:600;
-    cursor:pointer;
-    transition:.3s;
-}
+/* Tablet and mobile */
+@media (max-width: 650px) {
+  .profile-page {
+    padding: 25px 14px 45px;
+  }
 
-.edit-profile-btn:hover{
-    transform:translateY(-2px);
-    box-shadow:0 15px 30px rgba(37,99,235,.35);
-}
+  .profile-card {
+    border-radius: 19px;
+  }
 
-.edit-profile-btn:active{
-    transform:scale(.98);
-}
+  .profile-header {
+    gap: 16px;
+    padding: 25px 20px;
+  }
 
-@media(max-width:768px){
+  .profile-avatar {
+    width: 66px;
+    height: 66px;
+    border-radius: 18px;
+    font-size: 28px;
+  }
 
-    .technician-profile-card{
-        padding:25px;
-    }
+  .profile-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    padding: 25px 20px;
+  }
 
-    .technician-header{
-        flex-direction:column;
-        text-align:center;
-    }
+  .profile-header h1 {
+    font-size: 25px;
+  }
 
-    .technician-avatar{
-        width:90px;
-        height:90px;
-        font-size:34px;
-    }
-
-    .technician-header h1{
-        font-size:28px;
-    }
-
-    .technician-details{
-        grid-template-columns:1fr;
-    }
-
+  .profile-header p {
+    font-size: 14px;
+  }
 }

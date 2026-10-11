@@ -29,15 +29,29 @@ const ReviewsCard = () => {
         const token = localStorage.getItem("token");
 
         if (!storedUser || !token) {
-          if (active) setError("Please log in to view your reviews.");
+          if (active) {
+            setError("Please log in to view your reviews.");
+          }
           return;
         }
 
-        const user = JSON.parse(storedUser);
+        let user;
+
+        try {
+          user = JSON.parse(storedUser);
+        } catch {
+          if (active) {
+            setError("Unable to read account details. Please log in again.");
+          }
+          return;
+        }
+
         const technicianId = user?._id || user?.id;
 
         if (!technicianId) {
-          if (active) setError("Technician account details not found.");
+          if (active) {
+            setError("Technician account details were not found.");
+          }
           return;
         }
 
@@ -57,18 +71,20 @@ const ReviewsCard = () => {
               : []
           );
         }
-      } catch (error) {
-        console.error("Reviews Error:", error);
+      } catch (err) {
+        console.error("Technician Reviews Error:", err);
 
         if (active) {
           setReviews([]);
           setError(
-            error.response?.data?.message ||
+            err.response?.data?.message ||
               "Unable to load reviews. Please try again."
           );
         }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
@@ -97,11 +113,16 @@ const ReviewsCard = () => {
     );
 
     return (
-      <div className="review-stars" aria-label={`${safeRating} out of 5 stars`}>
+      <div
+        className="review-stars"
+        aria-label={`${safeRating} out of 5 stars`}
+      >
         {[1, 2, 3, 4, 5].map((star) => (
           <FiStar
             key={star}
-            className={star <= safeRating ? "star-filled" : "star-empty"}
+            className={
+              star <= safeRating ? "star-filled" : "star-empty"
+            }
             fill={star <= safeRating ? "currentColor" : "none"}
           />
         ))}
@@ -109,22 +130,34 @@ const ReviewsCard = () => {
     );
   };
 
-  const handleViewAll = () => {
-    navigate("/technician/reviews");
-  };
-
   const formatDate = (date) => {
     if (!date) return "Recent";
 
     const parsedDate = new Date(date);
 
-    if (Number.isNaN(parsedDate.getTime())) return "Recent";
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "Recent";
+    }
 
     return parsedDate.toLocaleDateString("en-IN", {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
+  };
+
+  const handleViewAll = () => {
+    navigate("/technician/reviews");
+  };
+
+  const getServiceName = (booking) => {
+    if (!booking) return "";
+
+    if (typeof booking.service === "string") {
+      return booking.service;
+    }
+
+    return booking.service?.name || "";
   };
 
   return (
@@ -139,6 +172,7 @@ const ReviewsCard = () => {
         <div>
           <div className="reviews-title-row">
             <h2 className="reviews-title">Recent Reviews</h2>
+
             <FiMessageSquare className="reviews-header-icon" />
           </div>
 
@@ -150,7 +184,9 @@ const ReviewsCard = () => {
         {!loading && !error && reviews.length > 0 && (
           <div className="reviews-summary">
             <strong>{averageRating}</strong>
+
             {renderStars(Math.round(Number(averageRating)))}
+
             <span>
               {reviews.length}{" "}
               {reviews.length === 1 ? "Review" : "Reviews"}
@@ -168,6 +204,7 @@ const ReviewsCard = () => {
 
       {!loading && error && (
         <div className="reviews-empty">
+          <h3>Unable to Load Reviews</h3>
           <p>{error}</p>
         </div>
       )}
@@ -191,10 +228,7 @@ const ReviewsCard = () => {
         <div className="reviews-list">
           {reviews.slice(0, 3).map((item, index) => {
             const customerName = item.customer?.name || "Customer";
-            const serviceName =
-              typeof item.booking?.service === "object"
-                ? item.booking.service?.name
-                : item.booking?.service;
+            const serviceName = getServiceName(item.booking);
 
             return (
               <div
@@ -208,7 +242,10 @@ const ReviewsCard = () => {
                     </div>
 
                     <div>
-                      <h3 className="review-name">{customerName}</h3>
+                      <h3 className="review-name">
+                        {customerName}
+                      </h3>
+
                       <p className="review-date">
                         {formatDate(item.createdAt)}
                       </p>
@@ -223,7 +260,9 @@ const ReviewsCard = () => {
                 </p>
 
                 {serviceName && (
-                  <span className="review-service">{serviceName}</span>
+                  <span className="review-service">
+                    {serviceName}
+                  </span>
                 )}
               </div>
             );
