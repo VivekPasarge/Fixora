@@ -26,9 +26,6 @@ const bookingSchema = new mongoose.Schema(
     // CUSTOMER LOCATION (DESTINATION)
     // =====================================================
 
-    // Coordinates of the customer's service address.
-    // Optional so existing bookings remain compatible.
-
     customerLocation: {
       latitude: {
         type: Number,
@@ -103,6 +100,20 @@ const bookingSchema = new mongoose.Schema(
     },
 
     customerRemovedAt: {
+      type: Date,
+      default: null,
+    },
+
+    // =====================================================
+    // TECHNICIAN BOOKING HISTORY
+    // =====================================================
+
+    technicianRemoved: {
+      type: Boolean,
+      default: false,
+    },
+
+    technicianRemovedAt: {
       type: Date,
       default: null,
     },
@@ -254,9 +265,6 @@ const bookingSchema = new mongoose.Schema(
     // =====================================================
     // LIVE TECHNICIAN TRACKING
     // =====================================================
-
-    // Updated by your existing technician GPS tracking logic.
-    // Keep this separate from customerLocation.
 
     technicianLocation: {
       latitude: {

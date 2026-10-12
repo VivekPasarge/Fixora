@@ -1094,17 +1094,28 @@ const getPendingBookings = async (req, res) => {
 // GET ASSIGNED BOOKINGS - TECHNICIAN
 // ==========================================================
 
+
+
 const getAssignedBookings = async (req, res) => {
   try {
     const technicianId = req.user?._id || req.user?.id;
 
+    if (!technicianId) {
+      return res.status(401).json({
+        success: false,
+        message: "Technician authentication required",
+      });
+    }
+
     const bookings = await Booking.find({
       technician: technicianId,
-      status: { $nin: ["Cancelled"] },
+      status: { $ne: "Cancelled" },
+      technicianRemoved: { $ne: true },
     })
       .populate("customer", "name phone")
       .populate("service", "name category price")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({
       success: true,
@@ -1120,6 +1131,7 @@ const getAssignedBookings = async (req, res) => {
     });
   }
 };
+
 
 // ==========================================================
 // CANCEL BOOKING - CUSTOMER
@@ -1438,10 +1450,18 @@ const updateTechnicianAvailability = async (req, res) => {
 // REMOVE COMPLETED JOB
 // ==========================================================
 
+
 const removeCompletedJob = async (req, res) => {
   try {
     const { id } = req.params;
     const technicianId = req.user?._id || req.user?.id;
+
+    if (!technicianId) {
+      return res.status(401).json({
+        success: false,
+        message: "Technician authentication required.",
+      });
+    }
 
     const booking = await Booking.findOne({
       _id: id,
@@ -1452,10 +1472,13 @@ const removeCompletedJob = async (req, res) => {
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: "Completed job not found",
+        message:
+          "Completed job not found or it does not belong to you.",
       });
     }
 
+    // Remove from the technician's assigned-job list.
+    // Keep the database record for earnings and booking history.
     booking.technicianRemoved = true;
     booking.technicianRemovedAt = new Date();
 
@@ -1463,17 +1486,19 @@ const removeCompletedJob = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Completed job removed successfully",
+      message: "Completed job removed from your dashboard.",
+      bookingId: booking._id,
     });
   } catch (error) {
     console.error("Remove Completed Job Error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to remove completed job",
+      message: "Failed to remove completed job.",
     });
   }
 };
+
 
 // ==========================================================
 // GET BOOKED TIME SLOTS

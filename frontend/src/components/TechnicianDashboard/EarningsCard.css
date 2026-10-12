@@ -237,3 +237,38 @@ font-size:20px;
     flex-direction: column;
   }
 }
+.recent-payments-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+  margin-bottom: 12px;
+}
+
+.recent-payments-header .recent-title {
+  margin: 0;
+}
+
+.view-all-payments-btn {
+  border: 1px solid #2563eb;
+  background: #fff;
+  color: #2563eb;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.view-all-payments-btn:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+@media (max-width: 480px) {
+  .recent-payments-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

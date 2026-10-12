@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import "./EarningsCard.css";
 
@@ -19,6 +20,8 @@ const formatCurrency = (amount) =>
   });
 
 const EarningsCard = () => {
+  const navigate = useNavigate();
+
   const [earnings, setEarnings] = useState(initialEarnings);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -85,6 +88,8 @@ const EarningsCard = () => {
     { label: "Lifetime Earnings", amount: earnings.lifetime },
   ];
 
+  const latestPayment = earnings.transactions[0];
+
   return (
     <section className="earnings-card">
       <h2>Earnings Overview</h2>
@@ -106,51 +111,65 @@ const EarningsCard = () => {
           <div className="earning-box" key={card.label}>
             <span>{card.label}</span>
             <h3>
-              {loading ? "Loading..." : formatCurrency(card.amount)}
+              {loading
+                ? "Loading..."
+                : formatCurrency(card.amount)}
             </h3>
           </div>
         ))}
       </div>
 
-      <h3 className="recent-title">Recent Payments</h3>
+      <div className="recent-payments-header">
+        <h3 className="recent-title">Recent Payment</h3>
+
+        
+<button
+  type="button"
+  className="view-all-payments-btn"
+  onClick={() => navigate("/technician/wallet")}
+>
+  View all payments
+</button>
+
+      </div>
 
       {loading ? (
-        <p className="no-payment">Loading transactions...</p>
+        <p className="no-payment">Loading latest payment...</p>
       ) : error ? (
         <p className="no-payment">
-          Earnings could not be loaded. Please retry.
+          Unable to load the latest payment.
         </p>
-      ) : earnings.transactions.length === 0 ? (
-        <p className="no-payment">No credited earnings yet.</p>
+      ) : !latestPayment ? (
+        <p className="no-payment">
+          No credited earnings yet.
+        </p>
       ) : (
-        earnings.transactions.slice(0, 5).map((transaction) => (
-          <div
-            key={transaction._id || transaction.reference}
-            className="payment-row"
-          >
-            <div className="payment-details">
-              <span>
-                {transaction.description || "Completed service"}
-              </span>
-              <small>
-                {transaction.createdAt
-                  ? new Date(transaction.createdAt).toLocaleDateString(
-                      "en-IN",
-                      {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      }
-                    )
-                  : ""}
-              </small>
-            </div>
+        <div
+          className="payment-row"
+          key={latestPayment._id || latestPayment.reference}
+        >
+          <div className="payment-details">
+            <span>
+              {latestPayment.description || "Completed service"}
+            </span>
 
-            <strong>
-              +{formatCurrency(transaction.amount)}
-            </strong>
+            <small>
+              {latestPayment.createdAt
+                ? new Date(
+                    latestPayment.createdAt
+                  ).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : ""}
+            </small>
           </div>
-        ))
+
+          <strong>
+            +{formatCurrency(latestPayment.amount)}
+          </strong>
+        </div>
       )}
     </section>
   );
