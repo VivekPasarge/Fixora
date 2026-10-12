@@ -78,11 +78,10 @@ const Login = () => {
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-
-      if (role === "admin") {
-        navigate("/admin-home", { replace: true });
-        return;
-      }
+if (role === "admin") {
+  navigate("/admin-home", { replace: true });
+  return;
+}
 
       if (role === "technician") {
         if (user.profileCompleted) {
