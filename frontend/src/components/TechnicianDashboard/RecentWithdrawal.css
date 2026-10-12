@@ -1,0 +1,273 @@
+
+/* ==========================================
+   FIXORA - RECENT WITHDRAWAL
+========================================== */
+
+.recent-withdrawal-section {
+  width: 100%;
+  margin: 24px 0;
+  padding: 0;
+  color: #172033;
+  font-family: Arial, sans-serif;
+}
+
+/* HEADER */
+
+.recent-withdrawal-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.recent-withdrawal-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: #111827;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+
+.recent-withdrawal-heading h2 span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: #fff0ed;
+  color: #ea4335;
+  font-size: 25px;
+}
+
+/* VIEW ALL BUTTON */
+
+.view-all-withdrawals {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 19px;
+  border: 1px solid #2563ff;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #2563ff;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.view-all-withdrawals:hover {
+  background: #2563ff;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* WITHDRAWAL CARD */
+
+.recent-withdrawal-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  width: 100%;
+  min-height: 118px;
+  padding: 24px 28px;
+  border: 1px solid #dce5f2;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.045);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.recent-withdrawal-card:hover {
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07);
+}
+
+/* DETAILS */
+
+.recent-withdrawal-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+}
+
+.recent-withdrawal-info > strong {
+  color: #172033;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.recent-withdrawal-info > span:not(.recent-withdrawal-status) {
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* STATUS */
+
+.recent-withdrawal-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 11px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.recent-withdrawal-status.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.recent-withdrawal-status.completed {
+  background: #e7f8ee;
+  color: #07803f;
+}
+
+.recent-withdrawal-status.rejected,
+.recent-withdrawal-status.failed {
+  background: #feeceb;
+  color: #dc2626;
+}
+
+/* AMOUNT */
+
+.recent-withdrawal-amount {
+  flex-shrink: 0;
+  color: #e8342b;
+  font-size: 24px;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* LOADING AND EMPTY STATES */
+
+.recent-withdrawal-state {
+  padding: 25px;
+  border: 1px solid #dce5f2;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
+}
+
+.recent-withdrawal-state.error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* TABLET */
+
+@media (max-width: 768px) {
+  .recent-withdrawal-heading h2 {
+    font-size: 22px;
+  }
+
+  .recent-withdrawal-card {
+    min-height: 105px;
+    padding: 21px;
+    border-radius: 17px;
+  }
+
+  .recent-withdrawal-info > strong {
+    font-size: 15px;
+  }
+
+  .recent-withdrawal-amount {
+    font-size: 20px;
+  }
+
+  .view-all-withdrawals {
+    min-height: 43px;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 480px) {
+  .recent-withdrawal-section {
+    margin: 20px 0;
+  }
+
+  .recent-withdrawal-heading {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .recent-withdrawal-heading h2 {
+    gap: 8px;
+    font-size: 19px;
+  }
+
+  .recent-withdrawal-heading h2 span {
+    width: 34px;
+    height: 34px;
+    font-size: 21px;
+  }
+
+  .view-all-withdrawals {
+    min-height: 38px;
+    padding: 9px 11px;
+    border-radius: 9px;
+    font-size: 11px;
+  }
+
+  .recent-withdrawal-card {
+    align-items: flex-start;
+    gap: 12px;
+    padding: 17px 15px;
+    border-radius: 15px;
+  }
+
+  .recent-withdrawal-info {
+    gap: 8px;
+  }
+
+  .recent-withdrawal-info > strong {
+    font-size: 13px;
+  }
+
+  .recent-withdrawal-info > span:not(.recent-withdrawal-status) {
+    font-size: 12px;
+  }
+
+  .recent-withdrawal-status {
+    padding: 6px 9px;
+    font-size: 10px;
+  }
+
+  .recent-withdrawal-amount {
+    padding-top: 2px;
+    font-size: 16px;
+  }
+}
+
+/* ACCESSIBILITY */
+
+.view-all-withdrawals:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}

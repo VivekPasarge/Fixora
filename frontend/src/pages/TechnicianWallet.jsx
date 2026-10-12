@@ -13,6 +13,7 @@ import {
   FiCheckCircle,
   FiXCircle,
 } from "react-icons/fi";
+import RecentWithdrawal from "../components/TechnicianDashboard/RecentWithdrawal";
 import { useNavigate } from "react-router-dom";
 
 import api from "../api/axios";
