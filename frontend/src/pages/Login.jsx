@@ -80,7 +80,7 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(user));
 
       if (role === "admin") {
-        navigate("/admin-dashboard", { replace: true });
+        navigate("/admin-home", { replace: true });
         return;
       }
 
