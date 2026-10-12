@@ -4,18 +4,14 @@ import { motion } from "framer-motion";
 import {
   FiArrowLeft,
   FiCreditCard,
-  FiArrowUpRight,
-  FiArrowDownLeft,
   FiClock,
   FiDownload,
   FiRefreshCw,
   FiAlertCircle,
   FiCheckCircle,
-  FiXCircle,
 } from "react-icons/fi";
-import RecentWithdrawal from "../components/TechnicianDashboard/RecentWithdrawal";
 import { useNavigate } from "react-router-dom";
-
+import RecentWithdrawal from "../components/TechnicianDashboard/RecentWithdrawal";
 import api from "../api/axios";
 import "./TechnicianWallet.css";
 
@@ -26,31 +22,10 @@ const formatCurrency = (amount) =>
     maximumFractionDigits: 2,
   }).format(Number(amount) || 0);
 
-const formatDate = (date) => {
-  if (!date) return "Date unavailable";
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return String(date);
-  }
-
-  return parsedDate.toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
 const getToken = () =>
   localStorage.getItem("token") ||
   localStorage.getItem("fixoraToken") ||
   localStorage.getItem("authToken");
-
-const getStatusClass = (status) =>
-  String(status || "PENDING").toLowerCase();
 
 const TechnicianWallet = () => {
   const navigate = useNavigate();
@@ -66,10 +41,7 @@ const TechnicianWallet = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-
-  const [showWithdrawalForm, setShowWithdrawalForm] =
-    useState(false);
-
+  const [showWithdrawalForm, setShowWithdrawalForm] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [upiId, setUpiId] = useState("");
   const [accountHolderName, setAccountHolderName] = useState("");
@@ -129,7 +101,6 @@ const TechnicianWallet = () => {
 
   useEffect(() => {
     fetchWallet();
-
   }, [fetchWallet]);
 
   const handleWithdrawal = async (event) => {
@@ -166,9 +137,7 @@ const TechnicianWallet = () => {
       (
         !accountHolderName.trim() ||
         !/^[0-9]{8,18}$/.test(accountNumber.trim()) ||
-        !/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/.test(
-          ifscCode.trim()
-        )
+        !/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/.test(ifscCode.trim())
       )
     ) {
       setError(
@@ -326,9 +295,7 @@ const TechnicianWallet = () => {
             animate={{ opacity: 1, y: 0 }}
           >
             <span>Total Wallet Balance</span>
-
             <strong>{formatCurrency(wallet.balance)}</strong>
-
             <small>
               Net wallet balance after completed transactions
             </small>
@@ -341,12 +308,12 @@ const TechnicianWallet = () => {
             transition={{ delay: 0.05 }}
           >
             <span>Available to Withdraw</span>
-
             <strong>
               {formatCurrency(wallet.availableBalance)}
             </strong>
-
-            <small>Available for a new withdrawal request</small>
+            <small>
+              Available for a new withdrawal request
+            </small>
           </motion.article>
 
           <motion.article
@@ -356,11 +323,9 @@ const TechnicianWallet = () => {
             transition={{ delay: 0.1 }}
           >
             <span>Pending Withdrawals</span>
-
             <strong>
               {formatCurrency(wallet.pendingWithdrawals)}
             </strong>
-
             <small>Awaiting review or processing</small>
           </motion.article>
         </section>
@@ -378,9 +343,7 @@ const TechnicianWallet = () => {
               or bank account details.
             </p>
 
-            <small>
-              Minimum withdrawal: ₹100
-            </small>
+            <small>Minimum withdrawal: ₹100</small>
           </div>
 
           <button
@@ -392,11 +355,11 @@ const TechnicianWallet = () => {
               setShowWithdrawalForm((previous) => !previous);
             }}
             disabled={
-              wallet.availableBalance < 100 && !showWithdrawalForm
+              wallet.availableBalance < 100 &&
+              !showWithdrawalForm
             }
           >
             <FiDownload />
-
             {showWithdrawalForm
               ? "Cancel Withdrawal"
               : "Request Withdrawal"}
@@ -514,7 +477,9 @@ const TechnicianWallet = () => {
                       type="text"
                       value={ifscCode}
                       onChange={(event) =>
-                        setIfscCode(event.target.value.toUpperCase())
+                        setIfscCode(
+                          event.target.value.toUpperCase()
+                        )
                       }
                       placeholder="ABCD0123456"
                       required
@@ -555,7 +520,10 @@ const TechnicianWallet = () => {
           </motion.form>
         )}
 
-        <RecentWithdrawal />
+        {/* Recent withdrawal and View All button */}
+        <div className="wallet-recent-withdrawal-wrapper">
+          <RecentWithdrawal />
+        </div>
 
         <p className="wallet-security-note">
           Wallet balances and transaction statuses are supplied by

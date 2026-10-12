@@ -10,39 +10,70 @@ const RecentWithdrawal = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let active = true;
+
     const fetchRecentWithdrawal = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const response = await api.get("/wallet/transactions");
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("fixoraToken") ||
+          localStorage.getItem("authToken");
+
+        const response = await api.get("/wallet/transactions", {
+          headers: token
+            ? { Authorization: `Bearer ${token}` }
+            : {},
+        });
+
         const data = response.data;
 
         const transactions = Array.isArray(data)
           ? data
-          : data.transactions || data.data || [];
+          : Array.isArray(data?.transactions)
+          ? data.transactions
+          : Array.isArray(data?.data)
+          ? data.data
+          : [];
 
         const withdrawals = transactions
           .filter(
             (item) =>
-              String(item.type).toUpperCase() === "WITHDRAWAL"
+              String(item.type || "").toUpperCase() ===
+              "WITHDRAWAL"
           )
           .sort(
             (a, b) =>
-              new Date(b.createdAt).getTime() -
-              new Date(a.createdAt).getTime()
+              new Date(b.createdAt || 0).getTime() -
+              new Date(a.createdAt || 0).getTime()
           );
 
-        setWithdrawal(withdrawals[0] || null);
+        if (active) {
+          setWithdrawal(withdrawals[0] || null);
+        }
       } catch (err) {
         console.error("Recent withdrawal error:", err);
-        setError("Unable to load recent withdrawal.");
+
+        if (active) {
+          setError(
+            err.response?.data?.message ||
+              "Unable to load recent withdrawal."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
     fetchRecentWithdrawal();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const formatDate = (date) => {
@@ -54,8 +85,19 @@ const RecentWithdrawal = () => {
       day: "2-digit",
       month: "short",
       year: "numeric",
+      timeZone: "Asia/Kolkata",
     });
   };
+
+  const formatAmount = (amount) =>
+    Number(amount || 0).toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+  const status = String(withdrawal?.status || "PENDING")
+    .toLowerCase()
+    .replace(/\s+/g, "-");
 
   return (
     <section className="recent-withdrawal-section">
@@ -66,11 +108,11 @@ const RecentWithdrawal = () => {
         </h2>
 
         <Link
-  to="/technician/transactions"
-  className="view-all-withdrawals"
->
-  View all withdrawals
-</Link>
+          to="/technician/withdrawals"
+          className="view-all-withdrawals"
+        >
+          View all withdrawals →
+        </Link>
       </div>
 
       {loading ? (
@@ -95,20 +137,14 @@ const RecentWithdrawal = () => {
             <span>{formatDate(withdrawal.createdAt)}</span>
 
             <span
-              className={`recent-withdrawal-status ${String(
-                withdrawal.status || "PENDING"
-              ).toLowerCase()}`}
+              className={`recent-withdrawal-status ${status}`}
             >
               {withdrawal.status || "PENDING"}
             </span>
           </div>
 
           <strong className="recent-withdrawal-amount">
-            −₹
-            {Number(withdrawal.amount || 0).toLocaleString("en-IN", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
+            −₹{formatAmount(withdrawal.amount)}
           </strong>
         </div>
       )}
