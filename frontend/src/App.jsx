@@ -13,7 +13,7 @@ import TechnicianTrack from "./pages/TechnicianTrack";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import TechnicianDashboard from "./pages/TechnicianDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-
+import TechnicianWithdrawals from "./pages/TechnicianWithdrawals";
 import NotFound from "./pages/NotFound";
 import BookingSuccess from "./pages/BookingSuccess";
 import MyBookings from "./pages/MyBookings";
@@ -133,6 +133,16 @@ function App() {
           </ProtectedRoute>
         }
       />
+      
+<Route
+  path="/technician/withdrawals"
+  element={
+    <ProtectedRoute allowedRoles={["technician"]}>
+      <TechnicianWithdrawals />
+    </ProtectedRoute>
+  }
+/>
+
 
       <Route
         path="/technician/reviews"

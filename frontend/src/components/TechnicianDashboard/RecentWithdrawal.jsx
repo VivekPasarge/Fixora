@@ -66,11 +66,11 @@ const RecentWithdrawal = () => {
         </h2>
 
         <Link
-          to="/technician/withdrawals"
-          className="view-all-withdrawals"
-        >
-          View all withdrawals
-        </Link>
+  to="/technician/transactions"
+  className="view-all-withdrawals"
+>
+  View all withdrawals
+</Link>
       </div>
 
       {loading ? (
