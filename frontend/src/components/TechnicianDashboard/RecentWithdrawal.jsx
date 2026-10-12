@@ -1,69 +1,64 @@
-
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import "./RecentWithdrawal.css";
 
+const getTransactions = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.transactions)) return data.transactions;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.data?.transactions)) {
+    return data.data.transactions;
+  }
+  if (Array.isArray(data?.wallet?.transactions)) {
+    return data.wallet.transactions;
+  }
+  return [];
+};
+
 const RecentWithdrawal = () => {
+  const navigate = useNavigate();
+
   const [withdrawal, setWithdrawal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    let active = true;
+    let cancelled = false;
 
     const fetchRecentWithdrawal = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const token =
-          localStorage.getItem("token") ||
-          localStorage.getItem("fixoraToken") ||
-          localStorage.getItem("authToken");
-
-        const response = await api.get("/wallet/transactions", {
-          headers: token
-            ? { Authorization: `Bearer ${token}` }
-            : {},
-        });
-
-        const data = response.data;
-
-        const transactions = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.transactions)
-          ? data.transactions
-          : Array.isArray(data?.data)
-          ? data.data
-          : [];
+        const response = await api.get("/wallet/transactions");
+        const transactions = getTransactions(response.data);
 
         const withdrawals = transactions
-          .filter(
-            (item) =>
-              String(item.type || "").toUpperCase() ===
-              "WITHDRAWAL"
-          )
-          .sort(
-            (a, b) =>
-              new Date(b.createdAt || 0).getTime() -
-              new Date(a.createdAt || 0).getTime()
-          );
+          .filter((item) => {
+            const type = String(item.type || "").toUpperCase();
+            return type === "WITHDRAWAL";
+          })
+          .sort((a, b) => {
+            const dateA = new Date(a.createdAt || 0).getTime();
+            const dateB = new Date(b.createdAt || 0).getTime();
+            return dateB - dateA;
+          });
 
-        if (active) {
+        if (!cancelled) {
           setWithdrawal(withdrawals[0] || null);
         }
       } catch (err) {
         console.error("Recent withdrawal error:", err);
 
-        if (active) {
+        if (!cancelled) {
           setError(
             err.response?.data?.message ||
-              "Unable to load recent withdrawal."
+              "Unable to load the latest withdrawal."
           );
         }
       } finally {
-        if (active) {
+        if (!cancelled) {
           setLoading(false);
         }
       }
@@ -72,7 +67,7 @@ const RecentWithdrawal = () => {
     fetchRecentWithdrawal();
 
     return () => {
-      active = false;
+      cancelled = true;
     };
   }, []);
 
@@ -85,7 +80,6 @@ const RecentWithdrawal = () => {
       day: "2-digit",
       month: "short",
       year: "numeric",
-      timeZone: "Asia/Kolkata",
     });
   };
 
@@ -95,32 +89,29 @@ const RecentWithdrawal = () => {
       maximumFractionDigits: 2,
     });
 
-  const status = String(withdrawal?.status || "PENDING")
-    .toLowerCase()
-    .replace(/\s+/g, "-");
-
   return (
     <section className="recent-withdrawal-section">
       <div className="recent-withdrawal-heading">
-        <h2>
-          <span aria-hidden="true">↗</span>
-          Recent Withdrawal
-        </h2>
+        <div>
+          <h2>Recent withdrawal</h2>
+          <p>Your latest withdrawal request</p>
+        </div>
 
-        <Link
-          to="/technician/withdrawals"
+        <button
+          type="button"
           className="view-all-withdrawals"
+          onClick={() => navigate("/technician/withdrawals")}
         >
           View all withdrawals →
-        </Link>
+        </button>
       </div>
 
       {loading ? (
         <div className="recent-withdrawal-state">
-          Loading recent withdrawal...
+          Loading latest withdrawal...
         </div>
       ) : error ? (
-        <div className="recent-withdrawal-state error">
+        <div className="recent-withdrawal-state error" role="alert">
           {error}
         </div>
       ) : !withdrawal ? (
@@ -137,7 +128,9 @@ const RecentWithdrawal = () => {
             <span>{formatDate(withdrawal.createdAt)}</span>
 
             <span
-              className={`recent-withdrawal-status ${status}`}
+              className={`recent-withdrawal-status ${String(
+                withdrawal.status || "PENDING"
+              ).toLowerCase()}`}
             >
               {withdrawal.status || "PENDING"}
             </span>

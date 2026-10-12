@@ -271,3 +271,168 @@
   outline: 3px solid #93c5fd;
   outline-offset: 3px;
 }
+
+
+.recent-withdrawal-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.recent-withdrawal-heading h2 {
+  margin: 0;
+}
+
+.recent-withdrawal-heading p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.view-all-withdrawals {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border: 1px solid #2459e8;
+  border-radius: 10px;
+  background: #2459e8;
+  color: #ffffff !important;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative;
+  z-index: 2;
+}
+
+.view-all-withdrawals:hover {
+  background: #1947c5;
+}
+
+.view-all-withdrawals:focus-visible {
+  outline: 3px solid #93b4ff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .recent-withdrawal-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .view-all-withdrawals {
+    width: 100%;
+  }
+}
+.recent-withdrawal-section {
+  display: block !important;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.recent-withdrawal-heading {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.view-all-withdrawals {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #2459e8;
+  color: #fff !important;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  z-index: 5;
+}
+
+.view-all-withdrawals:hover {
+  background: #1947c5;
+}
+
+@media (max-width: 600px) {
+  .recent-withdrawal-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .view-all-withdrawals {
+    width: 100%;
+  }
+}
+.recent-withdrawal-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.view-all-withdrawals {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 216px;
+  min-height: 48px;
+  padding: 12px 20px;
+  border: 1px solid #2563eb !important;
+  border-radius: 12px;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-family: inherit;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.view-all-withdrawals::before {
+  content: none !important;
+}
+
+.view-all-withdrawals:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+.view-all-withdrawals:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .recent-withdrawal-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .view-all-withdrawals {
+    width: 100%;
+    min-width: 0;
+  }
+}

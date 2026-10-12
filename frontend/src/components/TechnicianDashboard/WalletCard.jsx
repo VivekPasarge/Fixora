@@ -2,13 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import {
-  FiArrowDownLeft,
-  FiArrowUpRight,
   FiRefreshCw,
   FiClock,
   FiAlertCircle,
 } from "react-icons/fi";
 import { MdAccountBalanceWallet } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 import "./WalletCard.css";
 
 const API_URL = (
@@ -29,6 +28,8 @@ const getToken = () =>
   localStorage.getItem("authToken");
 
 const WalletCard = () => {
+  const navigate = useNavigate();
+
   const [wallet, setWallet] = useState({
     balance: 0,
     availableBalance: 0,
@@ -40,6 +41,7 @@ const WalletCard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [upiId, setUpiId] = useState("");
   const [accountHolderName, setAccountHolderName] = useState("");
@@ -47,6 +49,10 @@ const WalletCard = () => {
   const [ifscCode, setIfscCode] = useState("");
   const [showWithdrawalForm, setShowWithdrawalForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // ==========================================
+  // FETCH WALLET
+  // ==========================================
 
   const fetchWallet = useCallback(async (showLoader = true) => {
     if (showLoader) {
@@ -78,7 +84,8 @@ const WalletCard = () => {
 
       setWallet({
         balance: Number(response.data.balance) || 0,
-        availableBalance: Number(response.data.availableBalance) || 0,
+        availableBalance:
+          Number(response.data.availableBalance) || 0,
         pendingWithdrawals:
           Number(response.data.pendingWithdrawals) || 0,
         transactions: Array.isArray(response.data.transactions)
@@ -88,12 +95,14 @@ const WalletCard = () => {
     } catch (err) {
       if (err.response?.status === 404) {
         setError(
-          "Wallet API returned 404. Check that walletRoutes is registered and deployed on Render."
+          "Wallet API returned 404. Check that walletRoutes is registered and deployed."
         );
       } else if (err.response?.status === 401) {
         setError("Your session has expired. Please log in again.");
       } else if (err.response?.status === 403) {
-        setError("Wallet access is available to technician accounts only.");
+        setError(
+          "Wallet access is available to technician accounts only."
+        );
       } else {
         setError(
           err.response?.data?.message ||
@@ -110,6 +119,10 @@ const WalletCard = () => {
   useEffect(() => {
     fetchWallet();
   }, [fetchWallet]);
+
+  // ==========================================
+  // HANDLE WITHDRAWAL
+  // ==========================================
 
   const handleWithdrawal = async (event) => {
     event.preventDefault();
@@ -142,9 +155,13 @@ const WalletCard = () => {
 
     if (
       !usingUpi &&
-      (!accountHolderName.trim() ||
+      (
+        !accountHolderName.trim() ||
         !/^[0-9]{8,18}$/.test(accountNumber.trim()) ||
-        !/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/.test(ifscCode.trim()))
+        !/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/.test(
+          ifscCode.trim()
+        )
+      )
     ) {
       setError(
         "Enter a valid account holder name, account number and IFSC code."
@@ -206,7 +223,9 @@ const WalletCard = () => {
     }
   };
 
-  const transactions = wallet.transactions.slice(0, 5);
+  // ==========================================
+  // LOADING STATE
+  // ==========================================
 
   if (loading) {
     return (
@@ -218,6 +237,10 @@ const WalletCard = () => {
       </div>
     );
   }
+
+  // ==========================================
+  // WALLET CARD
+  // ==========================================
 
   return (
     <motion.div
@@ -252,14 +275,20 @@ const WalletCard = () => {
       </div>
 
       {error && (
-        <div className="wallet-alert wallet-alert-error">
+        <div
+          className="wallet-alert wallet-alert-error"
+          role="alert"
+        >
           <FiAlertCircle />
           <span>{error}</span>
         </div>
       )}
 
       {message && (
-        <div className="wallet-alert wallet-alert-success">
+        <div
+          className="wallet-alert wallet-alert-success"
+          role="status"
+        >
           {message}
         </div>
       )}
@@ -270,7 +299,9 @@ const WalletCard = () => {
 
         <div className="wallet-available">
           <span>Available to withdraw</span>
-          <strong>{formatCurrency(wallet.availableBalance)}</strong>
+          <strong>
+            {formatCurrency(wallet.availableBalance)}
+          </strong>
         </div>
 
         {wallet.pendingWithdrawals > 0 && (
@@ -393,76 +424,16 @@ const WalletCard = () => {
         </form>
       )}
 
-      <div className="wallet-transactions-header">
-        <h3>Recent transactions</h3>
+      {/* Transaction rows removed; use the button to open the full wallet. */}
+      <div className="wallet-history-navigation">
+        <button
+          type="button"
+          className="wallet-view-details-btn"
+          onClick={() => navigate("/technician/wallet")}
+        >
+          View Wallet &amp; Transactions →
+        </button>
       </div>
-
-      {transactions.length === 0 ? (
-        <div className="wallet-empty">
-          <MdAccountBalanceWallet />
-          <p>No wallet transactions yet.</p>
-        </div>
-      ) : (
-        <div className="wallet-transactions">
-          {transactions.map((transaction) => {
-            const isCredit = transaction.direction === "CREDIT";
-
-            return (
-              <div
-                className="wallet-transaction"
-                key={transaction._id}
-              >
-                <div
-                  className={`wallet-transaction-icon ${
-                    isCredit ? "credit" : "debit"
-                  }`}
-                >
-                  {isCredit ? (
-                    <FiArrowDownLeft />
-                  ) : (
-                    <FiArrowUpRight />
-                  )}
-                </div>
-
-                <div className="wallet-transaction-info">
-                  <strong>
-                    {transaction.description || transaction.type}
-                  </strong>
-
-                  <span>
-                    {transaction.createdAt
-                      ? new Date(
-                          transaction.createdAt
-                        ).toLocaleDateString("en-IN", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })
-                      : "Date unavailable"}
-                  </span>
-
-                  <span
-                    className={`wallet-status ${String(
-                      transaction.status || "PENDING"
-                    ).toLowerCase()}`}
-                  >
-                    {transaction.status}
-                  </span>
-                </div>
-
-                <strong
-                  className={`wallet-transaction-amount ${
-                    isCredit ? "credit" : "debit"
-                  }`}
-                >
-                  {isCredit ? "+" : "-"}
-                  {formatCurrency(transaction.amount)}
-                </strong>
-              </div>
-            );
-          })}
-        </div>
-      )}
     </motion.div>
   );
 };
