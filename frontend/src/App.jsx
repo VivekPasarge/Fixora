@@ -13,6 +13,7 @@ import TechnicianTrack from "./pages/TechnicianTrack";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import TechnicianDashboard from "./pages/TechnicianDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminWelcome from "./pages/AdminWelcome";
 import TechnicianWithdrawals from "./pages/TechnicianWithdrawals";
 import NotFound from "./pages/NotFound";
 import BookingSuccess from "./pages/BookingSuccess";
@@ -124,7 +125,24 @@ function App() {
           </ProtectedRoute>
         }
       />
+{/* Admin pages */}
+<Route
+  path="/admin"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <AdminWelcome />
+    </ProtectedRoute>
+  }
+/>
 
+<Route
+  path="/admin-dashboard"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <AdminDashboard />
+    </ProtectedRoute>
+  }
+/>
       <Route
         path="/technician/wallet"
         element={

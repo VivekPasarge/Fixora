@@ -1,0 +1,525 @@
+
+/* =========================================
+   FIXORA ADMIN WELCOME PAGE
+========================================= */
+
+.admin-welcome-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #f8fafc;
+  background:
+    radial-gradient(
+      circle at 80% 45%,
+      rgba(37, 99, 235, 0.16),
+      transparent 32%
+    ),
+    linear-gradient(135deg, #0f1e35 0%, #071426 55%, #0c1b30 100%);
+  font-family: inherit;
+}
+
+.admin-welcome-page * {
+  box-sizing: border-box;
+}
+
+/* NAVBAR */
+
+.admin-welcome-navbar {
+  min-height: 88px;
+  padding: 16px clamp(24px, 6vw, 110px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(5, 16, 33, 0.72);
+}
+
+.admin-welcome-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-welcome-logo {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #168bff, #00d4d8);
+  box-shadow: 0 8px 25px rgba(0, 153, 255, 0.22);
+}
+
+.admin-welcome-brand > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.admin-brand-caption {
+  color: #91b7ec;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.admin-welcome-badge {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 16px;
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  border-radius: 30px;
+  color: #c5dcff;
+  background: rgba(30, 58, 95, 0.42);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.admin-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.7);
+}
+
+/* HERO */
+
+.admin-welcome-hero {
+  width: 100%;
+  max-width: 1600px;
+  min-height: 660px;
+  margin: 0 auto;
+  padding: 64px clamp(24px, 6vw, 110px) 55px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: 45px;
+  flex: 1;
+}
+
+.admin-welcome-content {
+  position: relative;
+  z-index: 2;
+}
+
+.admin-welcome-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 20px;
+  border: 1px solid rgba(125, 166, 226, 0.3);
+  border-radius: 30px;
+  color: #a9ccff;
+  background: rgba(43, 68, 105, 0.42);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.admin-welcome-content h1 {
+  margin: 35px 0 22px;
+  color: #f8fafc;
+  font-size: clamp(42px, 4.1vw, 70px);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -2px;
+}
+
+.admin-welcome-content h1 span {
+  display: block;
+  color: #60a5fa;
+  overflow-wrap: anywhere;
+}
+
+.admin-welcome-description {
+  max-width: 550px;
+  margin: 0;
+  color: #bdcce0;
+  font-size: 16px;
+  line-height: 2;
+}
+
+/* MAIN BUTTON */
+
+.admin-command-button {
+  min-height: 56px;
+  margin-top: 34px;
+  padding: 0 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2563eb, #0879ed);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.24);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.admin-command-button span {
+  font-size: 23px;
+  transition: transform 0.2s ease;
+}
+
+.admin-command-button:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, #3478ff, #008cff);
+  box-shadow: 0 16px 35px rgba(37, 99, 235, 0.36);
+}
+
+.admin-command-button:hover span {
+  transform: translateX(4px);
+}
+
+.admin-command-button:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 4px;
+}
+
+/* FEATURE LABELS */
+
+.admin-welcome-features {
+  margin-top: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 13px 22px;
+  color: #c7d8ee;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin-welcome-features span::first-letter {
+  color: #60a5fa;
+}
+
+/* RIGHT VISUAL */
+
+.admin-welcome-visual {
+  min-height: 430px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+.admin-visual-glow {
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  background: rgba(0, 119, 255, 0.17);
+  filter: blur(65px);
+  z-index: -1;
+}
+
+.admin-visual-orbit {
+  position: absolute;
+  width: min(88%, 440px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  border-radius: 50%;
+}
+
+.orbit-two {
+  width: min(68%, 340px);
+  border-style: dashed;
+  border-color: rgba(56, 189, 248, 0.22);
+}
+
+.admin-visual-center {
+  width: 205px;
+  height: 205px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  border-radius: 34px;
+  background: linear-gradient(
+    145deg,
+    rgba(25, 65, 116, 0.9),
+    rgba(6, 21, 44, 0.97)
+  );
+  box-shadow:
+    0 0 55px rgba(37, 99, 235, 0.2),
+    inset 0 0 30px rgba(96, 165, 250, 0.08);
+  transform: rotate(-5deg);
+}
+
+.admin-visual-symbol {
+  width: 66px;
+  height: 66px;
+  display: grid;
+  place-items: center;
+  border-radius: 19px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #168bff, #00c8d7);
+  font-size: 44px;
+  font-weight: 900;
+  box-shadow: 0 0 30px rgba(0, 153, 255, 0.3);
+}
+
+.admin-visual-center > span {
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 4px;
+}
+
+.admin-visual-center > strong {
+  color: #8cbcff;
+  font-size: 9px;
+  letter-spacing: 1.7px;
+}
+
+/* FLOATING INFORMATION CARDS */
+
+.admin-floating-card {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 17px 19px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  color: #10213c;
+  background: #f1f6ff;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+.admin-floating-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #2563eb;
+  background: #dbeafe;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.admin-floating-card > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-floating-card strong {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-floating-card small {
+  color: #62738c;
+  font-size: 10px;
+}
+
+.admin-card-top {
+  top: 13%;
+  right: 0;
+}
+
+.admin-card-bottom {
+  bottom: 13%;
+  left: 0;
+}
+
+.admin-card-bottom .admin-floating-icon {
+  color: #059669;
+  background: #d1fae5;
+}
+
+/* FOOTER */
+
+.admin-welcome-footer {
+  min-height: 60px;
+  padding: 18px clamp(24px, 6vw, 110px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  color: #91a6c3;
+  background: rgba(5, 16, 33, 0.45);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* TABLETS */
+
+@media (max-width: 1000px) {
+  .admin-welcome-hero {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding-top: 55px;
+  }
+
+  .admin-welcome-content {
+    max-width: 720px;
+  }
+
+  .admin-welcome-content h1 {
+    font-size: clamp(42px, 7vw, 65px);
+  }
+
+  .admin-welcome-visual {
+    min-height: 400px;
+  }
+
+  .admin-card-top {
+    right: 5%;
+  }
+
+  .admin-card-bottom {
+    left: 5%;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  .admin-welcome-navbar {
+    min-height: 75px;
+    padding: 14px 18px;
+  }
+
+  .admin-welcome-logo {
+    width: 39px;
+    height: 39px;
+  }
+
+  .admin-brand-name {
+    font-size: 15px;
+  }
+
+  .admin-brand-caption {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  .admin-welcome-badge {
+    padding: 9px 11px;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+  }
+
+  .admin-welcome-hero {
+    padding: 42px 20px 30px;
+  }
+
+  .admin-welcome-eyebrow {
+    padding: 11px 14px;
+    font-size: 9px;
+    letter-spacing: 1.3px;
+  }
+
+  .admin-welcome-content h1 {
+    margin-top: 27px;
+    font-size: clamp(37px, 10vw, 52px);
+    letter-spacing: -1.5px;
+  }
+
+  .admin-welcome-description {
+    font-size: 14px;
+    line-height: 1.9;
+  }
+
+  .admin-command-button {
+    width: 100%;
+    padding: 0 14px;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .admin-welcome-features {
+    gap: 13px;
+    font-size: 11px;
+  }
+
+  .admin-welcome-visual {
+    min-height: 330px;
+  }
+
+  .admin-visual-center {
+    width: 160px;
+    height: 160px;
+    border-radius: 26px;
+  }
+
+  .admin-visual-symbol {
+    width: 52px;
+    height: 52px;
+    font-size: 35px;
+  }
+
+  .admin-visual-center > span {
+    font-size: 14px;
+  }
+
+  .admin-floating-card {
+    gap: 8px;
+    padding: 11px;
+  }
+
+  .admin-floating-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+
+  .admin-floating-card strong {
+    font-size: 10px;
+  }
+
+  .admin-floating-card small {
+    font-size: 8px;
+  }
+
+  .admin-card-top {
+    top: 5%;
+    right: 0;
+  }
+
+  .admin-card-bottom {
+    bottom: 5%;
+    left: 0;
+  }
+
+  .admin-welcome-footer {
+    padding: 17px 20px;
+    flex-wrap: wrap;
+    font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-command-button,
+  .admin-command-button span {
+    transition: none;
+  }
+}

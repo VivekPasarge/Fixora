@@ -615,3 +615,326 @@
     font-size: 20px;
   }
 }
+
+
+
+/* ==========================================
+   FIXORA ADMIN COMMAND CENTER HEADER
+========================================== */
+
+.admin-command-header {
+  width: 100%;
+  min-height: 88px;
+  padding: 12px clamp(24px, 6vw, 110px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  background: #071426;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 4px 20px rgba(7, 20, 38, 0.08);
+
+  position: relative;
+  z-index: 10;
+}
+
+/* BRAND */
+
+.admin-command-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+
+  text-decoration: none;
+  color: #ffffff;
+
+  min-width: 0;
+}
+
+.admin-command-brand img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+
+  border-radius: 10px;
+}
+
+.admin-command-brand-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+}
+
+.admin-command-brand-text > span {
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  line-height: 1.2;
+}
+
+.admin-command-brand-text small {
+  color: #8dbbff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  line-height: 1.4;
+}
+
+/* RIGHT SIDE LABEL */
+
+.admin-command-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 12px 18px;
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  border-radius: 30px;
+
+  color: #c5d8f3;
+  background: rgba(30, 58, 95, 0.35);
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  white-space: nowrap;
+}
+
+.admin-command-status-dot {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  flex-shrink: 0;
+
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.55);
+}
+
+/* EXISTING DASHBOARD SPACING */
+
+.admin-page {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 40px clamp(20px, 5vw, 80px) 60px;
+}
+
+/* KEYBOARD ACCESSIBILITY */
+
+.admin-command-brand:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 5px;
+  border-radius: 5px;
+}
+
+/* TABLET */
+
+@media (max-width: 768px) {
+  .admin-command-header {
+    min-height: 76px;
+    padding: 12px 22px;
+    gap: 14px;
+  }
+
+  .admin-command-brand {
+    gap: 10px;
+  }
+
+  .admin-command-brand img {
+    width: 44px;
+    height: 44px;
+  }
+
+  .admin-command-brand-text > span {
+    font-size: 16px;
+  }
+
+  .admin-command-brand-text small {
+    font-size: 8px;
+    letter-spacing: 1.1px;
+  }
+
+  .admin-command-label {
+    padding: 10px 12px;
+    font-size: 9px;
+    letter-spacing: 0.6px;
+  }
+
+  .admin-page {
+    padding: 30px 22px 45px;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 480px) {
+  .admin-command-header {
+    min-height: 70px;
+    padding: 12px 15px;
+    gap: 10px;
+  }
+
+  .admin-command-brand {
+    gap: 8px;
+  }
+
+  .admin-command-brand img {
+    width: 38px;
+    height: 38px;
+  }
+
+  .admin-command-brand-text > span {
+    font-size: 14px;
+    letter-spacing: 1.4px;
+  }
+
+  .admin-command-brand-text small {
+    font-size: 7px;
+    letter-spacing: 0.7px;
+  }
+
+  .admin-command-label {
+    padding: 8px 10px;
+    gap: 6px;
+    font-size: 0;
+    letter-spacing: 0;
+  }
+
+  .admin-command-status-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .admin-page {
+    padding: 24px 15px 35px;
+  }
+}
+/* Admin profile and logout menu */
+.admin-profile {
+  position: relative;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.admin-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+.admin-profile-trigger:hover { background: rgba(255, 255, 255, 0.14); }
+.admin-avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 17px;
+  font-weight: 800;
+}
+.admin-profile-details { display: flex; flex-direction: column; gap: 3px; }
+.admin-profile-details strong { font-size: 13px; }
+.admin-profile-details small { color: #cbd5e1; font-size: 11px; }
+.admin-profile-chevron { margin-left: 4px; font-size: 10px; }
+.admin-profile-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 1000;
+  width: 240px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+  color: #0f172a;
+}
+.admin-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  overflow-wrap: anywhere;
+}
+.admin-profile-info strong { font-size: 14px; }
+.admin-profile-info small { color: #64748b; font-size: 12px; }
+.admin-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 6px;
+  padding: 11px 12px;
+  background: #fff1f2;
+  color: #be123c;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+}
+.admin-logout-btn:hover { background: #ffe4e6; }
+@media (max-width: 600px) {
+  .admin-command-header { flex-wrap: wrap; gap: 12px; }
+  .admin-command-label { display: none; }
+  .admin-profile-details, .admin-profile-chevron { display: none; }
+  .admin-profile-trigger { padding: 5px; }
+  .admin-profile-menu { right: 0; width: 220px; }
+}
+
+.admin-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1e293b;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.admin-refresh-btn:hover {
+  background: #f1f5f9;
+}
+
+.admin-refresh-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.refresh-icon {
+  display: inline-block;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.refresh-icon.spinning {
+  animation: refreshSpin 0.8s linear infinite;
+}
+
+@keyframes refreshSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

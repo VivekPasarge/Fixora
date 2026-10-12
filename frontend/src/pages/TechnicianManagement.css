@@ -848,3 +848,290 @@
   }
 
 }
+
+
+
+/* ==========================================
+   FIX: TECHNICIAN DETAILS LAYOUT
+   ========================================== */
+
+/* Main technician details panel */
+.technician-management .technician-details {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 26px;
+  overflow: hidden;
+}
+
+/* Details heading and close button */
+.technician-management .technician-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 26px;
+}
+
+.technician-management .technician-details-header > div {
+  flex: 1 1 250px;
+  min-width: 0;
+}
+
+.technician-management .technician-details-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.technician-management .technician-details-header p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.technician-management .technician-close-btn {
+  flex-shrink: 0;
+}
+
+/* Responsive information grid */
+.technician-management .technician-details-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-auto-flow: row;
+  align-items: stretch;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Individual detail cards */
+.technician-management .technician-detail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 100px;
+  padding: 18px;
+  box-sizing: border-box;
+
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.technician-management .technician-detail-item label {
+  display: block;
+  width: 100%;
+  margin: 0;
+
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.technician-management .technician-detail-item p {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.7;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Booking history section */
+.technician-management .technician-bookings {
+  width: 100%;
+  min-width: 0;
+  margin-top: 28px;
+  padding-top: 26px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.technician-management .technician-bookings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  margin-bottom: 20px;
+}
+
+.technician-management .technician-bookings-header > div {
+  min-width: 0;
+}
+
+.technician-management .technician-bookings-header h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.technician-management .technician-bookings-header p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.technician-management .technician-booking-count {
+  flex-shrink: 0;
+}
+
+/* Prevent tables from squeezing their columns */
+.technician-management .technician-table-card,
+.technician-management .technician-table-wrapper,
+.technician-management .technician-booking-table-wrapper {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.technician-management .technician-table-wrapper,
+.technician-management .technician-booking-table-wrapper {
+  overflow-x: auto;
+}
+
+.technician-management .technician-table,
+.technician-management .technician-booking-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.technician-management .technician-table {
+  min-width: 1000px;
+}
+
+.technician-management .technician-booking-table {
+  min-width: 700px;
+}
+
+.technician-management .technician-table th,
+.technician-management .technician-table td,
+.technician-management .technician-booking-table th,
+.technician-management .technician-booking-table td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  vertical-align: middle;
+}
+
+/* Danger zone */
+.technician-management .technician-danger-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.technician-management .technician-danger-zone > div {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.technician-management .technician-delete-btn {
+  flex-shrink: 0;
+}
+
+/* ==========================================
+   RESPONSIVE GRID
+   ========================================== */
+
+/* Standard desktop and smaller laptops */
+@media (max-width: 1200px) {
+  .technician-management .technician-details-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Tablets */
+@media (max-width: 900px) {
+  .technician-management .technician-details {
+    padding: 22px;
+  }
+
+  .technician-management .technician-details-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px;
+  }
+}
+
+/* Mobile phones */
+@media (max-width: 560px) {
+  .technician-management .technician-details {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .technician-management .technician-details-header {
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .technician-management .technician-details-header h2 {
+    font-size: 21px;
+  }
+
+  .technician-management .technician-details-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px;
+  }
+
+  .technician-management .technician-detail-item {
+    min-height: auto;
+    padding: 15px;
+  }
+
+  .technician-management .technician-detail-item p {
+    font-size: 14px;
+  }
+
+  .technician-management .technician-bookings-header {
+    align-items: flex-start;
+  }
+
+  .technician-management .technician-danger-zone {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .technician-management .technician-delete-btn {
+    align-self: flex-start;
+  }
+}

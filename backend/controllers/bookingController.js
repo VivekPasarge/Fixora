@@ -1546,10 +1546,25 @@ const getBookedTimeSlots = async (req, res) => {
 // MARK CASH RECEIVED
 // ==========================================================
 
+
 const markCashReceived = async (req, res) => {
   try {
     const { id } = req.params;
     const technicianId = req.user?._id || req.user?.id;
+
+    if (!technicianId) {
+      return res.status(401).json({
+        success: false,
+        message: "Technician authentication required",
+      });
+    }
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking ID",
+      });
+    }
 
     const session = await mongoose.startSession();
 
@@ -1570,6 +1585,7 @@ const markCashReceived = async (req, res) => {
         });
       }
 
+      // Only COD bookings can use this endpoint.
       if (booking.paymentMethod !== "Cash on Service") {
         await session.abortTransaction();
 
@@ -1579,15 +1595,18 @@ const markCashReceived = async (req, res) => {
         });
       }
 
+      // Cash can only be recorded after service completion.
       if (booking.status !== "Completed") {
         await session.abortTransaction();
 
         return res.status(400).json({
           success: false,
-          message: "Complete the service before confirming cash collection",
+          message:
+            "Complete the service before confirming cash collection",
         });
       }
 
+      // Prevent duplicate collection and wallet credits.
       if (booking.paymentStatus === "Paid") {
         await session.abortTransaction();
 
@@ -1597,11 +1616,17 @@ const markCashReceived = async (req, res) => {
         });
       }
 
+      const cashCollectionTime = new Date();
+
+      // Record the actual COD collection.
       booking.paymentStatus = "Paid";
-      booking.paidAt = new Date();
+      booking.paidAt = cashCollectionTime;
+      booking.cashReceivedAt = cashCollectionTime;
+      booking.cashReceivedBy = technicianId;
 
       await booking.save({ session });
 
+      // Preserve the existing technician wallet transaction.
       await WalletTransaction.create(
         [
           {
@@ -1613,7 +1638,7 @@ const markCashReceived = async (req, res) => {
             status: "COMPLETED",
             description: `Earnings for booking ${booking.bookingId}`,
             reference: `booking:${booking._id}:earning`,
-            processedAt: new Date(),
+            processedAt: cashCollectionTime,
           },
         ],
         { session }
