@@ -1,7 +1,7 @@
 
 import { Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
-
+import AdminWithdrawals from "./pages/AdminWithdrawals";
 import Home from "./pages/Home";
 import Services from "./pages/Services";
 import ServiceDetails from "./pages/ServiceDetails";
@@ -281,7 +281,14 @@ function App() {
     </ProtectedRoute>
   }
 />
-
+<Route
+  path="/admin-withdrawals"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <AdminWithdrawals />
+    </ProtectedRoute>
+  }
+/>
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>

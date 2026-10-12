@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 
 const express = require("express");
@@ -8,6 +9,7 @@ const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 const Booking = require("./models/Booking");
 
+// Routes
 const authRoutes = require("./routes/authRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
@@ -17,13 +19,16 @@ const adminRoutes = require("./routes/adminRoutes");
 const adminCustomerRoutes = require("./routes/adminCustomerRoutes");
 const adminTechnicianRoutes = require("./routes/adminTechnicianRoutes");
 const adminBookingRoutes = require("./routes/adminBookingRoutes");
+const adminWalletRoutes = require("./routes/adminWalletRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const walletRoutes = require("./routes/walletRoutes");
 
 const app = express();
 
+// Database connection
 connectDB();
 
+// Allowed frontend origins
 const allowedOrigins = [
   "http://localhost:5173",
   "https://fixora-4cdg.vercel.app",
@@ -39,16 +44,15 @@ const isAllowedOrigin = (origin) => {
     return true;
   }
 
-  if (/^https:\/\/fixora-[a-z0-9-]+\.vercel\.app$/i.test(origin)) {
-    return true;
-  }
-
-  return false;
+  return /^https:\/\/fixora-[a-z0-9-]+\.vercel\.app$/i.test(
+    origin
+  );
 };
 
+// CORS
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
       if (isAllowedOrigin(origin)) {
         callback(null, true);
       } else {
@@ -64,27 +68,34 @@ app.use(
 
 app.use(express.json());
 
+// API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/partners", partnerRoutes);
+
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/customers", adminCustomerRoutes);
 app.use("/api/admin/technicians", adminTechnicianRoutes);
 app.use("/api/admin/bookings", adminBookingRoutes);
+app.use("/api/admin/wallet", adminWalletRoutes);
+
 app.use("/api/payment", paymentRoutes);
 app.use("/api/wallet", walletRoutes);
 
+// Health check
 app.get("/", (req, res) => {
   res.send("Welcome to Fixora Backend");
 });
 
+// HTTP server
 const server = http.createServer(app);
 
+// Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
       if (isAllowedOrigin(origin)) {
         callback(null, true);
       } else {
@@ -97,9 +108,11 @@ const io = new Server(server, {
   },
 });
 
+// Socket.IO events
 io.on("connection", (socket) => {
   console.log("User Connected:", socket.id);
 
+  // Join a booking room
   socket.on("join-booking", async (bookingId) => {
     try {
       if (!bookingId) {
@@ -151,6 +164,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Receive and broadcast technician location
   socket.on("send-location", async (data) => {
     try {
       console.log("Received From Technician:", data);
@@ -210,6 +224,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Stop tracking
   socket.on("stop-location", async (bookingId) => {
     try {
       if (!bookingId) {
@@ -230,11 +245,13 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Disconnect
   socket.on("disconnect", () => {
     console.log("User Disconnected:", socket.id);
   });
 });
 
+// Start server
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
