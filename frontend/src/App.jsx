@@ -56,12 +56,11 @@ import socket from "./socket";
 function App() {
   useEffect(() => {
     const handleConnect = () => {
-      console.log("Connected:", socket.id);
+      console.log("Socket connected:", socket.id);
     };
 
     socket.on("connect", handleConnect);
 
-    // Handle a socket that connected before this effect ran.
     if (socket.connected) {
       handleConnect();
     }
@@ -73,50 +72,33 @@ function App() {
 
   return (
     <Routes>
-      {/* ==========================================
-          PUBLIC PAGES
-      ========================================== */}
-
+      {/* PUBLIC PAGES */}
       <Route path="/" element={<Home />} />
-
       <Route path="/services" element={<Services />} />
-
       <Route
         path="/services/:id"
         element={<ServiceDetails />}
       />
-
       <Route path="/about" element={<About />} />
-
       <Route path="/contact" element={<Contact />} />
-
       <Route
         path="/become-partner"
         element={<BecomePartner />}
       />
 
-      {/* ==========================================
-          AUTHENTICATION
-      ========================================== */}
-
+      {/* AUTHENTICATION */}
       <Route path="/login" element={<Login />} />
-
       <Route path="/register" element={<Register />} />
-
       <Route
         path="/choose-account"
         element={<ChooseAccount />}
       />
-
       <Route
         path="/forgot-password"
         element={<ForgotPassword />}
       />
 
-      {/* ==========================================
-          PROFILE COMPLETION
-      ========================================== */}
-
+      {/* PROFILE COMPLETION */}
       <Route
         path="/complete-profile"
         element={
@@ -126,10 +108,7 @@ function App() {
         }
       />
 
-      {/* ==========================================
-          CUSTOMER DASHBOARD
-      ========================================== */}
-
+      {/* CUSTOMER DASHBOARD */}
       <Route
         path="/customer"
         element={
@@ -138,7 +117,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/customer-dashboard"
         element={
@@ -148,10 +126,7 @@ function App() {
         }
       />
 
-      {/* ==========================================
-          CUSTOMER BOOKING PAGES
-      ========================================== */}
-
+      {/* CUSTOMER BOOKING PAGES */}
       <Route
         path="/booking/:id"
         element={
@@ -160,7 +135,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/booking-success"
         element={
@@ -169,7 +143,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/booking-details"
         element={
@@ -178,7 +151,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/payment/:id"
         element={
@@ -187,7 +159,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/my-bookings"
         element={
@@ -196,7 +167,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/booking-history"
         element={
@@ -205,7 +175,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/review"
         element={
@@ -215,10 +184,7 @@ function App() {
         }
       />
 
-      {/* ==========================================
-          TECHNICIAN PAGES
-      ========================================== */}
-
+      {/* TECHNICIAN PAGES */}
       <Route
         path="/technician-home"
         element={
@@ -227,7 +193,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/technician-dashboard"
         element={
@@ -236,7 +201,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/technician-profile"
         element={
@@ -245,7 +209,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/technician/wallet"
         element={
@@ -254,7 +217,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/technician/withdrawals"
         element={
@@ -263,7 +225,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/technician/reviews"
         element={
@@ -272,7 +233,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/technician-track"
         element={
@@ -282,31 +242,22 @@ function App() {
         }
       />
 
-      {/* ==========================================
-          TRACKING PAGES
-      ========================================== */}
-
+      {/* TRACKING PAGES */}
       <Route path="/track" element={<TrackBooking />} />
-
       <Route
         path="/track-booking"
         element={<TrackBooking />}
       />
-
       <Route
         path="/track-booking/:id"
         element={<TrackBooking />}
       />
-
       <Route
         path="/track/:id"
         element={<TrackBooking />}
       />
 
-      {/* ==========================================
-          ADMIN PAGES
-      ========================================== */}
-
+      {/* ADMIN PAGES */}
       <Route
         path="/admin"
         element={
@@ -315,7 +266,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/admin-dashboard"
         element={
@@ -324,7 +274,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/admin-withdrawals"
         element={
@@ -333,7 +282,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/customer-management"
         element={
@@ -342,7 +290,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/technician-management"
         element={
@@ -351,7 +298,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/booking-management"
         element={
@@ -360,7 +306,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/service-management"
         element={
@@ -370,29 +315,19 @@ function App() {
         }
       />
 
-      {/* ==========================================
-          SHARED PROFILE
-      ========================================== */}
-
+      {/* SHARED PROFILE */}
       <Route
         path="/profile"
         element={
           <ProtectedRoute
-            allowedRoles={[
-              "customer",
-              "technician",
-              "admin",
-            ]}
+            allowedRoles={["customer", "technician", "admin"]}
           >
             <Profile />
           </ProtectedRoute>
         }
       />
 
-      {/* ==========================================
-          404 PAGE
-      ========================================== */}
-
+      {/* 404 PAGE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

@@ -30,7 +30,7 @@ function ForgotPassword() {
     try {
       console.log("Sending reset request...");
       console.log("FORGOT PASSWORD REQUEST RECEIVED");
-console.log("Request body:", req.body);
+// console.log("Request body:", req.body);
 
       const response = await api.post(
         "/auth/forgot-password",

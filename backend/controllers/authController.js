@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const mailer = require("../config/mailer");
-
+const googleClient = require("../config/googleAuth");
 // ==========================================================
 // TEST API
 // ==========================================================
@@ -280,7 +280,7 @@ const forgotPassword = async (req, res) => {
         `,
       });
     } catch (emailError) {
-      console.error("RESET EMAIL ERROR:", emailError.message);
+      console.error("RESET EMAIL ERROR:", emailError);
 
       user.resetPasswordToken = undefined;
       user.resetPasswordExpires = undefined;
@@ -498,6 +498,103 @@ const completeProfile = async (req, res) => {
   }
 };
 
+
+
+const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: "Google credential is required",
+      });
+    }
+
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.JWT_SECRET) {
+      return res.status(500).json({
+        success: false,
+        message: "Google login is not configured",
+      });
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    if (!payload || !payload.sub || !payload.email || !payload.email_verified) {
+      return res.status(401).json({
+        success: false,
+        message: "Google account could not be verified",
+      });
+    }
+
+    const email = payload.email.trim().toLowerCase();
+
+    let user = await User.findOne({ email });
+
+    if (user && user.role !== "customer") {
+      return res.status(403).json({
+        success: false,
+        message: "Google login is available for customer accounts only",
+      });
+    }
+
+    if (!user) {
+      user = await User.create({
+        name: payload.name || email.split("@")[0],
+        email,
+        googleId: payload.sub,
+        password: undefined,
+        phone: "",
+        role: "customer",
+      });
+    } else if (!user.googleId) {
+      user.googleId = payload.sub;
+      await user.save();
+    } else if (user.googleId !== payload.sub) {
+      return res.status(401).json({
+        success: false,
+        message: "Google account verification failed",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Google login successful",
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        profileCompleted: user.profileCompleted,
+      },
+    });
+  } catch (error) {
+    console.error("GOOGLE LOGIN ERROR:", error.message);
+
+    return res.status(401).json({
+      success: false,
+      message: "Google login failed. Please try again.",
+    });
+  }
+};
+
+
 // ==========================================================
 // EXPORTS
 // ==========================================================
@@ -511,4 +608,5 @@ module.exports = {
   profile,
   updateProfile,
   completeProfile,
+  googleLogin,
 };
