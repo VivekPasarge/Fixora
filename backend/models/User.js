@@ -1,7 +1,9 @@
+
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    // Basic user information
     name: {
       type: String,
       required: true,
@@ -16,22 +18,50 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // Password is required for local accounts.
+    // Google-only accounts can use an empty password.
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.googleId;
+      },
+      select: false,
     },
 
+    // Google authentication
+    googleId: {
+      type: String,
+      default: undefined,
+      sparse: true,
+    },
+
+    // Password reset
+    resetPasswordToken: {
+      type: String,
+      default: undefined,
+      select: false,
+    },
+
+    resetPasswordExpires: {
+      type: Date,
+      default: undefined,
+      select: false,
+    },
+
+    // Contact information
     phone: {
       type: String,
       default: "",
     },
 
+    // User role
     role: {
       type: String,
       enum: ["customer", "technician", "admin"],
       default: "customer",
     },
 
+    // Professional information
     profession: {
       type: String,
       default: "",
@@ -62,6 +92,7 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
+    // Identity information
     aadhaarNumber: {
       type: String,
       default: "",
@@ -72,6 +103,7 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
+    // Profile details
     about: {
       type: String,
       default: "",
@@ -101,11 +133,13 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
+    // Availability
     availability: {
       type: String,
       default: "Available",
     },
 
+    // Technician profile completion
     profileCompleted: {
       type: Boolean,
       default: false,
@@ -113,7 +147,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 module.exports = mongoose.model("User", userSchema);

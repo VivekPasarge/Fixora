@@ -12,7 +12,7 @@ import {
   FiClock,
   FiCheckCircle,
 } from "react-icons/fi";
-
+//import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar/Navbar";
 import api from "../api/axios";
 import "./Login.css";
@@ -306,9 +306,9 @@ if (role === "admin") {
                     Remember me
                   </label>
 
-                  <Link to="#" className="forgot-link">
-                    Forgot Password?
-                  </Link>
+                  <Link to="/forgot-password">
+  Forgot Password?
+</Link>
                 </div>
 
                 <button

@@ -25,10 +25,16 @@ const walletRoutes = require("./routes/walletRoutes");
 
 const app = express();
 
-// Database connection
+// ==========================================================
+// DATABASE CONNECTION
+// ==========================================================
+
 connectDB();
 
-// Allowed frontend origins
+// ==========================================================
+// ALLOWED FRONTEND ORIGINS
+// ==========================================================
+
 const allowedOrigins = [
   "http://localhost:5173",
   "https://fixora-4cdg.vercel.app",
@@ -49,26 +55,56 @@ const isAllowedOrigin = (origin) => {
   );
 };
 
-// CORS
+// ==========================================================
+// CORS MIDDLEWARE
+// ==========================================================
+
 app.use(
   cors({
     origin: (origin, callback) => {
       if (isAllowedOrigin(origin)) {
-        callback(null, true);
-      } else {
-        console.log("CORS blocked origin:", origin);
-        callback(new Error("Not allowed by CORS"));
+        return callback(null, true);
       }
+
+      console.log("CORS blocked origin:", origin);
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
   })
 );
 
-app.use(express.json());
+// ==========================================================
+// BODY PARSING MIDDLEWARE
+// MUST BE BEFORE API ROUTES
+// ==========================================================
 
-// API routes
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ==========================================================
+// HEALTH CHECK
+// ==========================================================
+
+app.get("/", (req, res) => {
+  res.status(200).send("Welcome to Fixora Backend");
+});
+
+// ==========================================================
+// API ROUTES
+// ==========================================================
+
 app.use("/api/auth", authRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
@@ -84,35 +120,42 @@ app.use("/api/admin/wallet", adminWalletRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/wallet", walletRoutes);
 
-// Health check
-app.get("/", (req, res) => {
-  res.send("Welcome to Fixora Backend");
-});
+// ==========================================================
+// HTTP SERVER
+// ==========================================================
 
-// HTTP server
 const server = http.createServer(app);
 
-// Socket.IO
+// ==========================================================
+// SOCKET.IO CONFIGURATION
+// ==========================================================
+
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
       if (isAllowedOrigin(origin)) {
-        callback(null, true);
-      } else {
-        console.log("Socket.IO CORS blocked origin:", origin);
-        callback(new Error("Not allowed by CORS"));
+        return callback(null, true);
       }
+
+      console.log("Socket.IO CORS blocked origin:", origin);
+      return callback(new Error("Not allowed by CORS"));
     },
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-// Socket.IO events
+// ==========================================================
+// SOCKET.IO EVENTS
+// ==========================================================
+
 io.on("connection", (socket) => {
   console.log("User Connected:", socket.id);
 
-  // Join a booking room
+  // --------------------------------------------------------
+  // JOIN BOOKING ROOM
+  // --------------------------------------------------------
+
   socket.on("join-booking", async (bookingId) => {
     try {
       if (!bookingId) {
@@ -164,11 +207,12 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Receive and broadcast technician location
+  // --------------------------------------------------------
+  // RECEIVE AND BROADCAST TECHNICIAN LOCATION
+  // --------------------------------------------------------
+
   socket.on("send-location", async (data) => {
     try {
-      console.log("Received From Technician:", data);
-
       if (
         !data ||
         !data.bookingId ||
@@ -181,6 +225,17 @@ io.on("connection", (socket) => {
 
       const { bookingId, latitude, longitude } = data;
 
+      const numericLatitude = Number(latitude);
+      const numericLongitude = Number(longitude);
+
+      if (
+        !Number.isFinite(numericLatitude) ||
+        !Number.isFinite(numericLongitude)
+      ) {
+        console.log("Invalid latitude or longitude");
+        return;
+      }
+
       const booking = await Booking.findById(bookingId);
 
       if (!booking) {
@@ -189,8 +244,8 @@ io.on("connection", (socket) => {
       }
 
       booking.technicianLocation = {
-        latitude: Number(latitude),
-        longitude: Number(longitude),
+        latitude: numericLatitude,
+        longitude: numericLongitude,
         updatedAt: new Date(),
       };
 
@@ -198,12 +253,10 @@ io.on("connection", (socket) => {
 
       await booking.save();
 
-      console.log("Technician location saved:", bookingId);
-
       const locationData = {
         bookingId,
-        latitude: Number(latitude),
-        longitude: Number(longitude),
+        latitude: numericLatitude,
+        longitude: numericLongitude,
         updatedAt: new Date(),
         trackingActive: true,
         status: booking.status,
@@ -211,20 +264,16 @@ io.on("connection", (socket) => {
 
       io.to(bookingId).emit("receive-location", locationData);
 
-      console.log("Sent location to booking room:", bookingId);
-
-      const room = io.sockets.adapter.rooms.get(bookingId);
-      const roomSize = room ? room.size : 0;
-
-      console.log(
-        `Booking room ${bookingId} currently has ${roomSize} socket(s)`
-      );
+      console.log("Technician location saved:", bookingId);
     } catch (error) {
-      console.error("Send Location Error:", error);
+      console.error("Send Location Error:", error.message);
     }
   });
 
-  // Stop tracking
+  // --------------------------------------------------------
+  // STOP TRACKING
+  // --------------------------------------------------------
+
   socket.on("stop-location", async (bookingId) => {
     try {
       if (!bookingId) {
@@ -245,13 +294,19 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Disconnect
+  // --------------------------------------------------------
+  // DISCONNECT
+  // --------------------------------------------------------
+
   socket.on("disconnect", () => {
     console.log("User Disconnected:", socket.id);
   });
 });
 
-// Start server
+// ==========================================================
+// START SERVER
+// ==========================================================
+
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {

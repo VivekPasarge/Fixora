@@ -1,7 +1,9 @@
+
 const express = require("express");
 const router = express.Router();
-//const protect = require("../middleware/authMiddleware");
+
 const { protect } = require("../middleware/authMiddleware");
+
 const {
   testAuth,
   register,
@@ -9,27 +11,30 @@ const {
   profile,
   updateProfile,
   completeProfile,
+  forgotPassword,
+  resetPassword,
 } = require("../controllers/authController");
 
-// Test Route
+// Test route
 router.get("/test", testAuth);
 
-// Register Route
+// Authentication
 router.post("/register", register);
-//login
 router.post("/login", login);
 
-router.get("/profile", protect, profile);
-router.put(
-  "/profile",
-  protect,
-  updateProfile
-);
+// Forgot Password — temporary debugging logs
+router.post("/forgot-password", (req, res, next) => {
+  console.log("FORGOT PASSWORD ROUTE HIT");
+  console.log("Request body:", req.body);
+  next();
+}, forgotPassword);
 
-router.put(
-  "/complete-profile",
-  protect,
-  completeProfile
-);
+// Reset Password
+router.post("/reset-password", resetPassword);
+
+// Profile routes
+router.get("/profile", protect, profile);
+router.put("/profile", protect, updateProfile);
+router.put("/complete-profile", protect, completeProfile);
 
 module.exports = router;
