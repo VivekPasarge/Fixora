@@ -1,0 +1,699 @@
+
+/* =========================================================
+   FIXORA WELCOME — PREMIUM CINEMATIC DESIGN
+========================================================= */
+
+.fixora-splash-content {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: min(100%, 760px);
+  margin: auto;
+
+  text-align: center;
+
+  /* Move the complete logo, text and button together */
+  transform: translateY(-15px);
+
+  animation: fixora-content-appear 900ms ease-out both;
+}
+
+/* .fixora-splash {
+  --fixora-blue: #1677ff;
+  --fixora-bright-blue: #35a5ff;
+  --fixora-navy: #07142c;
+  --fixora-white: #ffffff;
+
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+
+  padding: 50px 24px 150px;
+  overflow: hidden;
+
+  background: var(--fixora-navy);
+  color: var(--fixora-white);
+
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+} */
+
+/* Keep sizing predictable */
+
+.fixora-splash *,
+.fixora-splash *::before,
+.fixora-splash *::after {
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   BACKGROUND IMAGE
+   Put the clean image at public/fixora-welcome.png
+========================================================= */
+
+.fixora-splash-background {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+
+  background-image: url("/fixora-welcome.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  transform: scale(1.015);
+}
+
+/* Soft central darkening for readable text */
+
+.fixora-splash-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(4, 15, 38, 0.72) 0%,
+      rgba(4, 15, 38, 0.54) 35%,
+      rgba(4, 15, 38, 0.24) 65%,
+      rgba(4, 15, 38, 0.10) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(3, 12, 29, 0.12) 0%,
+      transparent 40%,
+      rgba(3, 12, 29, 0.42) 100%
+    );
+}
+
+/* =========================================================
+   CENTRAL CONTENT
+========================================================= */
+
+.fixora-splash-content {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: min(100%, 760px);
+  margin: auto;
+
+  text-align: center;
+
+  animation: fixora-content-appear 900ms ease-out both;
+}
+
+/* Welcome label */
+
+.fixora-splash-eyebrow {
+  margin: 0 0 18px;
+
+  color: rgba(226, 237, 255, 0.92);
+
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 9px;
+  text-indent: 9px;
+  text-transform: uppercase;
+
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* =========================================================
+   FIXORA LOGO
+========================================================= */
+
+.fixora-splash-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  color: #ffffff;
+
+  font-size: clamp(76px, 10vw, 124px);
+  font-weight: 850;
+  line-height: 0.92;
+  letter-spacing: -7px;
+
+  text-shadow:
+    0 4px 25px rgba(0, 0, 0, 0.2),
+    0 0 45px rgba(17, 104, 255, 0.12);
+}
+
+/* House roof symbol */
+
+.fixora-splash-roof {
+  display: block;
+
+  width: clamp(100px, 13vw, 150px);
+  height: auto;
+
+  margin-bottom: 3px;
+
+  color: var(--fixora-blue);
+
+  filter: drop-shadow(
+    0 0 15px rgba(22, 119, 255, 0.45)
+  );
+}
+
+.fixora-logo-dot {
+  color: var(--fixora-blue);
+}
+
+/* =========================================================
+   TAGLINE
+========================================================= */
+
+.fixora-splash-tagline {
+  margin: 27px 0 0;
+
+  color: rgba(245, 248, 255, 0.96);
+
+  font-size: clamp(13px, 1.7vw, 19px);
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: clamp(4px, 0.8vw, 8px);
+  text-indent: clamp(4px, 0.8vw, 8px);
+
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+}
+
+/* Blue accent line */
+
+.fixora-splash-divider {
+  width: 56px;
+  height: 3px;
+
+  margin: 22px 0 23px;
+
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    #1685ff,
+    #5bc4ff
+  );
+
+  box-shadow:
+    0 0 10px rgba(36, 151, 255, 0.85),
+    0 0 28px rgba(36, 151, 255, 0.35);
+}
+
+/* Description */
+
+.fixora-splash-description {
+  margin: 0;
+
+  color: rgba(244, 247, 255, 0.96);
+
+  font-size: clamp(15px, 1.65vw, 19px);
+  font-weight: 400;
+  line-height: 1.9;
+
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+
+/* =========================================================
+   MAIN LOGIN BUTTON
+========================================================= */
+
+.fixora-splash-login {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 15px;
+
+  width: min(100%, 450px);
+  min-height: 76px;
+
+  margin-top: 32px;
+  padding: 10px 24px 10px 12px;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(190, 225, 255, 0.9);
+  border-radius: 50px;
+
+  background: linear-gradient(
+    105deg,
+    #32a8ff 0%,
+    #1677ff 48%,
+    #0755f5 100%
+  );
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: clamp(15px, 1.5vw, 18px);
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 0 0 4px rgba(30, 119, 255, 0.12),
+    0 0 24px rgba(24, 113, 255, 0.45),
+    0 12px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    filter 220ms ease;
+}
+
+/* Subtle reflective sweep */
+
+.fixora-splash-login::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -80%;
+
+  width: 45%;
+
+  content: "";
+
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+
+  transform: skewX(-20deg);
+  transition: left 600ms ease;
+  pointer-events: none;
+}
+
+.fixora-splash-login:hover::before {
+  left: 140%;
+}
+
+.fixora-splash-login:hover {
+  transform: translateY(-3px);
+
+  filter: brightness(1.08);
+
+  box-shadow:
+    0 0 0 5px rgba(30, 119, 255, 0.15),
+    0 0 36px rgba(24, 113, 255, 0.62),
+    0 16px 36px rgba(0, 0, 0, 0.3);
+}
+
+.fixora-splash-login:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+.fixora-splash-login:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 6px;
+}
+
+/* Circular arrow */
+
+.fixora-splash-arrow {
+  position: relative;
+  z-index: 1;
+
+  display: grid;
+  place-items: center;
+
+  width: 50px;
+  height: 50px;
+  flex: 0 0 50px;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.18);
+
+  color: #ffffff;
+  font-size: 23px;
+
+  transition:
+    transform 220ms ease,
+    background 220ms ease;
+}
+
+.fixora-splash-login:hover .fixora-splash-arrow {
+  transform: translateX(3px);
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.fixora-splash-login > span:last-child {
+  position: relative;
+  z-index: 1;
+
+  flex: 1;
+  text-align: center;
+}
+
+/* Bottom tagline */
+
+.fixora-splash-caption {
+  margin: 25px 0 0;
+
+  color: rgba(230, 240, 255, 0.84);
+
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 5px;
+  text-indent: 5px;
+
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+/* =========================================================
+   FLOATING SERVICE ICONS
+========================================================= */
+
+.fixora-splash-services {
+  position: absolute;
+  z-index: 1;
+
+  bottom: 32px;
+  left: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 3.2vw, 34px);
+
+  width: min(calc(100% - 36px), 650px);
+
+  transform: translateX(-50%);
+}
+
+.fixora-splash-service {
+  display: grid;
+  place-items: center;
+
+  width: 66px;
+  height: 66px;
+  flex: 0 0 66px;
+
+  border: 1px solid rgba(203, 226, 255, 0.38);
+  border-radius: 17px;
+
+  background: rgba(219, 235, 255, 0.12);
+
+  color: #e1eeff;
+  font-size: 25px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.16);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  transition:
+    transform 220ms ease,
+    background 220ms ease,
+    border-color 220ms ease;
+}
+
+.fixora-splash-service:hover {
+  transform: translateY(-6px);
+
+  border-color: rgba(124, 188, 255, 0.8);
+  background: rgba(36, 119, 255, 0.24);
+}
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+@keyframes fixora-content-appear {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================
+   LARGE DESKTOPS
+========================================================= */
+
+@media (min-width: 1500px) {
+  .fixora-splash-content {
+    transform: translateY(-20px);
+  }
+
+  .fixora-splash-services {
+    bottom: 45px;
+  }
+
+  .fixora-splash-service {
+    width: 74px;
+    height: 74px;
+    flex-basis: 74px;
+  }
+}
+
+/* =========================================================
+   TABLETS
+========================================================= */
+
+@media (max-width: 900px) {
+  .fixora-splash {
+    padding-bottom: 130px;
+  }
+
+  .fixora-splash-logo {
+    font-size: clamp(76px, 12vw, 105px);
+  }
+
+  .fixora-splash-description {
+    font-size: 16px;
+  }
+
+  .fixora-splash-services {
+    bottom: 25px;
+  }
+
+  .fixora-splash-service {
+    width: 58px;
+    height: 58px;
+    flex-basis: 58px;
+    font-size: 22px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+  .fixora-splash {
+    padding: 35px 20px 115px;
+  }
+
+  .fixora-splash-background {
+    background-position: center center;
+  }
+
+  .fixora-splash-overlay {
+    background:
+      radial-gradient(
+        ellipse at center,
+        rgba(4, 15, 38, 0.65),
+        rgba(4, 15, 38, 0.42) 65%,
+        rgba(4, 15, 38, 0.24)
+      );
+  }
+
+  .fixora-splash-eyebrow {
+    margin-bottom: 19px;
+    font-size: 10px;
+    letter-spacing: 6px;
+    text-indent: 6px;
+  }
+
+  .fixora-splash-logo {
+    font-size: clamp(68px, 17vw, 94px);
+    letter-spacing: -4px;
+  }
+
+  .fixora-splash-roof {
+    width: 105px;
+  }
+
+  .fixora-splash-tagline {
+    margin-top: 23px;
+    font-size: 12px;
+    letter-spacing: 3.5px;
+    text-indent: 3.5px;
+  }
+
+  .fixora-splash-divider {
+    width: 45px;
+    margin: 19px 0;
+  }
+
+  .fixora-splash-description {
+    font-size: 14px;
+    line-height: 1.85;
+  }
+
+  .fixora-splash-login {
+    min-height: 64px;
+    gap: 10px;
+
+    margin-top: 27px;
+    padding: 8px 15px 8px 9px;
+
+    font-size: 14px;
+  }
+
+  .fixora-splash-arrow {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+    font-size: 20px;
+  }
+
+  .fixora-splash-caption {
+    margin-top: 22px;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-indent: 3px;
+  }
+
+  .fixora-splash-services {
+    bottom: 20px;
+    gap: clamp(7px, 2.4vw, 13px);
+    width: calc(100% - 30px);
+  }
+
+  .fixora-splash-service {
+    width: clamp(44px, 12.5vw, 58px);
+    height: clamp(44px, 12.5vw, 58px);
+    flex-basis: clamp(44px, 12.5vw, 58px);
+
+    border-radius: 13px;
+    font-size: 20px;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 360px) {
+  .fixora-splash {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .fixora-splash-logo {
+    font-size: 64px;
+  }
+
+  .fixora-splash-roof {
+    width: 90px;
+  }
+
+  .fixora-splash-description {
+    font-size: 13px;
+  }
+
+  .fixora-splash-login {
+    gap: 7px;
+    font-size: 12px;
+  }
+
+  .fixora-splash-services {
+    gap: 7px;
+  }
+
+  .fixora-splash-service {
+    width: 43px;
+    height: 43px;
+    flex-basis: 43px;
+    font-size: 18px;
+  }
+}
+
+/* Short screens */
+
+@media (max-height: 700px) and (min-width: 601px) {
+  .fixora-splash {
+    padding-top: 20px;
+    padding-bottom: 100px;
+  }
+
+  .fixora-splash-eyebrow {
+    margin-bottom: 10px;
+  }
+
+  .fixora-splash-logo {
+    font-size: 75px;
+  }
+
+  .fixora-splash-roof {
+    width: 90px;
+  }
+
+  .fixora-splash-tagline {
+    margin-top: 14px;
+  }
+
+  .fixora-splash-divider {
+    margin: 12px 0;
+  }
+
+  .fixora-splash-login {
+    min-height: 60px;
+    margin-top: 18px;
+  }
+
+  .fixora-splash-caption {
+    margin-top: 15px;
+  }
+
+  .fixora-splash-services {
+    bottom: 13px;
+  }
+
+  .fixora-splash-service {
+    width: 48px;
+    height: 48px;
+    flex-basis: 48px;
+  }
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  .fixora-splash-content {
+    animation: none;
+  }
+
+  .fixora-splash-login,
+  .fixora-splash-login::before,
+  .fixora-splash-arrow,
+  .fixora-splash-service {
+    transition: none;
+  }
+}

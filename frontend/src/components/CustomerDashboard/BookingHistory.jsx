@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiX,
@@ -10,49 +11,75 @@ import {
 
 import "./BookingHistory.css";
 
-const bookings = [
-  {
-    id: "#FX1001",
-    service: "AC Repair",
-    date: "28 Jul 2026",
-    amount: "₹1,250",
-    status: "Completed",
-  },
-  {
-    id: "#FX1002",
-    service: "House Cleaning",
-    date: "24 Jul 2026",
-    amount: "₹2,100",
-    status: "Pending",
-  },
-  {
-    id: "#FX1003",
-    service: "Plumbing",
-    date: "20 Jul 2026",
-    amount: "₹850",
-    status: "Cancelled",
-  },
-  {
-    id: "#FX1004",
-    service: "Electrician",
-    date: "15 Jul 2026",
-    amount: "₹1,450",
-    status: "Completed",
-  },
-];
+const getServiceName = (booking) =>
+  booking?.service?.name ||
+  booking?.service?.title ||
+  booking?.serviceName ||
+  (typeof booking?.service === "string" ? booking.service : null) ||
+  "Home Service";
 
-const BookingHistory = () => {
+const getBookingDate = (booking) =>
+  booking?.bookingDate || booking?.createdAt || booking?.updatedAt || null;
+
+const formatDate = (dateValue) => {
+  if (!dateValue) return "Date unavailable";
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) return "Date unavailable";
+
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const getBookingId = (booking) => {
+  const id = booking?._id || booking?.id;
+
+  if (!id) return "N/A";
+
+  return `#FX${String(id).slice(-6).toUpperCase()}`;
+};
+
+const getAmount = (booking) =>
+  Number(
+    booking?.price ?? booking?.totalAmount ?? booking?.amount ?? 0
+  ) || 0;
+
+const formatAmount = (booking) =>
+  getAmount(booking).toLocaleString("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  });
+
+const getStatusClass = (status) =>
+  String(status || "Pending")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+const BookingHistory = ({ bookings = [] }) => {
   const navigate = useNavigate();
-
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [showAllBookings, setShowAllBookings] = useState(false);
+
+  const recentBookings = useMemo(() => {
+    if (!Array.isArray(bookings)) return [];
+
+    return [...bookings]
+      .sort((a, b) => {
+        const dateA = new Date(getBookingDate(a) || 0).getTime();
+        const dateB = new Date(getBookingDate(b) || 0).getTime();
+
+        return dateB - dateA;
+      })
+      .slice(0, 4);
+  }, [bookings]);
 
   const handleViewAll = () => {
     navigate("/my-bookings");
-  };
-
-  const handleViewDetails = (booking) => {
-    setSelectedBooking(booking);
   };
 
   const closeDetails = () => {
@@ -62,14 +89,10 @@ const BookingHistory = () => {
   return (
     <>
       <section className="booking-history">
-
         <div className="history-header">
           <div>
             <h2>Booking History</h2>
-
-            <p>
-              Your recent Fixora service bookings.
-            </p>
+            <p>Your most recent Fixora service bookings.</p>
           </div>
 
           <button
@@ -82,7 +105,6 @@ const BookingHistory = () => {
         </div>
 
         <div className="history-table">
-
           <div className="table-head">
             <span>Booking ID</span>
             <span>Service</span>
@@ -92,58 +114,61 @@ const BookingHistory = () => {
             <span>Action</span>
           </div>
 
-          {bookings.map((booking) => (
-
-            <div
-              className="table-row"
-              key={booking.id}
-            >
-
-              <span>{booking.id}</span>
-
-              <span>{booking.service}</span>
-
-              <span>{booking.date}</span>
-
-              <span>{booking.amount}</span>
-
-              <span
-                className={`status ${booking.status.toLowerCase()}`}
-              >
-                {booking.status}
-              </span>
-
+          {recentBookings.length === 0 ? (
+            <div className="history-empty">
+              <p>No bookings yet.</p>
               <button
                 type="button"
                 className="details-btn"
-                onClick={() => handleViewDetails(booking)}
+                onClick={() => navigate("/services")}
               >
-                View Details
+                Browse Services
               </button>
-
             </div>
+          ) : (
+            recentBookings.map((booking) => {
+              const status = booking?.status || "Pending";
 
-          ))}
+              return (
+                <div
+                  className="table-row"
+                  key={booking._id || booking.id}
+                >
+                  <span>{getBookingId(booking)}</span>
+                  <span>{getServiceName(booking)}</span>
+                  <span>{formatDate(getBookingDate(booking))}</span>
+                  <span>{formatAmount(booking)}</span>
 
+                  <span className={`status ${getStatusClass(status)}`}>
+                    {status}
+                  </span>
+
+                  <button
+                    type="button"
+                    className="details-btn"
+                    onClick={() => setSelectedBooking(booking)}
+                  >
+                    View Details
+                  </button>
+                </div>
+              );
+            })
+          )}
         </div>
-
       </section>
-
-      {/* ================================
-          BOOKING DETAILS MODAL
-      ================================= */}
 
       {selectedBooking && (
         <div
           className="booking-details-overlay"
           onClick={closeDetails}
         >
-
           <div
             className="booking-details-modal"
             onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="booking-details-title"
           >
-
             <button
               type="button"
               className="booking-details-close"
@@ -161,82 +186,65 @@ const BookingHistory = () => {
               Booking Details
             </span>
 
-            <h2>
-              {selectedBooking.service}
+            <h2 id="booking-details-title">
+              {getServiceName(selectedBooking)}
             </h2>
 
             <p className="booking-id-text">
-              {selectedBooking.id}
+              {getBookingId(selectedBooking)}
             </p>
 
             <div className="booking-info-grid">
-
               <div className="booking-info-card">
-
                 <FiCalendar />
-
                 <div>
                   <span>Date</span>
                   <strong>
-                    {selectedBooking.date}
+                    {formatDate(getBookingDate(selectedBooking))}
                   </strong>
                 </div>
-
               </div>
 
               <div className="booking-info-card">
-
                 <FiClock />
-
                 <div>
                   <span>Status</span>
-                  <strong>
-                    {selectedBooking.status}
-                  </strong>
+                  <strong>{selectedBooking.status || "Pending"}</strong>
                 </div>
-
               </div>
 
               <div className="booking-info-card">
-
                 <FiCreditCard />
-
                 <div>
                   <span>Amount</span>
-                  <strong>
-                    {selectedBooking.amount}
-                  </strong>
+                  <strong>{formatAmount(selectedBooking)}</strong>
                 </div>
-
               </div>
 
               <div className="booking-info-card">
-
                 <FiMapPin />
-
                 <div>
                   <span>Service Location</span>
                   <strong>
-                    Bengaluru
+                    {typeof selectedBooking.address === "string"
+                      ? selectedBooking.address
+                      : selectedBooking.address?.fullAddress ||
+                        selectedBooking.address?.address ||
+                        "Not provided"}
                   </strong>
                 </div>
-
               </div>
-
             </div>
 
             <div className="booking-details-status">
-
-              <span>
-                Booking Status
-              </span>
-
+              <span>Payment Status</span>
               <strong
-                className={`status ${selectedBooking.status.toLowerCase()}`}
+                className={`status ${getStatusClass(
+                  selectedBooking.paymentStatus || "Pending"
+                )}`}
               >
-                {selectedBooking.status}
+                {selectedBooking.paymentStatus || "Pending"}
               </strong>
-
             </div>
 
             <button
@@ -246,9 +254,7 @@ const BookingHistory = () => {
             >
               Close
             </button>
-
           </div>
-
         </div>
       )}
     </>

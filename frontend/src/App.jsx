@@ -53,6 +53,9 @@ import NotFound from "./pages/NotFound";
 
 import socket from "./socket";
 
+//
+import FixoraWelcome from "./pages/FixoraWelcome";
+
 function App() {
   useEffect(() => {
     const handleConnect = () => {
@@ -326,6 +329,8 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route path="/welcome" element={<FixoraWelcome />} />
 
       {/* 404 PAGE */}
       <Route path="*" element={<NotFound />} />
