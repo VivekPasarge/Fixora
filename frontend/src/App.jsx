@@ -76,7 +76,8 @@ function App() {
   return (
     <Routes>
       {/* PUBLIC PAGES */}
-      <Route path="/" element={<Home />} />
+      {/* <Route path="/" element={<Home />} /> */}
+      <Route path="/" element={<FixoraWelcome />} />
       <Route path="/services" element={<Services />} />
       <Route
         path="/services/:id"
