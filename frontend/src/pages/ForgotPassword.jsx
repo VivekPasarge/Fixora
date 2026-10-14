@@ -10,10 +10,8 @@ function ForgotPassword() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    console.log("Forgot Password button clicked");
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     setMessage("");
     setError("");
@@ -28,20 +26,13 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
-      console.log("Sending reset request...");
-      console.log("FORGOT PASSWORD REQUEST RECEIVED");
-// console.log("Request body:", req.body);
-
-      const response = await api.post(
-        "/auth/forgot-password",
-        { email: cleanEmail }
-      );
-
-      console.log("Forgot password response:", response.data);
+      const response = await api.post("/auth/forgot-password", {
+        email: cleanEmail,
+      });
 
       setMessage(
-        response.data.message ||
-          "If an account exists for this email, a reset link will be sent."
+        response.data?.message ||
+          "If an account exists for this email, a password reset link will be sent."
       );
     } catch (err) {
       console.error(
@@ -49,13 +40,34 @@ function ForgotPassword() {
         err.response?.data || err.message
       );
 
-      setError(
-        err.response?.data?.message ||
-          "Unable to send the reset email. Check the backend terminal."
-      );
+      if (err.response?.status === 404) {
+        setError(
+          "The password reset endpoint was not found. Please check the backend route."
+        );
+      } else if (err.response?.status === 503) {
+        setError(
+          "The reset email could not be sent. Please try again later."
+        );
+      } else if (!err.response) {
+        setError(
+          "Unable to connect to the server. Check your internet connection and try again."
+        );
+      } else {
+        setError(
+          err.response?.data?.message ||
+            "Unable to process your request. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEmailChange = (event) => {
+    setEmail(event.target.value);
+
+    if (message) setMessage("");
+    if (error) setError("");
   };
 
   return (
@@ -81,12 +93,16 @@ function ForgotPassword() {
 
           <input
             id="forgot-email"
+            name="email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange}
             placeholder="Enter your email address"
             autoComplete="email"
+            autoCapitalize="none"
+            spellCheck={false}
             required
+            disabled={loading}
           />
 
           {message && (

@@ -53,6 +53,8 @@ import NotFound from "./pages/NotFound";
 
 import socket from "./socket";
 
+import ResetPassword from "./pages/ResetPassword";
+
 //
 import FixoraWelcome from "./pages/FixoraWelcome";
 
@@ -97,6 +99,10 @@ function App() {
         path="/choose-account"
         element={<ChooseAccount />}
       />
+      <Route
+  path="/reset-password"
+  element={<ResetPassword />}
+/>
       <Route
         path="/forgot-password"
         element={<ForgotPassword />}
