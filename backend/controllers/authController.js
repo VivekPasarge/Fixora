@@ -500,10 +500,12 @@ const completeProfile = async (req, res) => {
 
 
 
+
 const googleLogin = async (req, res) => {
   try {
     const { credential } = req.body;
 
+    // Check Google credential
     if (!credential) {
       return res.status(400).json({
         success: false,
@@ -511,13 +513,20 @@ const googleLogin = async (req, res) => {
       });
     }
 
+    // Check environment configuration
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.JWT_SECRET) {
+      console.error("Google authentication configuration missing:", {
+        googleClientId: Boolean(process.env.GOOGLE_CLIENT_ID),
+        jwtSecret: Boolean(process.env.JWT_SECRET),
+      });
+
       return res.status(500).json({
         success: false,
         message: "Google login is not configured",
       });
     }
 
+    // Verify Google ID token
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -525,7 +534,12 @@ const googleLogin = async (req, res) => {
 
     const payload = ticket.getPayload();
 
-    if (!payload || !payload.sub || !payload.email || !payload.email_verified) {
+    if (
+      !payload ||
+      !payload.sub ||
+      !payload.email ||
+      !payload.email_verified
+    ) {
       return res.status(401).json({
         success: false,
         message: "Google account could not be verified",
@@ -534,15 +548,22 @@ const googleLogin = async (req, res) => {
 
     const email = payload.email.trim().toLowerCase();
 
+    // Find existing account
     let user = await User.findOne({ email });
 
+    // Track whether this is a new account
+    let isNewUser = false;
+
+    // Prevent technician and admin accounts from using customer Google login
     if (user && user.role !== "customer") {
       return res.status(403).json({
         success: false,
-        message: "Google login is available for customer accounts only",
+        message:
+          "Google login is available for customer accounts only. Please use your regular login.",
       });
     }
 
+    // Create a new customer account
     if (!user) {
       user = await User.create({
         name: payload.name || email.split("@")[0],
@@ -552,29 +573,51 @@ const googleLogin = async (req, res) => {
         phone: "",
         role: "customer",
       });
-    } else if (!user.googleId) {
+
+      isNewUser = true;
+
+      console.log("New Google customer account created:", email);
+    }
+
+    // Link Google to an existing customer account
+    else if (!user.googleId) {
       user.googleId = payload.sub;
       await user.save();
-    } else if (user.googleId !== payload.sub) {
+
+      console.log("Google account linked to existing customer:", email);
+    }
+
+    // Verify existing Google account
+    else if (user.googleId !== payload.sub) {
       return res.status(401).json({
         success: false,
         message: "Google account verification failed",
       });
     }
 
+    // Generate JWT
     const token = jwt.sign(
       {
         id: user._id,
         role: user.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      {
+        expiresIn: "7d",
+      }
     );
 
+    // Prepare response
     return res.status(200).json({
       success: true,
-      message: "Google login successful",
+      isNewUser,
+
+      message: isNewUser
+        ? "Account created successfully! Welcome to Fixora."
+        : "Welcome back to Fixora!",
+
       token,
+
       user: {
         _id: user._id,
         name: user.name,
@@ -584,15 +627,17 @@ const googleLogin = async (req, res) => {
         profileCompleted: user.profileCompleted,
       },
     });
-  } catch (error) {
-    console.error("GOOGLE LOGIN ERROR:", error.message);
 
-    return res.status(401).json({
+  } catch (error) {
+    console.error("GOOGLE LOGIN ERROR:", error);
+
+    return res.status(500).json({
       success: false,
-      message: "Google login failed. Please try again.",
+      message: "Google authentication failed. Please try again.",
     });
   }
 };
+
 
 
 // ==========================================================
