@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
+
 import {
   FiMail,
   FiLock,
@@ -13,6 +14,7 @@ import {
   FiClock,
   FiCheckCircle,
 } from "react-icons/fi";
+
 import Navbar from "../components/Navbar/Navbar";
 import api from "../api/axios";
 import "./Login.css";
@@ -22,6 +24,7 @@ const Login = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState("customer");
+
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
@@ -31,6 +34,7 @@ const Login = () => {
     password: "",
   });
 
+  // Handle normal input changes
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -40,9 +44,10 @@ const Login = () => {
     }));
   };
 
+  // Save login session and redirect according to role
   const saveSessionAndRedirect = (token, user) => {
     if (!token || !user) {
-      throw new Error("The server returned an invalid login response.");
+      throw new Error("Invalid login response from server.");
     }
 
     const role = String(user.role || "").toLowerCase();
@@ -72,9 +77,11 @@ const Login = () => {
 
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
     throw new Error("Your account role is not recognized.");
   };
 
+  // Normal email and password login
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
@@ -83,7 +90,7 @@ const Login = () => {
     const password = formData.password;
 
     if (!email || !password) {
-      setError("Please enter your email address and password.");
+      setError("Please enter your email and password.");
       return;
     }
 
@@ -99,34 +106,28 @@ const Login = () => {
       const { token, user } = response.data || {};
 
       if (!token || !user) {
-        setError("The server returned an invalid login response.");
-        return;
+        throw new Error("Invalid login response from server.");
       }
 
       if (String(user.role).toLowerCase() !== loginType) {
-        setError(
-          `This account cannot use the selected ${loginType} login option.`
-        );
-        return;
+        throw new Error("Incorrect account type selected.");
       }
 
       saveSessionAndRedirect(token, user);
     } catch (err) {
-      console.error(
-        "Login failed:",
-        err.response?.data?.message || err.message
-      );
+      console.error("Login error:", err);
 
       setError(
         err.response?.data?.message ||
-          err.message ||
-          "Login failed. Please check your details."
+        err.message ||
+        "Login failed. Please try again."
       );
     } finally {
       setLoading(false);
     }
   };
 
+  // Google login
   const handleGoogleSuccess = async (credentialResponse) => {
     setError("");
 
@@ -136,7 +137,7 @@ const Login = () => {
     }
 
     if (!credentialResponse?.credential) {
-      setError("Google did not return a valid credential. Please try again.");
+      setError("Google did not return a valid credential.");
       return;
     }
 
@@ -150,19 +151,17 @@ const Login = () => {
       const { token, user } = response.data || {};
 
       if (!token || !user || user.role !== "customer") {
-        throw new Error("Invalid customer login response.");
+        throw new Error("Invalid Google login response.");
       }
 
       saveSessionAndRedirect(token, user);
     } catch (err) {
-      console.error(
-        "Google login failed:",
-        err.response?.data?.message || err.message
-      );
+      console.error("Google login error:", err);
 
       setError(
         err.response?.data?.message ||
-          "Google login failed. Please try again."
+        err.message ||
+        "Google login failed. Please try again."
       );
     } finally {
       setGoogleLoading(false);
@@ -176,6 +175,9 @@ const Login = () => {
       <main className="login-page">
         <div className="login-container">
           <div className="login-wrapper">
+
+            {/* LEFT SECTION */}
+
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -199,10 +201,12 @@ const Login = () => {
                 </p>
 
                 <div className="feature-list">
+
                   <div className="feature-item">
                     <div className="feature-icon">
                       <FiShield size={26} />
                     </div>
+
                     <div>
                       <h3>Verified Professionals</h3>
                       <p>Background checked technicians.</p>
@@ -213,6 +217,7 @@ const Login = () => {
                     <div className="feature-icon">
                       <FiClock size={26} />
                     </div>
+
                     <div>
                       <h3>Fast Booking</h3>
                       <p>Book services within minutes.</p>
@@ -223,14 +228,18 @@ const Login = () => {
                     <div className="feature-icon">
                       <FiCheckCircle size={26} />
                     </div>
+
                     <div>
                       <h3>Trusted by Thousands</h3>
                       <p>Premium home service experience.</p>
                     </div>
                   </div>
+
                 </div>
               </div>
             </motion.div>
+
+            {/* RIGHT SECTION */}
 
             <motion.div
               initial={{ opacity: 0, x: 50 }}
@@ -238,7 +247,11 @@ const Login = () => {
               transition={{ duration: 0.6 }}
               className="login-right"
             >
-              <form className="login-form" onSubmit={handleSubmit}>
+              <form
+                className="login-form"
+                onSubmit={handleSubmit}
+              >
+
                 <h2>Login</h2>
 
                 <p className="login-subtitle">
@@ -248,19 +261,27 @@ const Login = () => {
                 {error && (
                   <p
                     role="alert"
-                    style={{ color: "red", marginBottom: "15px" }}
+                    style={{
+                      color: "red",
+                      marginBottom: "15px",
+                    }}
                   >
                     {error}
                   </p>
                 )}
 
+                {/* LOGIN TYPE */}
+
                 <div className="login-type">
                   <label>Login As</label>
 
                   <div className="login-type-options">
+
                     <button
                       type="button"
-                      className={loginType === "customer" ? "active" : ""}
+                      className={
+                        loginType === "customer" ? "active" : ""
+                      }
                       onClick={() => {
                         setLoginType("customer");
                         setError("");
@@ -271,7 +292,9 @@ const Login = () => {
 
                     <button
                       type="button"
-                      className={loginType === "technician" ? "active" : ""}
+                      className={
+                        loginType === "technician" ? "active" : ""
+                      }
                       onClick={() => {
                         setLoginType("technician");
                         setError("");
@@ -282,7 +305,9 @@ const Login = () => {
 
                     <button
                       type="button"
-                      className={loginType === "admin" ? "active" : ""}
+                      className={
+                        loginType === "admin" ? "active" : ""
+                      }
                       onClick={() => {
                         setLoginType("admin");
                         setError("");
@@ -290,11 +315,17 @@ const Login = () => {
                     >
                       Admin
                     </button>
+
                   </div>
                 </div>
 
+                {/* EMAIL */}
+
                 <div>
-                  <label className="form-label" htmlFor="login-email">
+                  <label
+                    className="form-label"
+                    htmlFor="login-email"
+                  >
                     Email Address
                   </label>
 
@@ -315,8 +346,13 @@ const Login = () => {
                   </div>
                 </div>
 
+                {/* PASSWORD */}
+
                 <div>
-                  <label className="form-label" htmlFor="login-password">
+                  <label
+                    className="form-label"
+                    htmlFor="login-password"
+                  >
                     Password
                   </label>
 
@@ -350,16 +386,23 @@ const Login = () => {
                   </div>
                 </div>
 
+                {/* REMEMBER AND FORGOT PASSWORD */}
+
                 <div className="remember-row">
                   <label className="remember-label">
                     <input type="checkbox" />
                     Remember me
                   </label>
 
-                  <Link to="/forgot-password" className="forgot-link">
+                  <Link
+                    to="/forgot-password"
+                    className="forgot-link"
+                  >
                     Forgot Password?
                   </Link>
                 </div>
+
+                {/* LOGIN BUTTON */}
 
                 <button
                   type="submit"
@@ -367,8 +410,11 @@ const Login = () => {
                   disabled={loading || googleLoading}
                 >
                   {loading ? "Logging in..." : "Login"}
+
                   {!loading && <FiArrowRight />}
                 </button>
+
+                {/* GOOGLE LOGIN */}
 
                 <div className="divider">
                   <span>OR</span>
@@ -381,6 +427,7 @@ const Login = () => {
                     justifyContent: "center",
                     width: "100%",
                     margin: "12px 0",
+                    minHeight: "42px",
                   }}
                 >
                   {googleLoading ? (
@@ -389,7 +436,9 @@ const Login = () => {
                     <GoogleLogin
                       onSuccess={handleGoogleSuccess}
                       onError={() => {
-                        setError("Google sign-in was unsuccessful.");
+                        setError(
+                          "Google sign-in was unsuccessful. Please try again."
+                        );
                       }}
                       text="continue_with"
                       shape="rectangular"
@@ -400,14 +449,34 @@ const Login = () => {
                   )}
                 </div>
 
+                {loginType !== "customer" && (
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "#64748b",
+                      textAlign: "center",
+                    }}
+                  >
+                    Google sign-in is available for customers only.
+                  </p>
+                )}
+
+                {/* REGISTER LINK */}
+
                 <p className="register-text">
                   Don't have an account?{" "}
-                  <Link to="/register" className="register-link">
+
+                  <Link
+                    to="/register"
+                    className="register-link"
+                  >
                     Create Account
                   </Link>
                 </p>
+
               </form>
             </motion.div>
+
           </div>
         </div>
       </main>

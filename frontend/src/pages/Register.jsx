@@ -1,24 +1,34 @@
+
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+
 import api from "../api/axios";
+
 import {
   FiUser,
   FiMail,
   FiPhone,
   FiLock,
   FiEye,
+  FiEyeOff,
   FiArrowRight,
 } from "react-icons/fi";
 
 import "./Register.css";
 
 const Register = () => {
-
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -26,24 +36,22 @@ const Register = () => {
     phone: "",
     password: "",
     confirmPassword: "",
-    role: "customer",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
+  // Handle input changes
   const handleChange = (e) => {
+    const { name, value } = e.target;
 
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
 
+    setError("");
   };
 
+  // Normal registration
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     setError("");
@@ -55,17 +63,23 @@ const Register = () => {
       phone,
       password,
       confirmPassword,
-      role,
     } = formData;
 
+    // Validate fields
     if (
-      !name ||
-      !email ||
-      !phone ||
+      !name.trim() ||
+      !email.trim() ||
+      !phone.trim() ||
       !password ||
       !confirmPassword
     ) {
       setError("Please fill all fields.");
+      return;
+    }
+
+    // Validate password
+    if (password.length < 8) {
+      setError("Password must contain at least 8 characters.");
       return;
     }
 
@@ -74,27 +88,21 @@ const Register = () => {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
-
     try {
-
       setLoading(true);
 
-      const response = await api.post(
-        "/auth/register",
-        {
-          name,
-          email,
-          phone,
-          password,
-          role,
-        }
-      );
+      const response = await api.post("/auth/register", {
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        password,
+        role: "customer",
+      });
 
-      setSuccess(response.data.message);
+      setSuccess(
+        response.data?.message ||
+        "Account created successfully!"
+      );
 
       setFormData({
         name: "",
@@ -102,333 +110,357 @@ const Register = () => {
         phone: "",
         password: "",
         confirmPassword: "",
-        role: "customer",
       });
 
+      // Redirect to login
       setTimeout(() => {
-        navigate("/login");
+        navigate("/login", { replace: true });
       }, 1500);
 
     } catch (err) {
+      console.error("Registration Error:", err);
 
       setError(
         err.response?.data?.message ||
-        "Registration Failed"
+        "Registration failed. Please try again."
       );
 
     } finally {
-
       setLoading(false);
+    }
+  };
 
+  // Google registration / login
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError("");
+    setSuccess("");
+
+    if (!credentialResponse?.credential) {
+      setError("Google authentication failed. Please try again.");
+      return;
     }
 
+    try {
+      setGoogleLoading(true);
+
+      const response = await api.post("/auth/google", {
+        credential: credentialResponse.credential,
+      });
+
+      const { token, user } = response.data || {};
+
+      if (!token || !user) {
+        throw new Error("Invalid Google authentication response.");
+      }
+
+      // Google authentication is for customers only
+      if (user.role !== "customer") {
+        throw new Error(
+          "Google authentication is available for customers only."
+        );
+      }
+
+      // Save authentication details
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Redirect to customer dashboard
+      navigate("/customer-dashboard", {
+        replace: true,
+      });
+
+    } catch (err) {
+      console.error("Google Registration Error:", err);
+
+      setError(
+        err.response?.data?.message ||
+        err.message ||
+        "Google registration failed. Please try again."
+      );
+
+    } finally {
+      setGoogleLoading(false);
+    }
   };
+
+  // Google authentication failure
+  const handleGoogleError = () => {
+    setError("Google sign-in failed. Please try again.");
+  };
+
   return (
-  <motion.div
-    initial={{ opacity: 0, x: 40 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ duration: 0.6 }}
-    className="register-right"
-  >
-
-    <form
-      className="register-form"
-      onSubmit={handleSubmit}
+    <motion.div
+      initial={{ opacity: 0, x: 40 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.6 }}
+      className="register-right"
     >
+      <form
+        className="register-form"
+        onSubmit={handleSubmit}
+      >
+        <h2>Create Account</h2>
 
-      <h2>Register</h2>
-
-      <p className="register-subtitle">
-        Create your Fixora account.
-      </p>
-
-      {error && (
-        <p className="error-message">
-          {error}
+        <p className="register-subtitle">
+          Create your Fixora account.
         </p>
-      )}
 
-      {success && (
-        <p className="success-message">
-          {success}
-        </p>
-      )}
-
-      <div className="form-fields">
-
-        {/* Full Name */}
-
-        <div>
-
-          <label className="form-label">
-            Full Name
-          </label>
-
-          <div className="input-box">
-
-            <FiUser className="input-icon" />
-
-            <input
-              type="text"
-              name="name"
-              placeholder="John Doe"
-              className="form-input"
-              value={formData.name}
-              onChange={handleChange}
-            />
-
-          </div>
-
-        </div>
-
-        {/* Email */}
-
-        <div>
-
-          <label className="form-label">
-            Email
-          </label>
-
-          <div className="input-box">
-
-            <FiMail className="input-icon" />
-
-            <input
-              type="email"
-              name="email"
-              placeholder="john@example.com"
-              className="form-input"
-              value={formData.email}
-              onChange={handleChange}
-            />
-
-          </div>
-
-        </div>
-
-        {/* Phone */}
-
-        <div>
-
-          <label className="form-label">
-            Phone Number
-          </label>
-
-          <div className="input-box">
-
-            <FiPhone className="input-icon" />
-
-            <input
-              type="tel"
-              name="phone"
-              placeholder="+91 9876543210"
-              className="form-input"
-              value={formData.phone}
-              onChange={handleChange}
-            />
-
-          </div>
-
-        </div>
-
-        {/* Account Type */}
-
-        <div>
-
-          <label className="form-label">
-            Account Type
-          </label>
-
-          <div className="input-box">
-
-            <select
-              name="role"
-              className="form-input"
-              value={formData.role}
-              onChange={handleChange}
-            >
-
-              <option value="customer">
-                Customer
-              </option>
-
-              <option value="technician">
-                Technician
-              </option>
-
-            </select>
-
-          </div>
-
-        </div>
-
-        {/* Password */}
-
-        <div>
-
-          <label className="form-label">
-            Password
-          </label>
-
-          <div className="input-box">
-
-            <FiLock className="input-icon" />
-
-            <input
-              type={
-                showPassword
-                  ? "text"
-                  : "password"
-              }
-              name="password"
-              placeholder="••••••••"
-              className="form-input"
-              value={formData.password}
-              onChange={handleChange}
-            />
-
-            <button
-              type="button"
-              className="password-toggle"
-              onClick={() =>
-                setShowPassword(!showPassword)
-              }
-            >
-              <FiEye />
-            </button>
-
-          </div>
-
-        </div>
-
-        {/* Confirm Password */}
-
-        <div>
-
-          <label className="form-label">
-            Confirm Password
-          </label>
-
-          <div className="input-box">
-
-            <FiLock className="input-icon" />
-
-            <input
-              type={
-                showConfirm
-                  ? "text"
-                  : "password"
-              }
-              name="confirmPassword"
-              placeholder="••••••••"
-              className="form-input"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
-
-            <button
-              type="button"
-              className="password-toggle"
-              onClick={() =>
-                setShowConfirm(!showConfirm)
-              }
-            >
-              <FiEye />
-            </button>
-
-          </div>
-
-        </div>
-                {/* Terms */}
-
-        <label className="terms-label">
-
-          <input type="checkbox" required />
-
-          <span>
-
-            I agree to the{" "}
-
-            <Link
-              to="#"
-              className="terms-link"
-            >
-              Terms & Conditions
-            </Link>
-
-            {" "}and{" "}
-
-            <Link
-              to="#"
-              className="terms-link"
-            >
-              Privacy Policy
-            </Link>
-
-          </span>
-
-        </label>
-
-        {/* Register Button */}
-
-        <button
-          type="submit"
-          className="register-btn"
-          disabled={loading}
-        >
-
-          {loading
-            ? "Creating Account..."
-            : "Create Account"}
-
-          <FiArrowRight />
-
-        </button>
-
-        {/* Divider */}
-
-        <div className="divider">
-
-          <span>OR</span>
-
-        </div>
-
-        {/* Google */}
-
-        <button
-          type="button"
-          className="google-btn"
-        >
-
-          Continue with Google
-
-        </button>
-
-        {/* Login */}
-
-        <p className="login-text">
-
-          Already have an account?{" "}
-
-          <Link
-            to="/login"
-            className="login-link"
+        {/* Error message */}
+        {error && (
+          <p
+            className="error-message"
+            role="alert"
           >
+            {error}
+          </p>
+        )}
 
-            Login
+        {/* Success message */}
+        {success && (
+          <p className="success-message">
+            {success}
+          </p>
+        )}
 
-          </Link>
+        <div className="form-fields">
 
-        </p>
+          {/* Full Name */}
+          <div>
+            <label className="form-label">
+              Full Name
+            </label>
 
-      </div>
+            <div className="input-box">
+              <FiUser className="input-icon" />
 
-    </form>
+              <input
+                type="text"
+                name="name"
+                placeholder="John Doe"
+                className="form-input"
+                value={formData.name}
+                onChange={handleChange}
+                autoComplete="name"
+                required
+              />
+            </div>
+          </div>
 
-  </motion.div>
+          {/* Email */}
+          <div>
+            <label className="form-label">
+              Email
+            </label>
 
-);
+            <div className="input-box">
+              <FiMail className="input-icon" />
 
+              <input
+                type="email"
+                name="email"
+                placeholder="john@example.com"
+                className="form-input"
+                value={formData.email}
+                onChange={handleChange}
+                autoComplete="email"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Phone Number */}
+          <div>
+            <label className="form-label">
+              Phone Number
+            </label>
+
+            <div className="input-box">
+              <FiPhone className="input-icon" />
+
+              <input
+                type="tel"
+                name="phone"
+                placeholder="+91 9876543210"
+                className="form-input"
+                value={formData.phone}
+                onChange={handleChange}
+                autoComplete="tel"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="form-label">
+              Password
+            </label>
+
+            <div className="input-box">
+              <FiLock className="input-icon" />
+
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Enter password"
+                className="form-input"
+                value={formData.password}
+                onChange={handleChange}
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() =>
+                  setShowPassword((previous) => !previous)
+                }
+                aria-label={
+                  showPassword ? "Hide password" : "Show password"
+                }
+              >
+                {showPassword ? <FiEyeOff /> : <FiEye />}
+              </button>
+            </div>
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label className="form-label">
+              Confirm Password
+            </label>
+
+            <div className="input-box">
+              <FiLock className="input-icon" />
+
+              <input
+                type={showConfirm ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirm password"
+                className="form-input"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                autoComplete="new-password"
+                required
+              />
+
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() =>
+                  setShowConfirm((previous) => !previous)
+                }
+                aria-label={
+                  showConfirm
+                    ? "Hide confirm password"
+                    : "Show confirm password"
+                }
+              >
+                {showConfirm ? <FiEyeOff /> : <FiEye />}
+              </button>
+            </div>
+          </div>
+
+          {/* Terms and Conditions */}
+          <label className="terms-label">
+            <input
+              type="checkbox"
+              required
+            />
+
+            <span>
+              I agree to the{" "}
+
+              <Link
+                to="#"
+                className="terms-link"
+              >
+                Terms & Conditions
+              </Link>
+
+              {" "}and{" "}
+
+              <Link
+                to="#"
+                className="terms-link"
+              >
+                Privacy Policy
+              </Link>
+            </span>
+          </label>
+
+          {/* Create Account Button */}
+          <button
+            type="submit"
+            className="register-btn"
+            disabled={loading || googleLoading}
+          >
+            {loading ? "Creating Account..." : "Create Account"}
+
+            {!loading && <FiArrowRight />}
+          </button>
+
+          {/* Divider */}
+          <div className="divider">
+            <span>OR</span>
+          </div>
+
+          {/* Continue with Google */}
+          <div
+            className="google-login-container"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              width: "100%",
+              minHeight: "42px",
+              margin: "5px 0",
+            }}
+          >
+            {googleLoading ? (
+              <p>Connecting to Google...</p>
+            ) : (
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                text="continue_with"
+                theme="outline"
+                shape="rectangular"
+                size="large"
+                width="280"
+              />
+            )}
+          </div>
+
+          {/* Google information */}
+          <p
+            style={{
+              fontSize: "12px",
+              color: "#64748b",
+              textAlign: "center",
+            }}
+          >
+            Continue with Google to create your customer account
+            or sign in to an existing customer account.
+          </p>
+
+          {/* Login Link */}
+          <p className="login-text">
+            Already have an account?{" "}
+
+            <Link
+              to="/login"
+              className="login-link"
+            >
+              Login
+            </Link>
+          </p>
+
+        </div>
+      </form>
+    </motion.div>
+  );
 };
 
 export default Register;
