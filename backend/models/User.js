@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true,
     },
 
     // ==========================================
@@ -44,16 +43,28 @@ const userSchema = new mongoose.Schema(
     },
 
     // ==========================================
-    // PASSWORD RESET
+    // PASSWORD RESET OTP
     // ==========================================
 
-    resetPasswordToken: {
+    resetPasswordOTP: {
       type: String,
       default: undefined,
       select: false,
     },
 
-    resetPasswordExpires: {
+    resetPasswordOTPExpires: {
+      type: Date,
+      default: undefined,
+      select: false,
+    },
+
+    resetPasswordOTPVerified: {
+      type: Boolean,
+      default: false,
+      select: false,
+    },
+
+    resetPasswordOTPVerifiedUntil: {
       type: Date,
       default: undefined,
       select: false,

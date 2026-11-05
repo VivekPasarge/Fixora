@@ -1,10 +1,12 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import "./ForgotPassword.css";
 
 function ForgotPassword() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -32,7 +34,12 @@ function ForgotPassword() {
 
       setMessage(
         response.data?.message ||
-          "If an account exists for this email, a password reset link will be sent."
+          "If an account exists for this email, an OTP will be sent."
+      );
+
+      // Continue to the OTP verification page.
+      navigate(
+        `/reset-password?email=${encodeURIComponent(cleanEmail)}`
       );
     } catch (err) {
       console.error(
@@ -42,15 +49,15 @@ function ForgotPassword() {
 
       if (err.response?.status === 404) {
         setError(
-          "The password reset endpoint was not found. Please check the backend route."
+          "Password reset endpoint not found. Please check the backend route."
         );
       } else if (err.response?.status === 503) {
         setError(
-          "The reset email could not be sent. Please try again later."
+          "The OTP email could not be sent. Please try again later."
         );
       } else if (!err.response) {
         setError(
-          "Unable to connect to the server. Check your internet connection and try again."
+          "Unable to connect to the server. Check your internet connection."
         );
       } else {
         setError(
@@ -82,8 +89,8 @@ function ForgotPassword() {
         <h1>Forgot Password?</h1>
 
         <p className="forgot-description">
-          Enter your registered email address and we will
-          send you a link to reset your password.
+          Enter your registered email address. We will send
+          you a 6-digit OTP to reset your password.
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -97,7 +104,7 @@ function ForgotPassword() {
             type="email"
             value={email}
             onChange={handleEmailChange}
-            placeholder="Enter your email address"
+            placeholder="Enter your registered email"
             autoComplete="email"
             autoCapitalize="none"
             spellCheck={false}
@@ -118,7 +125,7 @@ function ForgotPassword() {
           )}
 
           <button type="submit" disabled={loading}>
-            {loading ? "Sending..." : "Send Reset Link"}
+            {loading ? "Sending OTP..." : "Send OTP"}
           </button>
         </form>
 

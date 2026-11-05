@@ -421,15 +421,17 @@ const Register = () => {
             {googleLoading ? (
               <p>Connecting to Google...</p>
             ) : (
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={handleGoogleError}
-                text="continue_with"
-                theme="outline"
-                shape="rectangular"
-                size="large"
-                width="280"
-              />
+            <GoogleLogin
+  onSuccess={handleGoogleSuccess}
+  onError={() => {
+    setError("Google login failed. Please try again.");
+  }}
+  text="continue_with"
+  size="medium"
+  shape="rectangular"
+  theme="outline"
+  width="300"
+/>
             )}
           </div>
 

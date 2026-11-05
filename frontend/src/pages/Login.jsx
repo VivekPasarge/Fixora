@@ -492,16 +492,17 @@ const Login = () => {
                       {googleLoading ? (
                         <p>Signing in with Google...</p>
                       ) : (
-                        <GoogleLogin
-                          onSuccess={handleGoogleSuccess}
-                          onError={handleGoogleError}
-                          text="continue_with"
-                          theme="outline"
-                          shape="rectangular"
-                          size="large"
-                          type="standard"
-                          width="280"
-                        />
+                      <GoogleLogin
+  onSuccess={handleGoogleSuccess}
+  onError={() => {
+    setError("Google login failed. Please try again.");
+  }}
+  text="continue_with"
+  size="medium"
+  shape="rectangular"
+  theme="outline"
+  width="300"
+/>
                       )}
                     </div>
                   </>

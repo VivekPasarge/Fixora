@@ -41,7 +41,6 @@ const register = async (req, res) => {
       });
     }
 
-    // Public registration is only for customers.
     if (role && role !== "customer") {
       return res.status(403).json({
         success: false,
@@ -136,7 +135,7 @@ const login = async (req, res) => {
       });
     }
 
-    // Check technician approval.
+    // Verify technician approval.
     if (loginType === "technician") {
       const partner = await Partner.findOne({ email: user.email });
 
@@ -208,12 +207,12 @@ const login = async (req, res) => {
 };
 
 // ==========================================================
-// FORGOT PASSWORD
+// FORGOT PASSWORD - SEND OTP
 // ==========================================================
 
 const forgotPassword = async (req, res) => {
   const responseMessage =
-    "If an account exists for this email, a password reset link will be sent.";
+    "If an account exists with this email, a verification OTP has been sent.";
 
   try {
     const email = String(req.body.email || "").trim().toLowerCase();
@@ -221,13 +220,14 @@ const forgotPassword = async (req, res) => {
     if (!email) {
       return res.status(400).json({
         success: false,
-        message: "Please enter your email address",
+        message: "Please enter your registered email address",
       });
     }
 
+    // Find only an already registered Fixora email.
     const user = await User.findOne({ email });
 
-    // Do not reveal whether an email is registered.
+    // Do not reveal whether an account exists.
     if (!user) {
       return res.status(200).json({
         success: true,
@@ -235,61 +235,81 @@ const forgotPassword = async (req, res) => {
       });
     }
 
-    const resetToken = crypto.randomBytes(32).toString("hex");
+    // Generate a secure six-digit OTP.
+    const otp = crypto.randomInt(100000, 1000000).toString();
 
-    const hashedToken = crypto
+    // Store only the hashed OTP.
+    const hashedOTP = crypto
       .createHash("sha256")
-      .update(resetToken)
+      .update(otp)
       .digest("hex");
 
-    user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
+    user.resetPasswordOTP = hashedOTP;
+    user.resetPasswordOTPExpires = new Date(Date.now() + 5 * 60 * 1000);
+    user.resetPasswordOTPVerified = false;
+    user.resetPasswordOTPVerifiedUntil = undefined;
+    user.resetPasswordOTPAttempts = 0;
 
     await user.save({ validateBeforeSave: false });
-
-    const frontendUrl = process.env.FRONTEND_URL;
-
-    if (!frontendUrl) {
-      throw new Error("FRONTEND_URL is not configured");
-    }
-
-    const resetUrl =
-      `${frontendUrl.replace(/\/$/, "")}/reset-password` +
-      `?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
     try {
       await mailer.sendMail({
         from: process.env.EMAIL_FROM,
         to: user.email,
-        subject: "Reset your Fixora password",
+        subject: "Your Fixora Password Reset OTP",
+
         text:
-          "You requested a Fixora password reset.\n\n" +
-          `Open this link within 15 minutes:\n${resetUrl}\n\n` +
+          `Your Fixora password reset OTP is ${otp}.\n\n` +
+          "This OTP expires in 5 minutes.\n" +
+          "You have a maximum of 5 verification attempts.\n\n" +
           "If you did not request this, ignore this email.",
+
         html: `
-          <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto">
-            <h2>Reset your Fixora password</h2>
-            <p>Use the button below to choose a new password.</p>
-            <p>This link expires in 15 minutes.</p>
-            <a href="${resetUrl}"
-              style="display:inline-block;padding:12px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px">
-              Reset Password
-            </a>
+          <div style="
+            font-family:Arial,sans-serif;
+            max-width:600px;
+            margin:auto;
+            padding:20px;
+            border:1px solid #eee;
+            border-radius:10px;
+          ">
+            <h2 style="color:#2563eb">Fixora Password Reset</h2>
+
+            <p>You requested to reset your Fixora password.</p>
+
+            <p>Your verification OTP is:</p>
+
+            <h1 style="
+              letter-spacing:8px;
+              color:#2563eb;
+              text-align:center;
+              padding:15px;
+            ">${otp}</h1>
+
+            <p>This OTP expires in <strong>5 minutes</strong>.</p>
+
+            <p>You have a maximum of 5 verification attempts.</p>
+
             <p>If you did not request this, ignore this email.</p>
+
+            <p>Regards,<br>Fixora Team</p>
           </div>
         `,
       });
     } catch (emailError) {
-      console.error("RESET EMAIL ERROR:", emailError);
+      console.error("RESET OTP EMAIL ERROR:", emailError.message);
 
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpires = undefined;
+      user.resetPasswordOTP = undefined;
+      user.resetPasswordOTPExpires = undefined;
+      user.resetPasswordOTPVerified = false;
+      user.resetPasswordOTPVerifiedUntil = undefined;
+      user.resetPasswordOTPAttempts = 0;
 
       await user.save({ validateBeforeSave: false });
 
       return res.status(503).json({
         success: false,
-        message: "Unable to send the reset email. Please try again later.",
+        message: "Unable to send OTP. Please try again later.",
       });
     }
 
@@ -308,18 +328,131 @@ const forgotPassword = async (req, res) => {
 };
 
 // ==========================================================
+// VERIFY RESET OTP
+// ==========================================================
+
+const verifyResetOTP = async (req, res) => {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const otp = String(req.body.otp || "").trim();
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and OTP are required",
+      });
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid 6-digit OTP",
+      });
+    }
+
+    const user = await User.findOne({ email }).select(
+      "+resetPasswordOTP " +
+      "+resetPasswordOTPExpires " +
+      "+resetPasswordOTPVerified " +
+      "+resetPasswordOTPVerifiedUntil " +
+      "+resetPasswordOTPAttempts"
+    );
+
+    if (!user || !user.resetPasswordOTP) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP. Request a new OTP.",
+      });
+    }
+
+    if (
+      !user.resetPasswordOTPExpires ||
+      user.resetPasswordOTPExpires.getTime() <= Date.now()
+    ) {
+      user.resetPasswordOTP = undefined;
+      user.resetPasswordOTPExpires = undefined;
+      user.resetPasswordOTPVerified = false;
+      user.resetPasswordOTPVerifiedUntil = undefined;
+      user.resetPasswordOTPAttempts = 0;
+
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired. Please request a new OTP.",
+      });
+    }
+
+    if ((user.resetPasswordOTPAttempts || 0) >= 5) {
+      return res.status(429).json({
+        success: false,
+        message: "Too many incorrect attempts. Request a new OTP.",
+      });
+    }
+
+    const hashedOTP = crypto
+      .createHash("sha256")
+      .update(otp)
+      .digest("hex");
+
+    if (hashedOTP !== user.resetPasswordOTP) {
+      user.resetPasswordOTPAttempts =
+        (user.resetPasswordOTPAttempts || 0) + 1;
+
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(400).json({
+        success: false,
+        message: "Incorrect OTP. Please try again.",
+        attemptsRemaining: Math.max(
+          0,
+          5 - user.resetPasswordOTPAttempts
+        ),
+      });
+    }
+
+    // Mark OTP as verified.
+    user.resetPasswordOTPVerified = true;
+
+    // Allow password reset for 10 minutes.
+    user.resetPasswordOTPVerifiedUntil = new Date(
+      Date.now() + 10 * 60 * 1000
+    );
+
+    // OTP cannot be reused.
+    user.resetPasswordOTP = undefined;
+    user.resetPasswordOTPExpires = undefined;
+    user.resetPasswordOTPAttempts = 0;
+
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified successfully. You can now reset your password.",
+    });
+  } catch (error) {
+    console.error("VERIFY RESET OTP ERROR:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to verify OTP",
+    });
+  }
+};
+
+// ==========================================================
 // RESET PASSWORD
 // ==========================================================
 
 const resetPassword = async (req, res) => {
   try {
-    const { token, password } = req.body;
     const email = String(req.body.email || "").trim().toLowerCase();
+    const { password } = req.body;
 
-    if (!token || !email || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Token, email and new password are required",
+        message: "Email and new password are required",
       });
     }
 
@@ -330,27 +463,37 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
-
-    const user = await User.findOne({
-      email,
-      resetPasswordToken: hashedToken,
-      resetPasswordExpires: { $gt: new Date() },
-    }).select("+resetPasswordToken +resetPasswordExpires");
+    const user = await User.findOne({ email }).select(
+      "+resetPasswordOTPVerified " +
+      "+resetPasswordOTPVerifiedUntil"
+    );
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "The reset link is invalid or has expired",
+        message: "Invalid password reset request",
+      });
+    }
+
+    if (
+      user.resetPasswordOTPVerified !== true ||
+      !user.resetPasswordOTPVerifiedUntil ||
+      user.resetPasswordOTPVerifiedUntil.getTime() <= Date.now()
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please verify your OTP before resetting your password",
       });
     }
 
     user.password = await bcrypt.hash(password, 10);
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
+
+    // Clear reset data after successful password reset.
+    user.resetPasswordOTP = undefined;
+    user.resetPasswordOTPExpires = undefined;
+    user.resetPasswordOTPVerified = false;
+    user.resetPasswordOTPVerifiedUntil = undefined;
+    user.resetPasswordOTPAttempts = 0;
 
     await user.save();
 
@@ -367,6 +510,7 @@ const resetPassword = async (req, res) => {
     });
   }
 };
+
 // ==========================================================
 // GET PROFILE
 // ==========================================================
@@ -526,7 +670,6 @@ const googleLogin = async (req, res) => {
       });
     }
 
-    // Verify the ID token received from Google.
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -551,7 +694,6 @@ const googleLogin = async (req, res) => {
     let user = await User.findOne({ email });
     let isNewUser = false;
 
-    // Google login is only available for customer accounts.
     if (user && user.role !== "customer") {
       return res.status(403).json({
         success: false,
@@ -560,7 +702,6 @@ const googleLogin = async (req, res) => {
       });
     }
 
-    // Create a new customer account.
     if (!user) {
       user = await User.create({
         name: payload.name || email.split("@")[0],
@@ -571,27 +712,19 @@ const googleLogin = async (req, res) => {
       });
 
       isNewUser = true;
-
       console.log("New Google customer account created");
-    }
-
-    // Link Google to an existing customer account.
-    else if (!user.googleId) {
+    } else if (!user.googleId) {
       user.googleId = payload.sub;
       await user.save();
 
       console.log("Google account linked to existing customer");
-    }
-
-    // Verify the Google ID for an already-linked account.
-    else if (user.googleId !== payload.sub) {
+    } else if (user.googleId !== payload.sub) {
       return res.status(401).json({
         success: false,
         message: "Google account verification failed",
       });
     }
 
-    // Generate JWT.
     const token = jwt.sign(
       {
         id: user._id,
@@ -622,7 +755,6 @@ const googleLogin = async (req, res) => {
   } catch (error) {
     console.error("GOOGLE LOGIN ERROR:", error.message);
 
-    // Duplicate email can occur if two registration requests arrive together.
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
@@ -647,6 +779,7 @@ module.exports = {
   register,
   login,
   forgotPassword,
+  verifyResetOTP,
   resetPassword,
   profile,
   updateProfile,
