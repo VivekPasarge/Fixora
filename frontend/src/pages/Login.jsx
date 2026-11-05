@@ -27,6 +27,7 @@ const Login = () => {
 
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
   const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
@@ -34,7 +35,7 @@ const Login = () => {
     password: "",
   });
 
-  // Handle normal input changes
+  // Handle input changes
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -44,37 +45,55 @@ const Login = () => {
     }));
   };
 
-  // Save login session and redirect according to role
-  const saveSessionAndRedirect = (token, user) => {
+  // Save session and redirect according to user role
+  const saveSessionAndRedirect = (token, user, message = "") => {
     if (!token || !user) {
       throw new Error("Invalid login response from server.");
     }
 
     const role = String(user.role || "").toLowerCase();
 
+    // Save authentication details
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
 
+    const navigationState = message
+      ? { authMessage: message }
+      : {};
+
+    // Admin dashboard
     if (role === "admin") {
-      navigate("/admin", { replace: true });
+      navigate("/admin", {
+        replace: true,
+        state: navigationState,
+      });
       return;
     }
 
+    // Technician dashboard
     if (role === "technician") {
       navigate(
         user.profileCompleted
           ? "/technician-home"
           : "/complete-profile",
-        { replace: true }
+        {
+          replace: true,
+          state: navigationState,
+        }
       );
       return;
     }
 
+    // Customer dashboard
     if (role === "customer") {
-      navigate("/customer-dashboard", { replace: true });
+      navigate("/customer-dashboard", {
+        replace: true,
+        state: navigationState,
+      });
       return;
     }
 
+    // Invalid role
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
@@ -84,6 +103,7 @@ const Login = () => {
   // Normal email and password login
   const handleSubmit = async (event) => {
     event.preventDefault();
+
     setError("");
 
     const email = formData.email.trim().toLowerCase();
@@ -113,7 +133,12 @@ const Login = () => {
         throw new Error("Incorrect account type selected.");
       }
 
-      saveSessionAndRedirect(token, user);
+      saveSessionAndRedirect(
+        token,
+        user,
+        response.data.message || "Login successful!"
+      );
+
     } catch (err) {
       console.error("Login error:", err);
 
@@ -122,12 +147,13 @@ const Login = () => {
         err.message ||
         "Login failed. Please try again."
       );
+
     } finally {
       setLoading(false);
     }
   };
 
-  // Google login
+  // Google login for customers
   const handleGoogleSuccess = async (credentialResponse) => {
     setError("");
 
@@ -148,13 +174,36 @@ const Login = () => {
         credential: credentialResponse.credential,
       });
 
-      const { token, user } = response.data || {};
+      const {
+        token,
+        user,
+        isNewUser,
+        message,
+      } = response.data || {};
 
-      if (!token || !user || user.role !== "customer") {
+      if (!token || !user) {
         throw new Error("Invalid Google login response.");
       }
 
-      saveSessionAndRedirect(token, user);
+      if (String(user.role).toLowerCase() !== "customer") {
+        throw new Error(
+          "Google login is available for customer accounts only."
+        );
+      }
+
+      // Redirect with the appropriate success message
+      const successMessage =
+        message ||
+        (isNewUser
+          ? "Account created successfully! Welcome to Fixora."
+          : "Welcome back to Fixora!");
+
+      saveSessionAndRedirect(
+        token,
+        user,
+        successMessage
+      );
+
     } catch (err) {
       console.error("Google login error:", err);
 
@@ -163,9 +212,15 @@ const Login = () => {
         err.message ||
         "Google login failed. Please try again."
       );
+
     } finally {
       setGoogleLoading(false);
     }
+  };
+
+  // Google authentication failure
+  const handleGoogleError = () => {
+    setError("Google sign-in failed. Please try again.");
   };
 
   return (
@@ -258,11 +313,13 @@ const Login = () => {
                   Enter your account details below.
                 </p>
 
+                {/* ERROR MESSAGE */}
+
                 {error && (
                   <p
                     role="alert"
                     style={{
-                      color: "red",
+                      color: "#dc2626",
                       marginBottom: "15px",
                     }}
                   >
@@ -416,63 +473,95 @@ const Login = () => {
 
                 {/* GOOGLE LOGIN */}
 
-                <div className="divider">
-                  <span>OR</span>
-                </div>
+                {loginType === "customer" && (
+                  <>
+                    <div className="divider">
+                      <span>OR</span>
+                    </div>
 
-                <div
-                  className="google-login-container"
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    width: "100%",
-                    margin: "12px 0",
-                    minHeight: "42px",
-                  }}
-                >
-                  {googleLoading ? (
-                    <p>Signing in with Google...</p>
-                  ) : (
-                    <GoogleLogin
-                      onSuccess={handleGoogleSuccess}
-                      onError={() => {
-                        setError(
-                          "Google sign-in was unsuccessful. Please try again."
-                        );
+                    <div
+                      className="google-login-container"
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        width: "100%",
+                        margin: "12px 0",
+                        minHeight: "42px",
                       }}
-                      text="continue_with"
-                      shape="rectangular"
-                      theme="outline"
-                      size="large"
-                      width="280"
-                    />
-                  )}
-                </div>
+                    >
+                      {googleLoading ? (
+                        <p>Signing in with Google...</p>
+                      ) : (
+                        <GoogleLogin
+                          onSuccess={handleGoogleSuccess}
+                          onError={handleGoogleError}
+                          text="continue_with"
+                          theme="outline"
+                          shape="rectangular"
+                          size="large"
+                          type="standard"
+                          width="280"
+                        />
+                      )}
+                    </div>
+                  </>
+                )}
 
-                {loginType !== "customer" && (
+                {/* TECHNICIAN AND ADMIN INFORMATION */}
+
+                {loginType === "technician" && (
                   <p
                     style={{
-                      fontSize: "12px",
+                      fontSize: "13px",
                       color: "#64748b",
                       textAlign: "center",
+                      marginTop: "15px",
                     }}
                   >
-                    Google sign-in is available for customers only.
+                    Login using your approved professional account.
+                  </p>
+                )}
+
+                {loginType === "admin" && (
+                  <p
+                    style={{
+                      fontSize: "13px",
+                      color: "#64748b",
+                      textAlign: "center",
+                      marginTop: "15px",
+                    }}
+                  >
+                    Restricted access for authorized administrators.
                   </p>
                 )}
 
                 {/* REGISTER LINK */}
 
-                <p className="register-text">
-                  Don't have an account?{" "}
+                {loginType === "customer" && (
+                  <p className="register-text">
+                    Don't have an account?{" "}
 
-                  <Link
-                    to="/register"
-                    className="register-link"
-                  >
-                    Create Account
-                  </Link>
-                </p>
+                    <Link
+                      to="/register"
+                      className="register-link"
+                    >
+                      Create Account
+                    </Link>
+                  </p>
+                )}
+
+                {loginType === "technician" && (
+                  <p className="register-text">
+                    Want to join Fixora?{" "}
+
+                    <Link
+                      to="/partner-register"
+                      className="register-link"
+                    >
+                      Apply as Professional
+                    </Link>
+                  </p>
+                )}
 
               </form>
             </motion.div>

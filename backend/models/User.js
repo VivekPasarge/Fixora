@@ -1,9 +1,11 @@
-
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    // Basic user information
+    // ==========================================
+    // BASIC USER INFORMATION
+    // ==========================================
+
     name: {
       type: String,
       required: true,
@@ -16,10 +18,13 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      index: true,
     },
 
-    // Password is required for local accounts.
-    // Google-only accounts can use an empty password.
+    // ==========================================
+    // PASSWORD AUTHENTICATION
+    // ==========================================
+
     password: {
       type: String,
       required: function () {
@@ -28,14 +33,20 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
-    // Google authentication
+    // ==========================================
+    // GOOGLE AUTHENTICATION
+    // ==========================================
+
     googleId: {
       type: String,
       default: undefined,
       sparse: true,
     },
 
-    // Password reset
+    // ==========================================
+    // PASSWORD RESET
+    // ==========================================
+
     resetPasswordToken: {
       type: String,
       default: undefined,
@@ -48,20 +59,30 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
-    // Contact information
+    // ==========================================
+    // CONTACT INFORMATION
+    // ==========================================
+
     phone: {
       type: String,
       default: "",
+      trim: true,
     },
 
-    // User role
+    // ==========================================
+    // USER ROLE
+    // ==========================================
+
     role: {
       type: String,
       enum: ["customer", "technician", "admin"],
       default: "customer",
     },
 
-    // Professional information
+    // ==========================================
+    // PROFESSIONAL INFORMATION
+    // ==========================================
+
     profession: {
       type: String,
       default: "",
@@ -92,7 +113,10 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // Identity information
+    // ==========================================
+    // IDENTITY INFORMATION
+    // ==========================================
+
     aadhaarNumber: {
       type: String,
       default: "",
@@ -102,8 +126,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+        // ==========================================
+    // PROFILE DETAILS
+    // ==========================================
 
-    // Profile details
     about: {
       type: String,
       default: "",
@@ -133,13 +159,19 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // Availability
+    // ==========================================
+    // TECHNICIAN AVAILABILITY
+    // ==========================================
+
     availability: {
       type: String,
       default: "Available",
     },
 
-    // Technician profile completion
+    // ==========================================
+    // PROFILE COMPLETION
+    // ==========================================
+
     profileCompleted: {
       type: Boolean,
       default: false,
@@ -150,4 +182,10 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+// ==========================================
+// CREATE USER MODEL
+// ==========================================
+
+const User = mongoose.model("User", userSchema);
+
+module.exports = User;

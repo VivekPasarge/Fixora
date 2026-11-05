@@ -1,4 +1,3 @@
-
 const User = require("../models/User");
 const Partner = require("../models/Partner");
 const bcrypt = require("bcryptjs");
@@ -6,12 +5,13 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const mailer = require("../config/mailer");
 const googleClient = require("../config/googleAuth");
+
 // ==========================================================
 // TEST API
 // ==========================================================
 
 const testAuth = (req, res) => {
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Auth Route Working",
   });
@@ -41,7 +41,7 @@ const register = async (req, res) => {
       });
     }
 
-    // Public registration must not create admin or technician accounts.
+    // Public registration is only for customers.
     if (role && role !== "customer") {
       return res.status(403).json({
         success: false,
@@ -120,7 +120,6 @@ const login = async (req, res) => {
       });
     }
 
-    // User.password has select:false in the updated User model.
     const user = await User.findOne({ email }).select("+password");
 
     if (!user || !user.password) {
@@ -137,7 +136,7 @@ const login = async (req, res) => {
       });
     }
 
-    // Verify technician approval.
+    // Check technician approval.
     if (loginType === "technician") {
       const partner = await Partner.findOne({ email: user.email });
 
@@ -228,7 +227,7 @@ const forgotPassword = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    // Return a generic response to avoid revealing registered emails.
+    // Do not reveal whether an email is registered.
     if (!user) {
       return res.status(200).json({
         success: true,
@@ -237,6 +236,7 @@ const forgotPassword = async (req, res) => {
     }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
+
     const hashedToken = crypto
       .createHash("sha256")
       .update(resetToken)
@@ -284,6 +284,7 @@ const forgotPassword = async (req, res) => {
 
       user.resetPasswordToken = undefined;
       user.resetPasswordExpires = undefined;
+
       await user.save({ validateBeforeSave: false });
 
       return res.status(503).json({
@@ -366,7 +367,6 @@ const resetPassword = async (req, res) => {
     });
   }
 };
-
 // ==========================================================
 // GET PROFILE
 // ==========================================================
@@ -403,6 +403,7 @@ const profile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const { name, phone, address } = req.body;
+
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -498,14 +499,14 @@ const completeProfile = async (req, res) => {
   }
 };
 
-
-
+// ==========================================================
+// GOOGLE LOGIN / REGISTER
+// ==========================================================
 
 const googleLogin = async (req, res) => {
   try {
     const { credential } = req.body;
 
-    // Check Google credential
     if (!credential) {
       return res.status(400).json({
         success: false,
@@ -513,7 +514,6 @@ const googleLogin = async (req, res) => {
       });
     }
 
-    // Check environment configuration
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.JWT_SECRET) {
       console.error("Google authentication configuration missing:", {
         googleClientId: Boolean(process.env.GOOGLE_CLIENT_ID),
@@ -526,7 +526,7 @@ const googleLogin = async (req, res) => {
       });
     }
 
-    // Verify Google ID token
+    // Verify the ID token received from Google.
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -538,7 +538,7 @@ const googleLogin = async (req, res) => {
       !payload ||
       !payload.sub ||
       !payload.email ||
-      !payload.email_verified
+      payload.email_verified !== true
     ) {
       return res.status(401).json({
         success: false,
@@ -548,13 +548,10 @@ const googleLogin = async (req, res) => {
 
     const email = payload.email.trim().toLowerCase();
 
-    // Find existing account
     let user = await User.findOne({ email });
-
-    // Track whether this is a new account
     let isNewUser = false;
 
-    // Prevent technician and admin accounts from using customer Google login
+    // Google login is only available for customer accounts.
     if (user && user.role !== "customer") {
       return res.status(403).json({
         success: false,
@@ -563,31 +560,30 @@ const googleLogin = async (req, res) => {
       });
     }
 
-    // Create a new customer account
+    // Create a new customer account.
     if (!user) {
       user = await User.create({
         name: payload.name || email.split("@")[0],
         email,
         googleId: payload.sub,
-        password: undefined,
         phone: "",
         role: "customer",
       });
 
       isNewUser = true;
 
-      console.log("New Google customer account created:", email);
+      console.log("New Google customer account created");
     }
 
-    // Link Google to an existing customer account
+    // Link Google to an existing customer account.
     else if (!user.googleId) {
       user.googleId = payload.sub;
       await user.save();
 
-      console.log("Google account linked to existing customer:", email);
+      console.log("Google account linked to existing customer");
     }
 
-    // Verify existing Google account
+    // Verify the Google ID for an already-linked account.
     else if (user.googleId !== payload.sub) {
       return res.status(401).json({
         success: false,
@@ -595,7 +591,7 @@ const googleLogin = async (req, res) => {
       });
     }
 
-    // Generate JWT
+    // Generate JWT.
     const token = jwt.sign(
       {
         id: user._id,
@@ -607,17 +603,13 @@ const googleLogin = async (req, res) => {
       }
     );
 
-    // Prepare response
     return res.status(200).json({
       success: true,
       isNewUser,
-
       message: isNewUser
         ? "Account created successfully! Welcome to Fixora."
         : "Welcome back to Fixora!",
-
       token,
-
       user: {
         _id: user._id,
         name: user.name,
@@ -627,18 +619,24 @@ const googleLogin = async (req, res) => {
         profileCompleted: user.profileCompleted,
       },
     });
-
   } catch (error) {
-    console.error("GOOGLE LOGIN ERROR:", error);
+    console.error("GOOGLE LOGIN ERROR:", error.message);
 
-    return res.status(500).json({
+    // Duplicate email can occur if two registration requests arrive together.
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "An account with this email already exists. Please try signing in again.",
+      });
+    }
+
+    return res.status(401).json({
       success: false,
       message: "Google authentication failed. Please try again.",
     });
   }
 };
-
-
 
 // ==========================================================
 // EXPORTS
