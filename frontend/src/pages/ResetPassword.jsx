@@ -20,9 +20,12 @@ function ResetPassword() {
     .trim()
     .toLowerCase();
 
+  // OTP states
   const [otp, setOtp] = useState("");
   const [otpVerified, setOtpVerified] = useState(false);
+  const [otpMessage, setOtpMessage] = useState("");
 
+  // Password states
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -30,18 +33,23 @@ function ResetPassword() {
   const [showConfirmPassword, setShowConfirmPassword] =
     useState(false);
 
+  // Loading states
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
+  // Messages
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Verify the 6-digit OTP.
+  // ==========================================
+  // VERIFY OTP
+  // ==========================================
+
   const handleVerifyOTP = async (event) => {
     event.preventDefault();
 
     setError("");
-    setSuccess("");
+    setOtpMessage("");
 
     if (!email) {
       setError("Email address is missing. Please request a new OTP.");
@@ -61,12 +69,22 @@ function ResetPassword() {
         otp,
       });
 
+      if (response.data?.success === false) {
+        throw new Error(
+          response.data?.message || "OTP verification failed."
+        );
+      }
+
       setOtpVerified(true);
 
-      setSuccess(
+      // Separate message: does not disable password fields.
+      setOtpMessage(
         response.data?.message ||
-          "OTP verified successfully. Create your new password."
+          "OTP verified successfully. You can now reset your password."
       );
+
+      setOtp("");
+      setError("");
     } catch (err) {
       console.error(
         "OTP verification failed:",
@@ -75,6 +93,7 @@ function ResetPassword() {
 
       setError(
         err.response?.data?.message ||
+          err.message ||
           "Invalid or expired OTP. Please try again."
       );
     } finally {
@@ -82,12 +101,20 @@ function ResetPassword() {
     }
   };
 
-  // Update the password after OTP verification.
+  // ==========================================
+  // RESET PASSWORD
+  // ==========================================
+
   const handleResetPassword = async (event) => {
     event.preventDefault();
 
     setError("");
     setSuccess("");
+
+    if (!otpVerified) {
+      setError("Please verify your OTP first.");
+      return;
+    }
 
     if (password.length < 8) {
       setError("Your password must contain at least 8 characters.");
@@ -107,6 +134,12 @@ function ResetPassword() {
         password,
       });
 
+      if (response.data?.success === false) {
+        throw new Error(
+          response.data?.message || "Password reset failed."
+        );
+      }
+
       setSuccess(
         response.data?.message ||
           "Password reset successfully. You can now log in."
@@ -115,6 +148,7 @@ function ResetPassword() {
       setPassword("");
       setConfirmPassword("");
 
+      // Redirect after showing success.
       window.setTimeout(() => {
         navigate("/login", { replace: true });
       }, 2000);
@@ -126,6 +160,7 @@ function ResetPassword() {
 
       setError(
         err.response?.data?.message ||
+          err.message ||
           "Unable to reset your password. Please try again."
       );
     } finally {
@@ -133,9 +168,13 @@ function ResetPassword() {
     }
   };
 
-  // Request another OTP.
+  // ==========================================
+  // RESEND OTP
+  // ==========================================
+
   const handleResendOTP = async () => {
     setError("");
+    setOtpMessage("");
     setSuccess("");
 
     if (!email) {
@@ -152,8 +191,10 @@ function ResetPassword() {
 
       setOtp("");
       setOtpVerified(false);
+      setPassword("");
+      setConfirmPassword("");
 
-      setSuccess(
+      setOtpMessage(
         response.data?.message ||
           "If an account exists for this email, a new OTP will be sent."
       );
@@ -171,6 +212,10 @@ function ResetPassword() {
       setResending(false);
     }
   };
+
+  // ==========================================
+  // INVALID EMAIL REQUEST
+  // ==========================================
 
   if (!email) {
     return (
@@ -195,9 +240,14 @@ function ResetPassword() {
     );
   }
 
+  // ==========================================
+  // MAIN UI
+  // ==========================================
+
   return (
     <main className="reset-password-page">
       <section className="reset-password-card">
+
         <Link to="/login" className="reset-back-link">
           &larr; Back to Login
         </Link>
@@ -209,7 +259,9 @@ function ResetPassword() {
         </div>
 
         <h1>
-          {otpVerified ? "Create New Password" : "Verify Your OTP"}
+          {otpVerified
+            ? "Create New Password"
+            : "Verify Your OTP"}
         </h1>
 
         <p className="reset-description">
@@ -218,9 +270,16 @@ function ResetPassword() {
             : `Enter the 6-digit OTP sent to ${email}.`}
         </p>
 
+        {/* ==================================
+            OTP VERIFICATION FORM
+        ================================== */}
+
         {!otpVerified ? (
           <form onSubmit={handleVerifyOTP}>
-            <label htmlFor="reset-otp">6-Digit OTP</label>
+
+            <label htmlFor="reset-otp">
+              6-Digit OTP
+            </label>
 
             <input
               id="reset-otp"
@@ -236,7 +295,7 @@ function ResetPassword() {
 
                 setOtp(value);
                 setError("");
-                setSuccess("");
+                setOtpMessage("");
               }}
               placeholder="Enter 6-digit OTP"
               required
@@ -249,10 +308,10 @@ function ResetPassword() {
               </div>
             )}
 
-            {success && (
+            {otpMessage && (
               <div className="reset-success" role="status">
                 <FiCheckCircle />
-                <span>{success}</span>
+                <span>{otpMessage}</span>
               </div>
             )}
 
@@ -272,9 +331,16 @@ function ResetPassword() {
             >
               {resending ? "Sending..." : "Resend OTP"}
             </button>
+
           </form>
         ) : (
+
+          /* ==================================
+             NEW PASSWORD FORM
+          ================================== */
+
           <form onSubmit={handleResetPassword}>
+
             <label htmlFor="reset-password">
               New Password
             </label>
@@ -324,7 +390,9 @@ function ResetPassword() {
 
               <input
                 id="reset-confirm-password"
-                type={showConfirmPassword ? "text" : "password"}
+                type={
+                  showConfirmPassword ? "text" : "password"
+                }
                 value={confirmPassword}
                 onChange={(event) => {
                   setConfirmPassword(event.target.value);
@@ -353,11 +421,24 @@ function ResetPassword() {
               </button>
             </div>
 
+            {/* OTP VERIFIED MESSAGE */}
+
+            {otpMessage && (
+              <div className="reset-success" role="status">
+                <FiCheckCircle />
+                <span>{otpMessage}</span>
+              </div>
+            )}
+
+            {/* ERROR MESSAGE */}
+
             {error && (
               <div className="reset-error" role="alert">
                 {error}
               </div>
             )}
+
+            {/* PASSWORD RESET SUCCESS */}
 
             {success && (
               <div className="reset-success" role="status">
@@ -369,16 +450,26 @@ function ResetPassword() {
             <button
               type="submit"
               className="reset-submit-button"
-              disabled={loading || Boolean(success)}
+              disabled={
+                loading ||
+                Boolean(success) ||
+                !password ||
+                !confirmPassword
+              }
             >
-              {loading ? "Updating Password..." : "Update Password"}
+              {loading
+                ? "Updating Password..."
+                : "Update Password"}
             </button>
+
           </form>
         )}
 
         <p className="reset-footer">
-          Remember your password? <Link to="/login">Login</Link>
+          Remember your password?{" "}
+          <Link to="/login">Login</Link>
         </p>
+
       </section>
     </main>
   );
