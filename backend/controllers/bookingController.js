@@ -10,6 +10,7 @@ const WalletTransaction = require("../models/WalletTransaction");
 // CREATE BOOKING
 // ==========================================================
 
+
 const createBooking = async (req, res) => {
   try {
     const {
@@ -44,7 +45,7 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // Today's date in India, always YYYY-MM-DD.
+    // Today's date in India (YYYY-MM-DD).
     const todayString = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Asia/Kolkata",
       year: "numeric",
@@ -53,7 +54,6 @@ const createBooking = async (req, res) => {
     }).format(new Date());
 
     // Accept DD-MM-YYYY, DD/MM/YYYY, or YYYY-MM-DD.
-    // Convert the date to YYYY-MM-DD for reliable comparisons.
     let normalizedBookingDate = "";
 
     if (typeof bookingDate === "string") {
@@ -76,24 +76,17 @@ const createBooking = async (req, res) => {
       }
     }
 
-    console.log("[FIXORA DATE DEBUG]", {
-      receivedDate: bookingDate,
-      normalizedDate: normalizedBookingDate,
-      today: todayString,
-    });
-
     if (!normalizedBookingDate) {
       return res.status(400).json({
         success: false,
         message: "Invalid booking date. Use DD-MM-YYYY format.",
-        receivedDate: bookingDate,
       });
     }
 
+    // Validate the actual calendar date.
     const [year, month, day] =
       normalizedBookingDate.split("-").map(Number);
 
-    // Validate the actual calendar date.
     const calendarDate = new Date(
       Date.UTC(year, month - 1, day)
     );
@@ -106,24 +99,23 @@ const createBooking = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid calendar date.",
-        receivedDate: bookingDate,
       });
     }
 
-    // Reject dates in the past.
+    // Reject past dates.
     if (normalizedBookingDate < todayString) {
       return res.status(400).json({
         success: false,
-        message: "Booking date cannot be in the past",
+        message: "Booking date cannot be in the past.",
       });
     }
 
-    // Permit booking today and up to two days ahead.
+    // Allow only today and tomorrow.
     const [todayYear, todayMonth, todayDay] =
       todayString.split("-").map(Number);
 
     const maxDate = new Date(
-      Date.UTC(todayYear, todayMonth - 1, todayDay + 2)
+      Date.UTC(todayYear, todayMonth - 1, todayDay + 1)
     );
 
     const maxBookingDateString = [
@@ -135,7 +127,7 @@ const createBooking = async (req, res) => {
     if (normalizedBookingDate > maxBookingDateString) {
       return res.status(400).json({
         success: false,
-        message: "You can book a service only up to 2 days from today.",
+        message: "Bookings are allowed only for today and tomorrow.",
       });
     }
 
@@ -148,7 +140,7 @@ const createBooking = async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: "Please select a valid booking time",
+        message: "Please select a valid booking time.",
       });
     }
 
@@ -173,7 +165,7 @@ const createBooking = async (req, res) => {
       ) {
         return res.status(400).json({
           success: false,
-          message: "The selected booking time has already passed",
+          message: "The selected booking time has already passed.",
         });
       }
     }
@@ -244,7 +236,7 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // Generate booking ID using the existing format.
+    // Generate booking ID.
     const lastBooking = await Booking.findOne()
       .sort({ createdAt: -1, _id: -1 })
       .select("bookingId");
@@ -273,10 +265,7 @@ const createBooking = async (req, res) => {
       customer,
       service,
       address: address.trim(),
-
-      // Store the normalized date to keep comparisons consistent.
       bookingDate: normalizedBookingDate,
-
       bookingTime,
       price: serviceData.price,
       paymentMethod: selectedPaymentMethod,
@@ -300,6 +289,7 @@ const createBooking = async (req, res) => {
       booking,
       otp,
     });
+
   } catch (error) {
     console.error("Create Booking Error:", error);
 

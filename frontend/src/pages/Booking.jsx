@@ -119,10 +119,10 @@ const Booking = () => {
 
   // Check whether a booking is beyond the technician acceptance window.
   const isBookingBeyondTechnicianWindow = (selectedDate) => {
-    const lastAllowedDate = getDateAfterDays(2);
+  const lastAllowedDate = getDateAfterDays(1);
 
-    return selectedDate > lastAllowedDate;
-  };
+  return selectedDate > lastAllowedDate;
+};
 
   // Get the current time in India as minutes after midnight.
   const getCurrentTimeInMinutes = () => {
@@ -275,7 +275,7 @@ const Booking = () => {
     }
 
     const today = getTodayDate();
-    const maxDate = getDateAfterDays(2);
+    const maxDate = getDateAfterDays(1);
 
     // Prevent past dates.
     if (isoDate < today) {
@@ -295,7 +295,7 @@ const Booking = () => {
         date: "",
       }));
 
-      alert("You can book a service only up to 2 days from today.");
+      alert("Bookings are allowed only for today and tomorrow.");
       return;
     }
 
@@ -771,8 +771,7 @@ const Booking = () => {
                         color: "#64748b",
                       }}
                     >
-                      Enter the date as DD-MM-YYYY. You can book from
-                      today up to 2 days in advance.
+                      You can book only for today or tomorrow.
                     </small>
                   </div>
 
