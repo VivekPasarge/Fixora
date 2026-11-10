@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -16,18 +17,35 @@ const AvailabilityCard = () => {
 
   const getToken = () => localStorage.getItem("token");
 
+  // Convert API availability response into a Boolean.
   const getStatus = (data) => {
-    if (typeof data?.isAvailable === "boolean") {
-      return data.isAvailable;
+    const result = data?.data || data;
+
+    const value =
+      result?.isAvailable ??
+      result?.isOnline ??
+      result?.availability;
+
+    if (typeof value === "boolean") {
+      return value;
     }
 
-    if (typeof data?.isOnline === "boolean") {
-      return data.isOnline;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+
+      if (["true", "available", "online"].includes(normalized)) {
+        return true;
+      }
+
+      if (["false", "unavailable", "offline"].includes(normalized)) {
+        return false;
+      }
     }
 
     return null;
   };
 
+  // Notify the GPS tracker when availability changes.
   const notifyAvailabilityChange = (status) => {
     localStorage.setItem("technicianOnline", String(status));
 
@@ -38,12 +56,14 @@ const AvailabilityCard = () => {
     );
   };
 
+  // Fetch current availability from backend.
   const fetchAvailability = useCallback(async () => {
     try {
       const token = getToken();
 
       if (!token) {
         setIsOnline(false);
+        localStorage.setItem("technicianOnline", "false");
         return;
       }
 
@@ -61,9 +81,15 @@ const AvailabilityCard = () => {
       if (status !== null) {
         setIsOnline(status);
         localStorage.setItem("technicianOnline", String(status));
+
+        window.dispatchEvent(
+          new CustomEvent("technicianAvailabilityChanged", {
+            detail: { isOnline: status },
+          })
+        );
       } else {
         console.error(
-          "Availability response is missing a Boolean status:",
+          "Invalid availability response:",
           response.data
         );
       }
@@ -81,6 +107,7 @@ const AvailabilityCard = () => {
     fetchAvailability();
   }, [fetchAvailability]);
 
+  // Listen for availability changes.
   useEffect(() => {
     const handleAvailabilityChange = (event) => {
       if (typeof event.detail?.isOnline === "boolean") {
@@ -101,6 +128,7 @@ const AvailabilityCard = () => {
     };
   }, []);
 
+  // Toggle online/offline status.
   const toggleAvailability = async () => {
     if (updating || loading) return;
 
@@ -112,6 +140,7 @@ const AvailabilityCard = () => {
     }
 
     const newStatus = !isOnline;
+
     setUpdating(true);
 
     try {
@@ -137,6 +166,7 @@ const AvailabilityCard = () => {
 
       setIsOnline(updatedStatus);
       notifyAvailabilityChange(updatedStatus);
+
     } catch (error) {
       console.error(
         "Update Availability Error:",
@@ -150,11 +180,13 @@ const AvailabilityCard = () => {
       );
 
       await fetchAvailability();
+
     } finally {
       setUpdating(false);
     }
   };
 
+  // Loading UI.
   if (loading) {
     return (
       <motion.div
@@ -164,7 +196,10 @@ const AvailabilityCard = () => {
       >
         <div className="availability-header">
           <div>
-            <h2 className="availability-title">Availability</h2>
+            <h2 className="availability-title">
+              Availability
+            </h2>
+
             <p className="availability-subtitle">
               Checking your working status...
             </p>
@@ -189,12 +224,17 @@ const AvailabilityCard = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       className={`availability-card ${
-        isOnline ? "availability-online" : "availability-offline"
+        isOnline
+          ? "availability-online"
+          : "availability-offline"
       }`}
     >
       <div className="availability-header">
         <div>
-          <h2 className="availability-title">Availability</h2>
+          <h2 className="availability-title">
+            Availability
+          </h2>
+
           <p className="availability-subtitle">
             Control your working status.
           </p>
@@ -216,7 +256,9 @@ const AvailabilityCard = () => {
       <div className="status-card">
         <div className="status-header">
           <div>
-            <p className="status-label">Current Status</p>
+            <p className="status-label">
+              Current Status
+            </p>
 
             <div className="status-value-row">
               <span
@@ -249,20 +291,31 @@ const AvailabilityCard = () => {
 
       <div className="availability-details">
         <div className="detail-row">
-          <span className="detail-label">Working Hours</span>
+          <span className="detail-label">
+            Working Hours
+          </span>
+
           <strong>09:00 AM - 08:00 PM</strong>
         </div>
 
         <div className="detail-row">
-          <span className="detail-label">Break Time</span>
+          <span className="detail-label">
+            Break Time
+          </span>
+
           <strong>01:00 PM - 02:00 PM</strong>
         </div>
 
         <div className="detail-row">
-          <span className="detail-label">Today's Availability</span>
+          <span className="detail-label">
+            Today's Availability
+          </span>
+
           <strong
             className={
-              isOnline ? "available-text" : "unavailable-text"
+              isOnline
+                ? "available-text"
+                : "unavailable-text"
             }
           >
             {isOnline ? "Available" : "Unavailable"}

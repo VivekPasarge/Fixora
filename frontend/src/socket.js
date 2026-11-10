@@ -2,7 +2,13 @@ import { io } from "socket.io-client";
 
 const socket = io("https://fixora-2.onrender.com", {
   transports: ["websocket", "polling"],
-  autoConnect: true,
+  autoConnect: false,
+
+  auth: (callback) => {
+    const token = localStorage.getItem("token");
+    callback({ token });
+  },
+
   reconnection: true,
   reconnectionAttempts: Infinity,
   reconnectionDelay: 1000,
@@ -10,15 +16,15 @@ const socket = io("https://fixora-2.onrender.com", {
 });
 
 socket.on("connect", () => {
-  console.log("🟢 Socket connected:", socket.id);
+  console.log("Socket connected:", socket.id);
 });
 
 socket.on("disconnect", (reason) => {
-  console.log("🔴 Socket disconnected:", reason);
+  console.log("Socket disconnected:", reason);
 });
 
 socket.on("connect_error", (error) => {
-  console.log("❌ Socket connection error:", error.message);
+  console.error("Socket connection error:", error.message);
 });
 
 export default socket;

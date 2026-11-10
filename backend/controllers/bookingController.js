@@ -10,7 +10,6 @@ const WalletTransaction = require("../models/WalletTransaction");
 // CREATE BOOKING
 // ==========================================================
 
-
 const createBooking = async (req, res) => {
   try {
     const {
@@ -289,7 +288,6 @@ const createBooking = async (req, res) => {
       booking,
       otp,
     });
-
   } catch (error) {
     console.error("Create Booking Error:", error);
 
@@ -566,7 +564,10 @@ const getTechnicianEarnings = async (req, res) => {
           }).format(new Date(date)) === todayString
         );
       })
-      .reduce((sum, booking) => sum + Number(booking.price || 0), 0);
+      .reduce(
+        (sum, booking) => sum + Number(booking.price || 0),
+        0
+      );
 
     return res.status(200).json({
       success: true,
@@ -600,11 +601,11 @@ const getBookingById = async (req, res) => {
       });
     }
 
-   const booking = await Booking.findById(id)
-  .select("+otp")
-  .populate("customer", "name email phone")
-  .populate("service", "name category price")
-  .populate("technician", "name email phone");
+    const booking = await Booking.findById(id)
+      .select("+otp")
+      .populate("customer", "name email phone")
+      .populate("service", "name category price")
+      .populate("technician", "name email phone");
 
     if (!booking) {
       return res.status(404).json({
@@ -676,7 +677,7 @@ const acceptBooking = async (req, res) => {
 
     if (
       technician.isAvailable === false ||
-      technician.availability === false
+      technician.availability === "Unavailable"
     ) {
       return res.status(403).json({
         success: false,
@@ -847,10 +848,6 @@ const updateBookingStatus = async (req, res) => {
 };
 
 // ==========================================================
-// VERIFY BOOKING OTP
-// ==========================================================
-
-// ==========================================================
 // VERIFY BOOKING OTP - ASSIGNED TECHNICIAN
 // ==========================================================
 
@@ -861,7 +858,6 @@ const verifyBookingOTP = async (req, res) => {
 
     const technicianId = req.user?._id || req.user?.id;
 
-    // Ensure the user is a technician.
     if (req.user?.role !== "technician") {
       return res.status(403).json({
         success: false,
@@ -869,7 +865,6 @@ const verifyBookingOTP = async (req, res) => {
       });
     }
 
-    // Validate booking ID.
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({
         success: false,
@@ -877,7 +872,6 @@ const verifyBookingOTP = async (req, res) => {
       });
     }
 
-    // Validate OTP input.
     if (!/^\d{4}$/.test(String(otp || ""))) {
       return res.status(400).json({
         success: false,
@@ -885,7 +879,6 @@ const verifyBookingOTP = async (req, res) => {
       });
     }
 
-    // Explicitly select OTP because the schema has select: false.
     const booking = await Booking.findById(id).select("+otp");
 
     if (!booking) {
@@ -895,7 +888,6 @@ const verifyBookingOTP = async (req, res) => {
       });
     }
 
-    // Only the technician assigned to this booking may verify it.
     if (
       !booking.technician ||
       booking.technician.toString() !== technicianId.toString()
@@ -906,7 +898,6 @@ const verifyBookingOTP = async (req, res) => {
       });
     }
 
-    // OTP verification is allowed only while the technician is on the way.
     if (booking.status !== "On The Way") {
       return res.status(400).json({
         success: false,
@@ -928,13 +919,10 @@ const verifyBookingOTP = async (req, res) => {
       });
     }
 
-    // Mark OTP as verified and move the booking to In Progress.
     booking.otpVerified = true;
     booking.otpVerifiedAt = new Date();
     booking.status = "In Progress";
     booking.trackingActive = true;
-
-    // Remove the OTP after successful verification.
     booking.otp = "";
 
     await booking.save();
@@ -963,8 +951,6 @@ const verifyBookingOTP = async (req, res) => {
 
 // ==========================================================
 // PAY FOR BOOKING
-// IMPORTANT: This endpoint must not mark an online payment
-// as paid without verified payment-provider confirmation.
 // ==========================================================
 
 const payForBooking = async (req, res) => {
@@ -1084,8 +1070,6 @@ const getPendingBookings = async (req, res) => {
 // GET ASSIGNED BOOKINGS - TECHNICIAN
 // ==========================================================
 
-
-
 const getAssignedBookings = async (req, res) => {
   try {
     const technicianId = req.user?._id || req.user?.id;
@@ -1121,7 +1105,6 @@ const getAssignedBookings = async (req, res) => {
     });
   }
 };
-
 
 // ==========================================================
 // CANCEL BOOKING - CUSTOMER
@@ -1211,6 +1194,7 @@ const technicianCancelJob = async (req, res) => {
       reason: req.body?.reason || "Cancelled by technician",
       cancelledAt: new Date(),
     };
+
     booking.technician = null;
     booking.status = "Pending";
     booking.trackingActive = false;
@@ -1372,7 +1356,8 @@ const getTechnicianAvailability = async (req, res) => {
     return res.status(200).json({
       success: true,
       isAvailable:
-        technician.isAvailable ?? technician.availability ?? true,
+        technician.isAvailable ??
+        (technician.availability === "Available"),
     });
   } catch (error) {
     console.error("Get Technician Availability Error:", error);
@@ -1393,6 +1378,13 @@ const updateTechnicianAvailability = async (req, res) => {
     const technicianId = req.user?._id || req.user?.id;
     const { isAvailable } = req.body;
 
+    if (!technicianId) {
+      return res.status(401).json({
+        success: false,
+        message: "Technician authentication required",
+      });
+    }
+
     if (typeof isAvailable !== "boolean") {
       return res.status(400).json({
         success: false,
@@ -1405,7 +1397,7 @@ const updateTechnicianAvailability = async (req, res) => {
       {
         $set: {
           isAvailable,
-          availability: isAvailable,
+          availability: isAvailable ? "Available" : "Unavailable",
         },
       },
       {
@@ -1424,7 +1416,7 @@ const updateTechnicianAvailability = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Availability updated successfully",
-      isAvailable,
+      isAvailable: technician.isAvailable,
     });
   } catch (error) {
     console.error("Update Technician Availability Error:", error);
@@ -1439,7 +1431,6 @@ const updateTechnicianAvailability = async (req, res) => {
 // ==========================================================
 // REMOVE COMPLETED JOB
 // ==========================================================
-
 
 const removeCompletedJob = async (req, res) => {
   try {
@@ -1467,8 +1458,6 @@ const removeCompletedJob = async (req, res) => {
       });
     }
 
-    // Remove from the technician's assigned-job list.
-    // Keep the database record for earnings and booking history.
     booking.technicianRemoved = true;
     booking.technicianRemovedAt = new Date();
 
@@ -1488,7 +1477,6 @@ const removeCompletedJob = async (req, res) => {
     });
   }
 };
-
 
 // ==========================================================
 // GET BOOKED TIME SLOTS
@@ -1520,7 +1508,9 @@ const getBookedTimeSlots = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      bookedTimeSlots: bookings.map((booking) => booking.bookingTime),
+      bookedTimeSlots: bookings.map(
+        (booking) => booking.bookingTime
+      ),
     });
   } catch (error) {
     console.error("Get Booked Time Slots Error:", error);
@@ -1535,7 +1525,6 @@ const getBookedTimeSlots = async (req, res) => {
 // ==========================================================
 // MARK CASH RECEIVED
 // ==========================================================
-
 
 const markCashReceived = async (req, res) => {
   try {
@@ -1575,7 +1564,6 @@ const markCashReceived = async (req, res) => {
         });
       }
 
-      // Only COD bookings can use this endpoint.
       if (booking.paymentMethod !== "Cash on Service") {
         await session.abortTransaction();
 
@@ -1585,7 +1573,6 @@ const markCashReceived = async (req, res) => {
         });
       }
 
-      // Cash can only be recorded after service completion.
       if (booking.status !== "Completed") {
         await session.abortTransaction();
 
@@ -1596,7 +1583,6 @@ const markCashReceived = async (req, res) => {
         });
       }
 
-      // Prevent duplicate collection and wallet credits.
       if (booking.paymentStatus === "Paid") {
         await session.abortTransaction();
 
@@ -1608,7 +1594,6 @@ const markCashReceived = async (req, res) => {
 
       const cashCollectionTime = new Date();
 
-      // Record the actual COD collection.
       booking.paymentStatus = "Paid";
       booking.paidAt = cashCollectionTime;
       booking.cashReceivedAt = cashCollectionTime;
@@ -1616,7 +1601,6 @@ const markCashReceived = async (req, res) => {
 
       await booking.save({ session });
 
-      // Preserve the existing technician wallet transaction.
       await WalletTransaction.create(
         [
           {

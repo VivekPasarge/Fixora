@@ -12,8 +12,9 @@ import ReviewsCard from "../components/TechnicianDashboard/ReviewsCard";
 import WalletCard from "../components/TechnicianDashboard/WalletCard";
 import AvailableJobs from "../components/TechnicianDashboard/AvailableJobs";
 import AssignedJobs from "../components/TechnicianDashboard/AssignedJobs";
-
+//import TechnicianLocationTracker from "../../components/TechnicianDashboard/TechnicianLocationTracker";
 import "./TechnicianDashboard.css";
+import TechnicianLocationTracker from "../components/TechnicianDashboard/TechnicianLocationTracker";
 
 const TechnicianDashboard = () => {
   const location = useLocation();
@@ -92,7 +93,11 @@ const TechnicianDashboard = () => {
         style={{ scrollMarginTop: "100px" }}
       >
         <AssignedJobs />
+
+
       </section>
+
+      <TechnicianLocationTracker />
     </main>
   );
 };

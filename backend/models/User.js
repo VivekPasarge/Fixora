@@ -119,6 +119,28 @@ const userSchema = new mongoose.Schema(
       default: 10,
     },
 
+    // Technician's latest GPS location
+technicianLocation: {
+  latitude: {
+    type: Number,
+    min: -90,
+    max: 90,
+    default: null,
+  },
+
+  longitude: {
+    type: Number,
+    min: -180,
+    max: 180,
+    default: null,
+  },
+
+  updatedAt: {
+    type: Date,
+    default: null,
+  },
+},
+
     profilePhoto: {
       type: String,
       default: "",
@@ -174,10 +196,17 @@ const userSchema = new mongoose.Schema(
     // TECHNICIAN AVAILABILITY
     // ==========================================
 
-    availability: {
-      type: String,
-      default: "Available",
-    },
+    // Technician availability
+isAvailable: {
+  type: Boolean,
+  default: true,
+},
+
+// Legacy field retained for compatibility
+availability: {
+  type: String,
+  default: "Available",
+},
 
     // ==========================================
     // PROFILE COMPLETION

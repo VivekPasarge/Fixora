@@ -17,6 +17,7 @@ import {
 
 import Navbar from "../components/Navbar/Navbar";
 import api from "../api/axios";
+import socket from "../socket";
 import "./Login.css";
 
 const Login = () => {
@@ -45,7 +46,7 @@ const Login = () => {
     }));
   };
 
-  // Save session and redirect according to user role
+  // Save session, connect authenticated socket and redirect
   const saveSessionAndRedirect = (token, user, message = "") => {
     if (!token || !user) {
       throw new Error("Invalid login response from server.");
@@ -56,6 +57,15 @@ const Login = () => {
     // Save authentication details
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
+
+    // Connect Socket.IO using the JWT token
+    socket.auth = { token };
+
+    if (socket.connected) {
+      socket.disconnect();
+    }
+
+    socket.connect();
 
     const navigationState = message
       ? { authMessage: message }
@@ -94,6 +104,7 @@ const Login = () => {
     }
 
     // Invalid role
+    socket.disconnect();
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
@@ -103,7 +114,6 @@ const Login = () => {
   // Normal email and password login
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     setError("");
 
     const email = formData.email.trim().toLowerCase();
@@ -138,16 +148,14 @@ const Login = () => {
         user,
         response.data.message || "Login successful!"
       );
-
     } catch (err) {
       console.error("Login error:", err);
 
       setError(
         err.response?.data?.message ||
-        err.message ||
-        "Login failed. Please try again."
+          err.message ||
+          "Login failed. Please try again."
       );
-
     } finally {
       setLoading(false);
     }
@@ -191,7 +199,6 @@ const Login = () => {
         );
       }
 
-      // Redirect with the appropriate success message
       const successMessage =
         message ||
         (isNewUser
@@ -203,24 +210,17 @@ const Login = () => {
         user,
         successMessage
       );
-
     } catch (err) {
       console.error("Google login error:", err);
 
       setError(
         err.response?.data?.message ||
-        err.message ||
-        "Google login failed. Please try again."
+          err.message ||
+          "Google login failed. Please try again."
       );
-
     } finally {
       setGoogleLoading(false);
     }
-  };
-
-  // Google authentication failure
-  const handleGoogleError = () => {
-    setError("Google sign-in failed. Please try again.");
   };
 
   return (
@@ -232,7 +232,6 @@ const Login = () => {
           <div className="login-wrapper">
 
             {/* LEFT SECTION */}
-
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -256,7 +255,6 @@ const Login = () => {
                 </p>
 
                 <div className="feature-list">
-
                   <div className="feature-item">
                     <div className="feature-icon">
                       <FiShield size={26} />
@@ -289,13 +287,11 @@ const Login = () => {
                       <p>Premium home service experience.</p>
                     </div>
                   </div>
-
                 </div>
               </div>
             </motion.div>
 
             {/* RIGHT SECTION */}
-
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -306,7 +302,6 @@ const Login = () => {
                 className="login-form"
                 onSubmit={handleSubmit}
               >
-
                 <h2>Login</h2>
 
                 <p className="login-subtitle">
@@ -314,7 +309,6 @@ const Login = () => {
                 </p>
 
                 {/* ERROR MESSAGE */}
-
                 {error && (
                   <p
                     role="alert"
@@ -328,12 +322,10 @@ const Login = () => {
                 )}
 
                 {/* LOGIN TYPE */}
-
                 <div className="login-type">
                   <label>Login As</label>
 
                   <div className="login-type-options">
-
                     <button
                       type="button"
                       className={
@@ -372,12 +364,10 @@ const Login = () => {
                     >
                       Admin
                     </button>
-
                   </div>
                 </div>
 
                 {/* EMAIL */}
-
                 <div>
                   <label
                     className="form-label"
@@ -404,7 +394,6 @@ const Login = () => {
                 </div>
 
                 {/* PASSWORD */}
-
                 <div>
                   <label
                     className="form-label"
@@ -444,7 +433,6 @@ const Login = () => {
                 </div>
 
                 {/* REMEMBER AND FORGOT PASSWORD */}
-
                 <div className="remember-row">
                   <label className="remember-label">
                     <input type="checkbox" />
@@ -460,19 +448,16 @@ const Login = () => {
                 </div>
 
                 {/* LOGIN BUTTON */}
-
                 <button
                   type="submit"
                   className="login-btn"
                   disabled={loading || googleLoading}
                 >
                   {loading ? "Logging in..." : "Login"}
-
                   {!loading && <FiArrowRight />}
                 </button>
 
                 {/* GOOGLE LOGIN */}
-
                 {loginType === "customer" && (
                   <>
                     <div className="divider">
@@ -492,24 +477,25 @@ const Login = () => {
                       {googleLoading ? (
                         <p>Signing in with Google...</p>
                       ) : (
-                      <GoogleLogin
-  onSuccess={handleGoogleSuccess}
-  onError={() => {
-    setError("Google login failed. Please try again.");
-  }}
-  text="continue_with"
-  size="medium"
-  shape="rectangular"
-  theme="outline"
-  width="300"
-/>
+                        <GoogleLogin
+                          onSuccess={handleGoogleSuccess}
+                          onError={() => {
+                            setError(
+                              "Google login failed. Please try again."
+                            );
+                          }}
+                          text="continue_with"
+                          size="medium"
+                          shape="rectangular"
+                          theme="outline"
+                          width="300"
+                        />
                       )}
                     </div>
                   </>
                 )}
 
-                {/* TECHNICIAN AND ADMIN INFORMATION */}
-
+                {/* TECHNICIAN INFORMATION */}
                 {loginType === "technician" && (
                   <p
                     style={{
@@ -523,6 +509,7 @@ const Login = () => {
                   </p>
                 )}
 
+                {/* ADMIN INFORMATION */}
                 {loginType === "admin" && (
                   <p
                     style={{
@@ -537,11 +524,9 @@ const Login = () => {
                 )}
 
                 {/* REGISTER LINK */}
-
                 {loginType === "customer" && (
                   <p className="register-text">
                     Don't have an account?{" "}
-
                     <Link
                       to="/register"
                       className="register-link"
@@ -554,7 +539,6 @@ const Login = () => {
                 {loginType === "technician" && (
                   <p className="register-text">
                     Want to join Fixora?{" "}
-
                     <Link
                       to="/partner-register"
                       className="register-link"
@@ -563,7 +547,6 @@ const Login = () => {
                     </Link>
                   </p>
                 )}
-
               </form>
             </motion.div>
 
