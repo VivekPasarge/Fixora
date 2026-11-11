@@ -64,13 +64,66 @@ const getExperienceYears = (experience) => {
 // CHECK SERVICE EXPERTISE
 // ==========================================================
 
+
 const hasMatchingExpertise = (technician, service) => {
-  const serviceTerms = [
+  const aliases = {
+    painter: "painting",
+    paint: "painting",
+    painting: "painting",
+
+    plumber: "plumbing",
+    plumbing: "plumbing",
+
+    electrician: "electrical",
+    electric: "electrical",
+    electrical: "electrical",
+
+    cleaner: "cleaning",
+    clean: "cleaning",
+    cleaning: "cleaning",
+
+    carpenter: "carpentry",
+    carpentry: "carpentry",
+
+    appliance: "appliance",
+    "ac repair": "ac repair",
+  };
+
+  const getTypes = (values) => {
+    const result = new Set();
+
+    values.forEach((value) => {
+      const normalized = normalizeText(value);
+
+      Object.entries(aliases).forEach(([alias, type]) => {
+        const pattern = new RegExp(
+          `\\b${alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`
+        );
+
+        if (pattern.test(normalized)) {
+          result.add(type);
+        }
+      });
+    });
+
+    return result;
+  };
+
+  const serviceTypes = getTypes([
     service?.name,
     service?.category,
-  ]
-    .map(normalizeText)
-    .filter(Boolean);
+    ...(service?.includedServices || []),
+  ]);
+
+  const technicianTypes = getTypes([
+    technician?.profession,
+    technician?.skills,
+  ]);
+
+  return [...serviceTypes].some((type) =>
+    technicianTypes.has(type)
+  );
+};
 
   const technicianTerms = [
     technician?.profession,
