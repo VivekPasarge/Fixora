@@ -14,6 +14,7 @@ const MATCHING_WEIGHTS = {
 };
 
 const GPS_MAX_AGE_MINUTES = 5;
+const DEFAULT_WORKING_RADIUS = 10;
 
 // ==========================================================
 // DISTANCE CALCULATION: HAVERSINE FORMULA
@@ -51,7 +52,6 @@ const normalizeText = (value) => {
 
 // ==========================================================
 // EXPERIENCE CONVERSION
-// Examples: "5 Years", "2+ Years", "Fresher"
 // ==========================================================
 
 const getExperienceYears = (experience) => {
@@ -61,87 +61,86 @@ const getExperienceYears = (experience) => {
 };
 
 // ==========================================================
-// CHECK SERVICE EXPERTISE
+// SERVICE AND PROFESSION ALIASES
 // ==========================================================
 
+const SERVICE_ALIASES = {
+  painter: "painting",
+  paint: "painting",
+  painting: "painting",
 
-const hasMatchingExpertise = (technician, service) => {
-  const aliases = {
-    painter: "painting",
-    paint: "painting",
-    painting: "painting",
+  plumber: "plumbing",
+  plumbing: "plumbing",
 
-    plumber: "plumbing",
-    plumbing: "plumbing",
+  electrician: "electrical",
+  electric: "electrical",
+  electrical: "electrical",
 
-    electrician: "electrical",
-    electric: "electrical",
-    electrical: "electrical",
+  cleaner: "cleaning",
+  clean: "cleaning",
+  cleaning: "cleaning",
 
-    cleaner: "cleaning",
-    clean: "cleaning",
-    cleaning: "cleaning",
+  carpenter: "carpentry",
+  carpentry: "carpentry",
 
-    carpenter: "carpentry",
-    carpentry: "carpentry",
-
-    appliance: "appliance",
-    "ac repair": "ac repair",
-  };
-
-  const getTypes = (values) => {
-    const result = new Set();
-
-    values.forEach((value) => {
-      const normalized = normalizeText(value);
-
-      Object.entries(aliases).forEach(([alias, type]) => {
-        const pattern = new RegExp(
-          `\\b${alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`
-        );
-
-        if (pattern.test(normalized)) {
-          result.add(type);
-        }
-      });
-    });
-
-    return result;
-  };
-
-  const serviceTypes = getTypes([
-    service?.name,
-    service?.category,
-    ...(service?.includedServices || []),
-  ]);
-
-  const technicianTypes = getTypes([
-    technician?.profession,
-    technician?.skills,
-  ]);
-
-  return [...serviceTypes].some((type) =>
-    technicianTypes.has(type)
-  );
+  appliance: "appliance",
+  "ac repair": "ac repair",
 };
 
-  const technicianTerms = [
-    technician?.profession,
-    technician?.skills,
-  ]
+// ==========================================================
+// EXTRACT SERVICE TYPES FROM TEXT
+// ==========================================================
+
+const getServiceTypes = (values) => {
+  const result = new Set();
+
+  const allText = values
+    .flatMap((value) =>
+      Array.isArray(value) ? value : [value]
+    )
     .map(normalizeText)
     .filter(Boolean);
 
-  if (!serviceTerms.length || !technicianTerms.length) {
+  for (const text of allText) {
+    const paddedText = ` ${text} `;
+
+    for (const [alias, type] of Object.entries(SERVICE_ALIASES)) {
+      if (paddedText.includes(` ${alias} `)) {
+        result.add(type);
+      }
+    }
+  }
+
+  return result;
+};
+
+// ==========================================================
+// CHECK SERVICE EXPERTISE
+// ==========================================================
+
+const hasMatchingExpertise = (technician, service) => {
+  if (!technician || !service) {
     return false;
   }
 
-  return serviceTerms.some((serviceTerm) =>
-    technicianTerms.some(
-      (technicianTerm) =>
-        technicianTerm.includes(serviceTerm) ||
-        serviceTerm.includes(technicianTerm)
-    )
+  const serviceTypes = getServiceTypes([
+    service.name,
+    service.category,
+    service.description,
+    service.includedServices,
+  ]);
+
+  const technicianTypes = getServiceTypes([
+    technician.profession,
+    technician.skills,
+  ]);
+
+  if (!serviceTypes.size || !technicianTypes.size) {
+    return false;
+  }
+
+  return [...serviceTypes].some((type) =>
+    technicianTypes.has(type)
   );
 };
 
@@ -177,181 +176,228 @@ const getTechnicianRatings = async (technicianIds) => {
 };
 
 // ==========================================================
+// VALIDATE CUSTOMER LOCATION
+// ==========================================================
+
+const getValidLocation = (location) => {
+  if (!location) {
+    return null;
+  }
+
+  const latitude = Number(location.latitude);
+  const longitude = Number(location.longitude);
+
+  if (
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
+    return null;
+  }
+
+  return { latitude, longitude };
+};
+
+// ==========================================================
 // BUILD RANKED TECHNICIAN QUEUE
 // ==========================================================
 
 const buildTechnicianQueue = async (booking, service) => {
-  if (
-    !booking?.customerLocation?.latitude &&
-    booking?.customerLocation?.latitude !== 0
-  ) {
-    return [];
-  }
+  try {
+    console.log("\n========== FIXORA MATCHING STARTED ==========");
 
-  if (
-    booking?.customerLocation?.longitude == null
-  ) {
-    return [];
-  }
+    console.log("Booking ID:", booking?._id);
+    console.log("Service:", service?.name);
+    console.log("Category:", service?.category);
 
-  const customerLatitude = Number(
-    booking.customerLocation.latitude
-  );
-
-  const customerLongitude = Number(
-    booking.customerLocation.longitude
-  );
-
-  if (
-    !Number.isFinite(customerLatitude) ||
-    !Number.isFinite(customerLongitude) ||
-    customerLatitude < -90 ||
-    customerLatitude > 90 ||
-    customerLongitude < -180 ||
-    customerLongitude > 180
-  ) {
-    return [];
-  }
-
-  const gpsCutoff = new Date(
-    Date.now() - GPS_MAX_AGE_MINUTES * 60 * 1000
-  );
-
-  // Find online technicians with recent GPS locations.
-  const technicians = await User.find({
-    role: "technician",
-
-    $or: [
-      { isAvailable: true },
-      { availability: "Available" },
-    ],
-
-    "technicianLocation.latitude": {
-      $exists: true,
-      $ne: null,
-    },
-
-    "technicianLocation.longitude": {
-      $exists: true,
-      $ne: null,
-    },
-
-    "technicianLocation.updatedAt": {
-      $gte: gpsCutoff,
-    },
-  }).select(
-    "_id profession skills experience workingRadius isAvailable availability technicianLocation"
-  );
-
-  if (!technicians.length) {
-    return [];
-  }
-
-  // Get ratings for all matching technicians in one query.
-  const technicianIds = technicians.map(
-    (technician) => technician._id
-  );
-
-  const ratingMap = await getTechnicianRatings(
-    technicianIds
-  );
-
-  const rankedTechnicians = [];
-
-  for (const technician of technicians) {
-    const latitude = Number(
-      technician.technicianLocation?.latitude
-    );
-
-    const longitude = Number(
-      technician.technicianLocation?.longitude
-    );
-
-    if (
-      !Number.isFinite(latitude) ||
-      !Number.isFinite(longitude) ||
-      latitude < -90 ||
-      latitude > 90 ||
-      longitude < -180 ||
-      longitude > 180
-    ) {
-      continue;
+    if (!booking || !service) {
+      console.log("Matching stopped: Booking or service missing.");
+      return [];
     }
 
-    // Exclude technicians without matching expertise.
-    if (!hasMatchingExpertise(technician, service)) {
-      continue;
+    // Validate customer GPS.
+    const customerLocation = getValidLocation(
+      booking.customerLocation
+    );
+
+    if (!customerLocation) {
+      console.log("Matching stopped: Invalid customer GPS.");
+      return [];
     }
 
-    const distanceKm = calculateDistance(
-      customerLatitude,
-      customerLongitude,
-      latitude,
-      longitude
+    const { latitude: customerLatitude, longitude: customerLongitude } =
+      customerLocation;
+
+    // Recent GPS cutoff.
+    const gpsCutoff = new Date(
+      Date.now() - GPS_MAX_AGE_MINUTES * 60 * 1000
     );
 
-    const workingRadius = Math.max(
-      0,
-      Number(technician.workingRadius || 10)
+    // Find available technicians with recent GPS.
+    const technicians = await User.find({
+      role: "technician",
+
+      $or: [
+        { isAvailable: true },
+        { availability: "Available" },
+      ],
+
+      "technicianLocation.latitude": {
+        $exists: true,
+        $ne: null,
+      },
+
+      "technicianLocation.longitude": {
+        $exists: true,
+        $ne: null,
+      },
+
+      "technicianLocation.updatedAt": {
+        $gte: gpsCutoff,
+      },
+    }).select(
+      "_id profession skills experience workingRadius isAvailable availability technicianLocation"
     );
 
-    // Exclude technicians outside their working radius.
-    if (
-      workingRadius <= 0 ||
-      distanceKm > workingRadius
-    ) {
-      continue;
+    console.log(
+      "Available technicians found:",
+      technicians.length
+    );
+
+    if (!technicians.length) {
+      console.log("No available technicians with recent GPS.");
+      return [];
     }
 
-    // Distance score: closer technicians receive higher scores.
-    const distanceScore =
-      Math.max(
-        0,
-        1 - distanceKm / workingRadius
-      ) * 100;
-
-    // Expertise score: eligible matching technicians receive 100.
-    const expertiseScore = 100;
-
-    // Rating score: normalize rating to a percentage.
-    const averageRating =
-      ratingMap.get(technician._id.toString()) || 0;
-
-    const ratingScore = Math.min(
-      100,
-      Math.max(0, (averageRating / 5) * 100)
+    // Get technician ratings.
+    const technicianIds = technicians.map(
+      (technician) => technician._id
     );
 
-    // Experience score: 10 years or more receives 100.
-    const experienceYears = getExperienceYears(
-      technician.experience
+    const ratingMap = await getTechnicianRatings(
+      technicianIds
     );
 
-    const experienceScore = Math.min(
-      100,
-      (experienceYears / 10) * 100
+    const rankedTechnicians = [];
+
+    // Check every technician.
+    for (const technician of technicians) {
+      console.log("\nChecking technician:", technician._id);
+      console.log("Profession:", technician.profession);
+      console.log("Skills:", technician.skills);
+
+      // Validate technician GPS.
+      const technicianLocation = getValidLocation(
+        technician.technicianLocation
+      );
+
+      if (!technicianLocation) {
+        console.log("REJECTED: Invalid technician GPS.");
+        continue;
+      }
+
+      // Check profession and skills.
+      const expertiseMatches = hasMatchingExpertise(
+        technician,
+        service
+      );
+
+      if (!expertiseMatches) {
+        console.log("REJECTED: Service expertise mismatch.");
+        continue;
+      }
+
+      // Calculate distance.
+      const distanceKm = calculateDistance(
+        customerLatitude,
+        customerLongitude,
+        technicianLocation.latitude,
+        technicianLocation.longitude
+      );
+
+      // Validate working radius.
+      const configuredRadius = Number(
+        technician.workingRadius
+      );
+
+      const workingRadius = Number.isFinite(configuredRadius)
+        ? configuredRadius
+        : DEFAULT_WORKING_RADIUS;
+
+      if (workingRadius <= 0) {
+        console.log("REJECTED: Invalid working radius.");
+        continue;
+      }
+
+      if (distanceKm > workingRadius) {
+        console.log(
+          `REJECTED: Outside working radius. Distance: ${distanceKm.toFixed(2)} km`
+        );
+        continue;
+      }
+
+      // Distance score.
+      const distanceScore =
+        Math.max(0, 1 - distanceKm / workingRadius) * 100;
+
+      // Expertise score.
+      const expertiseScore = 100;
+
+      // Rating score.
+      const averageRating =
+        ratingMap.get(technician._id.toString()) || 0;
+
+      const ratingScore = Math.min(
+        100,
+        Math.max(0, (averageRating / 5) * 100)
+      );
+
+      // Experience score.
+      const experienceYears = getExperienceYears(
+        technician.experience
+      );
+
+      const experienceScore = Math.min(
+        100,
+        (experienceYears / 10) * 100
+      );
+
+      // Calculate final score.
+      const totalScore =
+        (distanceScore * MATCHING_WEIGHTS.distance) / 100 +
+        (expertiseScore * MATCHING_WEIGHTS.expertise) / 100 +
+        (ratingScore * MATCHING_WEIGHTS.rating) / 100 +
+        (experienceScore * MATCHING_WEIGHTS.experience) / 100;
+
+      rankedTechnicians.push({
+        technician: technician._id,
+        score: Number(totalScore.toFixed(2)),
+        distanceKm: Number(distanceKm.toFixed(2)),
+      });
+
+      console.log("ELIGIBLE TECHNICIAN");
+      console.log("Distance:", distanceKm.toFixed(2), "km");
+      console.log("Score:", totalScore.toFixed(2));
+    }
+
+    // Sort by highest score.
+    rankedTechnicians.sort(
+      (a, b) => b.score - a.score
     );
 
-    // Final weighted score.
-    const totalScore =
-      (distanceScore * MATCHING_WEIGHTS.distance) / 100 +
-      (expertiseScore * MATCHING_WEIGHTS.expertise) / 100 +
-      (ratingScore * MATCHING_WEIGHTS.rating) / 100 +
-      (experienceScore * MATCHING_WEIGHTS.experience) / 100;
+    console.log("\n========== MATCHING RESULTS ==========");
+    console.log("Eligible technicians:", rankedTechnicians.length);
+    console.log("Matching queue:", rankedTechnicians);
 
-    rankedTechnicians.push({
-      technician: technician._id,
-      score: Number(totalScore.toFixed(2)),
-      distanceKm: Number(distanceKm.toFixed(2)),
-    });
+    return rankedTechnicians;
+
+  } catch (error) {
+    console.error("TECHNICIAN MATCHING ERROR:", error);
+    throw error;
   }
-
-  // Highest matching score receives the first offer.
-  rankedTechnicians.sort(
-    (a, b) => b.score - a.score
-  );
-
-  return rankedTechnicians;
 };
 
 // ==========================================================
@@ -360,5 +406,6 @@ const buildTechnicianQueue = async (booking, service) => {
 
 module.exports = {
   calculateDistance,
+  hasMatchingExpertise,
   buildTechnicianQueue,
 };
