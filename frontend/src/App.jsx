@@ -92,6 +92,11 @@ function App() {
         element={<BecomePartner />}
       />
 
+      <Route
+  path="/partner-register"
+  element={<BecomePartner />}
+/>
+
       {/* AUTHENTICATION */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
