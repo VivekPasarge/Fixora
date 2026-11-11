@@ -1561,9 +1561,20 @@ const declineAvailableJob = async (req, res) => {
 // GET AVAILABLE JOBS
 // ==========================================================
 
+
 const getAvailableJobs = async (req, res) => {
   try {
+    // ==========================================
+    // GET LOGGED-IN TECHNICIAN
+    // ==========================================
+
     const technicianId = req.user?._id || req.user?.id;
+
+    console.log("\n========== TECHNICIAN CHECK ==========");
+    console.log("Technician ID:", technicianId?.toString());
+    console.log("Technician Email:", req.user?.email);
+    console.log("Technician Name:", req.user?.name);
+    console.log("======================================");
 
     if (!technicianId) {
       return res.status(401).json({
@@ -1571,15 +1582,6 @@ const getAvailableJobs = async (req, res) => {
         message: "Technician authentication required",
       });
     }
-
-    console.log(
-      "\n========== AVAILABLE JOBS DEBUG =========="
-    );
-
-    console.log(
-      "Logged-in Technician ID:",
-      technicianId.toString()
-    );
 
     const now = new Date();
 
@@ -1624,27 +1626,39 @@ const getAvailableJobs = async (req, res) => {
     // DEBUG INFORMATION
     // ==========================================
 
+    console.log("\n========== AVAILABLE JOBS DEBUG ==========");
     console.log(
-      "Bookings offered to this technician:",
-      bookings.length
+      "Logged-in Technician ID:",
+      technicianId.toString()
     );
 
-    console.log(
-      "Offer details:",
-      bookings.map((booking) => ({
-        bookingId: booking.bookingId,
-        bookingMongoId: booking._id.toString(),
-        currentOfferTechnician:
-          booking.currentOfferTechnician?.toString(),
-        currentOfferExpiresAt:
-          booking.currentOfferExpiresAt,
-        matchingStatus: booking.matchingStatus,
-      }))
-    );
+    console.log("Bookings returned:", bookings.length);
 
-    console.log(
-      "==========================================\n"
-    );
+    bookings.forEach((booking) => {
+      console.log("Booking ID:", booking.bookingId);
+      console.log(
+        "Booking MongoDB ID:",
+        booking._id.toString()
+      );
+      console.log(
+        "Current Offer Technician:",
+        booking.currentOfferTechnician?.toString()
+      );
+      console.log(
+        "Offer Expiry:",
+        booking.currentOfferExpiresAt
+      );
+      console.log(
+        "Matching Status:",
+        booking.matchingStatus
+      );
+    });
+
+    console.log("==========================================\n");
+
+    // ==========================================
+    // SEND RESPONSE
+    // ==========================================
 
     return res.status(200).json({
       success: true,
