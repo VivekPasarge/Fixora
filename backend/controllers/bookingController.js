@@ -6,6 +6,165 @@ const Review = require("../models/reviewModel");
 const User = require("../models/User");
 const WalletTransaction = require("../models/WalletTransaction");
 
+const {
+  buildTechnicianQueue,
+} = require("../services/technicianMatching");
+
+// Move an expired offer to the next technician.
+const advanceExpiredOffer = async (bookingId) => {
+  const now = new Date();
+
+  const booking = await Booking.findById(bookingId).select(
+    "status technician matchingQueue matchingCurrentIndex currentOfferTechnician currentOfferExpiresAt"
+  );
+
+  if (
+    !booking ||
+    booking.status !== "Pending" ||
+    booking.technician ||
+    !booking.currentOfferTechnician ||
+    !booking.currentOfferExpiresAt ||
+    booking.currentOfferExpiresAt > now
+  ) {
+    return false;
+  }
+
+  const oldIndex = Number(booking.matchingCurrentIndex || 0);
+  const oldTechnician = booking.currentOfferTechnician;
+
+  const moved = await Booking.findOneAndUpdate(
+    {
+      _id: bookingId,
+      status: "Pending",
+      technician: null,
+      matchingCurrentIndex: oldIndex,
+      currentOfferTechnician: oldTechnician,
+      currentOfferExpiresAt: { $lte: now },
+    },
+    {
+      $set: {
+        matchingCurrentIndex: oldIndex + 1,
+        currentOfferTechnician: null,
+        currentOfferExpiresAt: null,
+        matchingLastUpdatedAt: now,
+      },
+    },
+    { new: true }
+  );
+
+  if (!moved) return false;
+
+  await assignNextTechnician(bookingId);
+
+  return true;
+};
+
+// Assign exactly one technician from the ranked queue.
+const assignNextTechnician = async (bookingId) => {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const booking = await Booking.findById(bookingId).select(
+      "status technician matchingQueue matchingCurrentIndex currentOfferTechnician declinedTechnicians"
+    );
+
+    if (!booking || booking.status !== "Pending" || booking.technician) {
+      return;
+    }
+
+    if (booking.currentOfferTechnician) return;
+
+    const queue = Array.isArray(booking.matchingQueue)
+      ? booking.matchingQueue
+      : [];
+
+    let nextIndex = Number(booking.matchingCurrentIndex || 0);
+
+    const declinedIds = new Set(
+      (booking.declinedTechnicians || []).map((id) =>
+        id.toString()
+      )
+    );
+
+    while (
+      nextIndex < queue.length &&
+      declinedIds.has(queue[nextIndex].technician?.toString())
+    ) {
+      nextIndex += 1;
+    }
+
+    const now = new Date();
+
+    if (nextIndex >= queue.length) {
+      await Booking.updateOne(
+        {
+          _id: bookingId,
+          status: "Pending",
+          technician: null,
+          matchingCurrentIndex: booking.matchingCurrentIndex,
+          currentOfferTechnician: null,
+        },
+        {
+          $set: {
+            matchingCurrentIndex: nextIndex,
+            matchingStatus: "No Technician",
+            currentOfferTechnician: null,
+            currentOfferExpiresAt: null,
+            matchingLastUpdatedAt: now,
+          },
+        }
+      );
+
+      return;
+    }
+
+    const nextTechnician = queue[nextIndex]?.technician;
+
+    if (!nextTechnician) {
+      nextIndex += 1;
+
+      await Booking.updateOne(
+        {
+          _id: bookingId,
+          status: "Pending",
+          technician: null,
+          matchingCurrentIndex: booking.matchingCurrentIndex,
+          currentOfferTechnician: null,
+        },
+        {
+          $set: {
+            matchingCurrentIndex: nextIndex,
+          },
+        }
+      );
+
+      continue;
+    }
+
+    const offered = await Booking.findOneAndUpdate(
+      {
+        _id: bookingId,
+        status: "Pending",
+        technician: null,
+        matchingCurrentIndex: booking.matchingCurrentIndex,
+        currentOfferTechnician: null,
+      },
+      {
+        $set: {
+          matchingCurrentIndex: nextIndex,
+          matchingStatus: "Offering",
+          currentOfferTechnician: nextTechnician,
+          currentOfferExpiresAt: new Date(
+            now.getTime() + 30 * 1000
+          ),
+          matchingLastUpdatedAt: now,
+        },
+      },
+      { new: true }
+    );
+
+    if (offered) return;
+  }
+};
+
 // ==========================================================
 // CREATE BOOKING
 // ==========================================================
@@ -23,7 +182,13 @@ const createBooking = async (req, res) => {
 
     const customer = req.user?._id || req.user?.id;
 
-    if (!customer || !service || !address || !bookingDate || !bookingTime) {
+    if (
+      !customer ||
+      !service ||
+      !address ||
+      !bookingDate ||
+      !bookingTime
+    ) {
       return res.status(400).json({
         success: false,
         message: "Please fill all required fields",
@@ -37,7 +202,10 @@ const createBooking = async (req, res) => {
       });
     }
 
-    if (typeof address !== "string" || !address.trim()) {
+    if (
+      typeof address !== "string" ||
+      !address.trim()
+    ) {
       return res.status(400).json({
         success: false,
         message: "Please provide a valid address",
@@ -122,8 +290,7 @@ const createBooking = async (req, res) => {
       String(maxDate.getUTCMonth() + 1).padStart(2, "0"),
       String(maxDate.getUTCDate()).padStart(2, "0"),
     ].join("-");
-
-    if (normalizedBookingDate > maxBookingDateString) {
+        if (normalizedBookingDate > maxBookingDateString) {
       return res.status(400).json({
         success: false,
         message: "Bookings are allowed only for today and tomorrow.",
@@ -282,9 +449,38 @@ const createBooking = async (req, res) => {
 
     const booking = await Booking.create(bookingData);
 
+    // SMART TECHNICIAN MATCHING
+    const matchingQueue = await buildTechnicianQueue(
+      booking,
+      serviceData
+    );
+
+    booking.matchingQueue = matchingQueue;
+    booking.matchingCurrentIndex = 0;
+    booking.matchingLastUpdatedAt = new Date();
+
+    if (matchingQueue.length > 0) {
+      booking.matchingStatus = "Offering";
+      booking.currentOfferTechnician =
+        matchingQueue[0].technician;
+
+      booking.currentOfferExpiresAt = new Date(
+        Date.now() + 30 * 1000
+      );
+    } else {
+      booking.matchingStatus = "No Technician";
+      booking.currentOfferTechnician = null;
+      booking.currentOfferExpiresAt = null;
+    }
+
+    await booking.save();
+
     return res.status(201).json({
       success: true,
-      message: "Booking created successfully",
+      message:
+        booking.matchingStatus === "Offering"
+          ? "Booking created. A technician has received your request."
+          : "Booking created. No eligible technician is currently available.",
       booking,
       otp,
     });
@@ -685,17 +881,25 @@ const acceptBooking = async (req, res) => {
       });
     }
 
+    const now = new Date();
+
+    // Accept only if this technician has the active offer.
     const booking = await Booking.findOneAndUpdate(
       {
         _id: id,
         status: "Pending",
         technician: null,
-        declinedTechnicians: { $ne: technicianId },
+        currentOfferTechnician: technicianId,
+        currentOfferExpiresAt: { $gt: now },
       },
       {
         $set: {
           technician: technicianId,
           status: "Accepted",
+          matchingStatus: "Assigned",
+          currentOfferTechnician: null,
+          currentOfferExpiresAt: null,
+          matchingLastUpdatedAt: now,
         },
       },
       {
@@ -731,9 +935,23 @@ const acceptBooking = async (req, res) => {
         });
       }
 
+      if (
+        existingBooking.currentOfferTechnician?.toString() ===
+          technicianId.toString() &&
+        existingBooking.currentOfferExpiresAt &&
+        existingBooking.currentOfferExpiresAt <= now
+      ) {
+        await advanceExpiredOffer(id);
+
+        return res.status(409).json({
+          success: false,
+          message: "Your 30-second offer has expired. The next technician is being notified.",
+        });
+      }
+
       return res.status(409).json({
         success: false,
-        message: "You have already declined this booking",
+        message: "This booking is not currently offered to you.",
       });
     }
 
@@ -1036,7 +1254,6 @@ const getPaymentHistory = async (req, res) => {
     });
   }
 };
-
 // ==========================================================
 // GET PENDING BOOKINGS
 // ==========================================================
@@ -1143,6 +1360,10 @@ const cancelBooking = async (req, res) => {
 
     booking.status = "Cancelled";
     booking.trackingActive = false;
+    booking.matchingStatus = "Not Started";
+    booking.currentOfferTechnician = null;
+    booking.currentOfferExpiresAt = null;
+    booking.matchingLastUpdatedAt = new Date();
 
     await booking.save();
 
@@ -1170,6 +1391,13 @@ const technicianCancelJob = async (req, res) => {
     const { id } = req.params;
     const technicianId = req.user?._id || req.user?.id;
 
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking ID",
+      });
+    }
+
     const booking = await Booking.findOne({
       _id: id,
       technician: technicianId,
@@ -1195,16 +1423,37 @@ const technicianCancelJob = async (req, res) => {
       cancelledAt: new Date(),
     };
 
+    // Do not offer this job to the same technician again.
+    const alreadyDeclined = (booking.declinedTechnicians || []).some(
+      (value) => value.toString() === technicianId.toString()
+    );
+
+    if (!alreadyDeclined) {
+      booking.declinedTechnicians.push(technicianId);
+    }
+
     booking.technician = null;
     booking.status = "Pending";
     booking.trackingActive = false;
+    booking.currentOfferTechnician = null;
+    booking.currentOfferExpiresAt = null;
+    booking.matchingStatus = "Searching";
+    booking.matchingLastUpdatedAt = new Date();
 
     await booking.save();
 
+    // Continue with the next eligible technician.
+    await assignNextTechnician(booking._id);
+
+    const updatedBooking = await Booking.findById(id);
+
     return res.status(200).json({
       success: true,
-      message: "Job released successfully",
-      booking,
+      message:
+        updatedBooking?.matchingStatus === "Offering"
+          ? "Job released and offered to the next technician"
+          : "Job released. No more eligible technicians are available.",
+      booking: updatedBooking,
     });
   } catch (error) {
     console.error("Technician Cancel Job Error:", error);
@@ -1225,35 +1474,73 @@ const declineAvailableJob = async (req, res) => {
     const { id } = req.params;
     const technicianId = req.user?._id || req.user?.id;
 
-    const booking = await Booking.findOne({
-      _id: id,
-      status: "Pending",
-      technician: null,
-    });
-
-    if (!booking) {
-      return res.status(404).json({
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
         success: false,
-        message: "Available booking not found",
+        message: "Invalid booking ID",
       });
     }
 
-    const declined = (booking.declinedTechnicians || []).some(
-      (value) => value.toString() === technicianId.toString()
+    const now = new Date();
+
+    // Only the technician currently receiving the offer can decline.
+    const booking = await Booking.findOneAndUpdate(
+      {
+        _id: id,
+        status: "Pending",
+        technician: null,
+        currentOfferTechnician: technicianId,
+        currentOfferExpiresAt: { $gt: now },
+      },
+      {
+        $addToSet: {
+          declinedTechnicians: technicianId,
+        },
+        $set: {
+          currentOfferTechnician: null,
+          currentOfferExpiresAt: null,
+          matchingStatus: "Searching",
+          matchingLastUpdatedAt: now,
+        },
+      },
+      { new: true }
     );
 
-    if (!declined) {
-      booking.declinedTechnicians = [
-        ...(booking.declinedTechnicians || []),
-        technicianId,
-      ];
+    if (!booking) {
+      const existingBooking = await Booking.findById(id);
 
-      await booking.save();
+      if (!existingBooking) {
+        return res.status(404).json({
+          success: false,
+          message: "Booking not found",
+        });
+      }
+
+      if (
+        existingBooking.currentOfferTechnician?.toString() ===
+          technicianId.toString() &&
+        existingBooking.currentOfferExpiresAt &&
+        existingBooking.currentOfferExpiresAt <= now
+      ) {
+        await advanceExpiredOffer(id);
+
+        return res.status(409).json({
+          success: false,
+          message: "Your 30-second offer has expired.",
+        });
+      }
+
+      return res.status(409).json({
+        success: false,
+        message: "This booking is not currently offered to you.",
+      });
     }
+
+    await assignNextTechnician(id);
 
     return res.status(200).json({
       success: true,
-      message: "Job declined successfully",
+      message: "Job declined. The next technician is being notified.",
     });
   } catch (error) {
     console.error("Decline Available Job Error:", error);
@@ -1266,6 +1553,11 @@ const declineAvailableJob = async (req, res) => {
 };
 
 // ==========================================================
+// GET AVAILABLE JOBS - TECHNICIAN
+// ==========================================================
+
+
+// ==========================================================
 // GET AVAILABLE JOBS
 // ==========================================================
 
@@ -1273,22 +1565,98 @@ const getAvailableJobs = async (req, res) => {
   try {
     const technicianId = req.user?._id || req.user?.id;
 
+    if (!technicianId) {
+      return res.status(401).json({
+        success: false,
+        message: "Technician authentication required",
+      });
+    }
+
+    console.log(
+      "\n========== AVAILABLE JOBS DEBUG =========="
+    );
+
+    console.log(
+      "Logged-in Technician ID:",
+      technicianId.toString()
+    );
+
+    const now = new Date();
+
+    // ==========================================
+    // PROCESS EXPIRED OFFERS
+    // ==========================================
+
+    const expiredBookings = await Booking.find({
+      status: "Pending",
+      technician: null,
+      currentOfferTechnician: { $ne: null },
+      currentOfferExpiresAt: { $lte: now },
+    }).select("_id bookingId");
+
+    for (const expiredBooking of expiredBookings) {
+      try {
+        await advanceExpiredOffer(expiredBooking._id);
+      } catch (error) {
+        console.error(
+          "Failed to advance expired offer:",
+          expiredBooking.bookingId,
+          error.message
+        );
+      }
+    }
+
+    // ==========================================
+    // FETCH ONLY THIS TECHNICIAN'S OFFER
+    // ==========================================
+
     const bookings = await Booking.find({
       status: "Pending",
       technician: null,
-      declinedTechnicians: { $ne: technicianId },
+      currentOfferTechnician: technicianId,
+      currentOfferExpiresAt: { $gt: new Date() },
     })
       .populate("customer", "name phone")
       .populate("service", "name category price")
       .sort({ createdAt: -1 });
+
+    // ==========================================
+    // DEBUG INFORMATION
+    // ==========================================
+
+    console.log(
+      "Bookings offered to this technician:",
+      bookings.length
+    );
+
+    console.log(
+      "Offer details:",
+      bookings.map((booking) => ({
+        bookingId: booking.bookingId,
+        bookingMongoId: booking._id.toString(),
+        currentOfferTechnician:
+          booking.currentOfferTechnician?.toString(),
+        currentOfferExpiresAt:
+          booking.currentOfferExpiresAt,
+        matchingStatus: booking.matchingStatus,
+      }))
+    );
+
+    console.log(
+      "==========================================\n"
+    );
 
     return res.status(200).json({
       success: true,
       count: bookings.length,
       bookings,
     });
+
   } catch (error) {
-    console.error("Get Available Jobs Error:", error);
+    console.error(
+      "Get Available Jobs Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
@@ -1296,6 +1664,7 @@ const getAvailableJobs = async (req, res) => {
     });
   }
 };
+
 
 // ==========================================================
 // GET ACTIVE BOOKING
@@ -1306,26 +1675,54 @@ const getActiveBooking = async (req, res) => {
     const userId = req.user?._id || req.user?.id;
     const role = req.user?.role;
 
-    const filter =
-      role === "technician"
-        ? { technician: userId }
-        : { customer: userId };
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
+    let filter;
+
+    if (role === "technician") {
+      filter = {
+        technician: userId,
+      };
+    } else if (role === "customer") {
+      filter = {
+        customer: userId,
+      };
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized role",
+      });
+    }
 
     filter.status = {
-      $in: ["Accepted", "On The Way", "In Progress"],
+      $in: [
+        "Accepted",
+        "On The Way",
+        "In Progress",
+      ],
     };
 
     const booking = await Booking.findOne(filter)
       .populate("customer", "name phone")
       .populate("technician", "name phone")
-      .populate("service", "name category price");
+      .populate("service", "name category price")
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
       booking,
     });
+
   } catch (error) {
-    console.error("Get Active Booking Error:", error);
+    console.error(
+      "Get Active Booking Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
@@ -1334,6 +1731,7 @@ const getActiveBooking = async (req, res) => {
   }
 };
 
+
 // ==========================================================
 // GET TECHNICIAN AVAILABILITY
 // ==========================================================
@@ -1341,6 +1739,8 @@ const getActiveBooking = async (req, res) => {
 const getTechnicianAvailability = async (req, res) => {
   try {
     const technicianId = req.user?._id || req.user?.id;
+
+    console.log("LOGGED-IN TECHNICIAN ID:", technicianId);
 
     const technician = await User.findById(technicianId).select(
       "isAvailable availability"
@@ -1640,7 +2040,8 @@ const markCashReceived = async (req, res) => {
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
-        message: "A wallet transaction already exists for this booking",
+        message:
+          "A wallet transaction already exists for this booking",
       });
     }
 
@@ -1650,12 +2051,36 @@ const markCashReceived = async (req, res) => {
     });
   }
 };
+// ==========================================================
+// PROCESS EXPIRED TECHNICIAN OFFERS
+// ==========================================================
 
+const processExpiredOffers = async () => {
+  if (mongoose.connection.readyState !== 1) {
+    return;
+  }
+
+  const now = new Date();
+
+  const expiredBookings = await Booking.find({
+    status: "Pending",
+    technician: null,
+    currentOfferTechnician: { $ne: null },
+    currentOfferExpiresAt: { $lte: now },
+  })
+    .select("_id")
+    .limit(100);
+
+  for (const booking of expiredBookings) {
+    await advanceExpiredOffer(booking._id);
+  }
+};
 // ==========================================================
 // EXPORT CONTROLLER FUNCTIONS
 // ==========================================================
 
 module.exports = {
+  // Keep all your existing exports.
   createBooking,
   getAllBookings,
   getMyBookings,
@@ -1681,4 +2106,6 @@ module.exports = {
   removeCompletedJob,
   getBookedTimeSlots,
   markCashReceived,
+
+  processExpiredOffers,
 };

@@ -13,6 +13,61 @@ const bookingSchema = new mongoose.Schema(
     },
 
     // =====================================================
+    // SMART TECHNICIAN MATCHING
+    // =====================================================
+
+    matchingStatus: {
+      type: String,
+      enum: [
+        "Not Started",
+        "Searching",
+        "Offering",
+        "Assigned",
+        "No Technician",
+      ],
+      default: "Not Started",
+    },
+
+    matchingQueue: [
+      {
+        technician: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        score: {
+          type: Number,
+          default: 0,
+        },
+        distanceKm: {
+          type: Number,
+          default: null,
+        },
+      },
+    ],
+
+    matchingCurrentIndex: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    currentOfferTechnician: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    currentOfferExpiresAt: {
+      type: Date,
+      default: null,
+    },
+
+    matchingLastUpdatedAt: {
+      type: Date,
+      default: null,
+    },
+
+    // =====================================================
     // CUSTOMER
     // =====================================================
 
@@ -23,7 +78,7 @@ const bookingSchema = new mongoose.Schema(
     },
 
     // =====================================================
-    // CUSTOMER LOCATION (DESTINATION)
+    // CUSTOMER LOCATION
     // =====================================================
 
     customerLocation: {
@@ -33,7 +88,6 @@ const bookingSchema = new mongoose.Schema(
         max: 90,
         default: null,
       },
-
       longitude: {
         type: Number,
         min: -180,
@@ -78,12 +132,10 @@ const bookingSchema = new mongoose.Schema(
         ref: "User",
         default: null,
       },
-
       cancelledAt: {
         type: Date,
         default: null,
       },
-
       reason: {
         type: String,
         default: "",
@@ -271,12 +323,10 @@ const bookingSchema = new mongoose.Schema(
         type: Number,
         default: null,
       },
-
       longitude: {
         type: Number,
         default: null,
       },
-
       updatedAt: {
         type: Date,
         default: null,
@@ -297,8 +347,18 @@ const bookingSchema = new mongoose.Schema(
   }
 );
 
-// =========================================================
+// =====================================================
+// MATCHING INDEX
+// =====================================================
+
+bookingSchema.index({
+  status: 1,
+  matchingStatus: 1,
+  currentOfferExpiresAt: 1,
+});
+
+// =====================================================
 // MODEL
-// =========================================================
+// =====================================================
 
 module.exports = mongoose.model("Booking", bookingSchema);

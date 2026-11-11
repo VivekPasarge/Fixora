@@ -168,9 +168,7 @@ const AvailableJobs = () => {
         error
       );
 
-      if (!silent) {
-        setJobs([]);
-      }
+      setJobs([]);
 
     } finally {
 

@@ -10,7 +10,7 @@ const reviewSchema = new mongoose.Schema(
     },
     customer: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "User",  
       required: true,
     },
     technician: {
