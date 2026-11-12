@@ -502,3 +502,206 @@
     flex-direction: column;
   }
 }
+
+/* =========================================
+   RAPIDO-STYLE JOB OFFER POPUP
+========================================= */
+
+.job-offer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(8, 20, 40, 0.78);
+  backdrop-filter: blur(7px);
+}
+
+.job-offer-popup {
+  width: 100%;
+  max-width: 440px;
+  padding: 28px;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+  animation: jobOfferAppear 0.3s ease-out;
+}
+
+@keyframes jobOfferAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.job-offer-heading {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.job-offer-heading span {
+  display: inline-block;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.job-offer-heading h2 {
+  margin: 14px 0 6px;
+  color: #10213b;
+  font-size: 25px;
+  font-weight: 850;
+}
+
+.job-offer-heading p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.job-offer-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0;
+  padding: 17px;
+  border: 1px solid #fecaca;
+  border-radius: 16px;
+  background: #fff1f2;
+  color: #dc2626;
+}
+
+.job-offer-timer strong {
+  font-size: 32px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.job-offer-timer span {
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.job-offer-service {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.job-offer-service h3 {
+  margin: 0 0 7px;
+  color: #10213b;
+  font-size: 23px;
+  font-weight: 850;
+}
+
+.job-offer-service p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.job-offer-details {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding: 17px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.job-offer-detail {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  font-size: 13px;
+}
+
+.job-offer-detail span {
+  color: #64748b;
+}
+
+.job-offer-detail strong {
+  color: #17233b;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.job-offer-price {
+  color: #15803d !important;
+  font-size: 19px;
+}
+
+.job-offer-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.job-offer-actions button {
+  min-height: 49px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.job-offer-actions button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.job-offer-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.job-offer-decline {
+  border: 1px solid #fecaca;
+  background: #fff;
+  color: #dc2626;
+}
+
+.job-offer-accept {
+  border: 1px solid #16a34a;
+  background: #16a34a;
+  color: #fff;
+}
+
+.job-offer-expired {
+  padding: 15px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .job-offer-popup {
+    padding: 22px 18px;
+    border-radius: 19px;
+  }
+
+  .job-offer-heading h2 {
+    font-size: 22px;
+  }
+
+  .job-offer-actions {
+    grid-template-columns: 1fr;
+  }
+}

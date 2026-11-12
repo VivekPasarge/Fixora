@@ -179,6 +179,9 @@ const TECHNICIAN_RESPONSE_TIME = 30 * 1000;
 
 let matchingWorkerRunning = false;
 
+// Prevent sending the same offer repeatedly.
+const notifiedOfferKeys = new Set();
+
 // Assign the next technician from the saved queue.
 const assignNextTechnician = async (bookingId, expectedIndex) => {
   for (let attempt = 0; attempt < 10; attempt += 1) {
@@ -336,6 +339,69 @@ const processExpiredOffers = async () => {
   }
 };
 
+// ==========================================================
+// NOTIFY TECHNICIANS ABOUT ACTIVE JOB OFFERS
+// ==========================================================
+
+const notifyActiveOffers = async () => {
+  if (mongoose.connection.readyState !== 1) return;
+
+  const now = new Date();
+
+  const activeOffers = await Booking.find({
+    status: "Pending",
+    technician: null,
+    currentOfferTechnician: { $ne: null },
+    currentOfferExpiresAt: { $gt: now },
+  })
+    .select(
+      "_id service customer address bookingDate bookingTime price currentOfferTechnician currentOfferExpiresAt matchingStatus"
+    )
+    .populate("service", "name")
+    .populate("customer", "name phone")
+    .lean();
+
+  const activeKeys = new Set();
+
+  for (const booking of activeOffers) {
+    const technicianId = booking.currentOfferTechnician?.toString();
+    if (!technicianId) continue;
+
+    const offerKey = [
+      booking._id.toString(),
+      technicianId,
+      new Date(booking.currentOfferExpiresAt).getTime(),
+    ].join(":");
+
+    activeKeys.add(offerKey);
+    if (notifiedOfferKeys.has(offerKey)) continue;
+
+    notifiedOfferKeys.add(offerKey);
+
+    io.to(`user:${technicianId}`).emit("new-job-offer", {
+      booking: {
+        _id: booking._id,
+        service: booking.service,
+        customer: booking.customer,
+        address: booking.address,
+        bookingDate: booking.bookingDate,
+        bookingTime: booking.bookingTime,
+        price: booking.price,
+        currentOfferExpiresAt: booking.currentOfferExpiresAt,
+      },
+    });
+
+    console.log(
+      `New job offer notification sent for booking ${booking._id} to technician ${technicianId}`
+    );
+  }
+
+  for (const key of notifiedOfferKeys) {
+    if (!activeKeys.has(key)) notifiedOfferKeys.delete(key);
+  }
+};
+
+
 // Prevent overlapping worker executions.
 const runMatchingWorker = async () => {
   if (matchingWorkerRunning) return;
@@ -344,6 +410,7 @@ const runMatchingWorker = async () => {
 
   try {
     await processExpiredOffers();
+    await notifyActiveOffers();
   } catch (error) {
     console.error(
       "Technician Matching Worker Error:",

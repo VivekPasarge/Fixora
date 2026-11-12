@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const Booking = require("../models/Booking");
@@ -10,56 +11,12 @@ const {
   buildTechnicianQueue,
 } = require("../services/technicianMatching");
 
-// Move an expired offer to the next technician.
-const advanceExpiredOffer = async (bookingId) => {
-  const now = new Date();
+// ==========================================================
+// ASSIGN NEXT TECHNICIAN
+// Used when a technician explicitly declines or releases a job.
+// Offer timeouts are handled only by server.js.
+// ==========================================================
 
-  const booking = await Booking.findById(bookingId).select(
-    "status technician matchingQueue matchingCurrentIndex currentOfferTechnician currentOfferExpiresAt"
-  );
-
-  if (
-    !booking ||
-    booking.status !== "Pending" ||
-    booking.technician ||
-    !booking.currentOfferTechnician ||
-    !booking.currentOfferExpiresAt ||
-    booking.currentOfferExpiresAt > now
-  ) {
-    return false;
-  }
-
-  const oldIndex = Number(booking.matchingCurrentIndex || 0);
-  const oldTechnician = booking.currentOfferTechnician;
-
-  const moved = await Booking.findOneAndUpdate(
-    {
-      _id: bookingId,
-      status: "Pending",
-      technician: null,
-      matchingCurrentIndex: oldIndex,
-      currentOfferTechnician: oldTechnician,
-      currentOfferExpiresAt: { $lte: now },
-    },
-    {
-      $set: {
-        matchingCurrentIndex: oldIndex + 1,
-        currentOfferTechnician: null,
-        currentOfferExpiresAt: null,
-        matchingLastUpdatedAt: now,
-      },
-    },
-    { new: true }
-  );
-
-  if (!moved) return false;
-
-  await assignNextTechnician(bookingId);
-
-  return true;
-};
-
-// Assign exactly one technician from the ranked queue.
 const assignNextTechnician = async (bookingId) => {
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const booking = await Booking.findById(bookingId).select(
@@ -70,7 +27,10 @@ const assignNextTechnician = async (bookingId) => {
       return;
     }
 
-    if (booking.currentOfferTechnician) return;
+    // Another technician already has the active offer.
+    if (booking.currentOfferTechnician) {
+      return;
+    }
 
     const queue = Array.isArray(booking.matchingQueue)
       ? booking.matchingQueue
@@ -79,11 +39,10 @@ const assignNextTechnician = async (bookingId) => {
     let nextIndex = Number(booking.matchingCurrentIndex || 0);
 
     const declinedIds = new Set(
-      (booking.declinedTechnicians || []).map((id) =>
-        id.toString()
-      )
+      (booking.declinedTechnicians || []).map((id) => id.toString())
     );
 
+    // Skip technicians who have already declined this booking.
     while (
       nextIndex < queue.length &&
       declinedIds.has(queue[nextIndex].technician?.toString())
@@ -93,6 +52,7 @@ const assignNextTechnician = async (bookingId) => {
 
     const now = new Date();
 
+    // No more eligible technicians.
     if (nextIndex >= queue.length) {
       await Booking.updateOne(
         {
@@ -118,10 +78,9 @@ const assignNextTechnician = async (bookingId) => {
 
     const nextTechnician = queue[nextIndex]?.technician;
 
+    // Skip invalid queue entries safely.
     if (!nextTechnician) {
-      nextIndex += 1;
-
-      await Booking.updateOne(
+      const skipped = await Booking.updateOne(
         {
           _id: bookingId,
           status: "Pending",
@@ -131,14 +90,20 @@ const assignNextTechnician = async (bookingId) => {
         },
         {
           $set: {
-            matchingCurrentIndex: nextIndex,
+            matchingCurrentIndex: nextIndex + 1,
+            matchingLastUpdatedAt: now,
           },
         }
       );
 
+      if (skipped.modifiedCount === 0) {
+        return;
+      }
+
       continue;
     }
 
+    // Only one request can successfully create the next offer.
     const offered = await Booking.findOneAndUpdate(
       {
         _id: bookingId,
@@ -152,16 +117,18 @@ const assignNextTechnician = async (bookingId) => {
           matchingCurrentIndex: nextIndex,
           matchingStatus: "Offering",
           currentOfferTechnician: nextTechnician,
-          currentOfferExpiresAt: new Date(
-            now.getTime() + 30 * 1000
-          ),
+          currentOfferExpiresAt: new Date(now.getTime() + 30 * 1000),
           matchingLastUpdatedAt: now,
         },
       },
       { new: true }
     );
 
-    if (offered) return;
+    if (offered) {
+      return;
+    }
+
+    return;
   }
 };
 
@@ -202,10 +169,7 @@ const createBooking = async (req, res) => {
       });
     }
 
-    if (
-      typeof address !== "string" ||
-      !address.trim()
-    ) {
+    if (typeof address !== "string" || !address.trim()) {
       return res.status(400).json({
         success: false,
         message: "Please provide a valid address",
@@ -290,7 +254,8 @@ const createBooking = async (req, res) => {
       String(maxDate.getUTCMonth() + 1).padStart(2, "0"),
       String(maxDate.getUTCDate()).padStart(2, "0"),
     ].join("-");
-        if (normalizedBookingDate > maxBookingDateString) {
+
+    if (normalizedBookingDate > maxBookingDateString) {
       return res.status(400).json({
         success: false,
         message: "Bookings are allowed only for today and tomorrow.",
@@ -941,11 +906,10 @@ const acceptBooking = async (req, res) => {
         existingBooking.currentOfferExpiresAt &&
         existingBooking.currentOfferExpiresAt <= now
       ) {
-        await advanceExpiredOffer(id);
-
         return res.status(409).json({
           success: false,
-          message: "Your 30-second offer has expired. The next technician is being notified.",
+          message:
+            "Your 30-second offer has expired. The next technician will be notified.",
         });
       }
 
@@ -1254,6 +1218,7 @@ const getPaymentHistory = async (req, res) => {
     });
   }
 };
+
 // ==========================================================
 // GET PENDING BOOKINGS
 // ==========================================================
@@ -1522,8 +1487,6 @@ const declineAvailableJob = async (req, res) => {
         existingBooking.currentOfferExpiresAt &&
         existingBooking.currentOfferExpiresAt <= now
       ) {
-        await advanceExpiredOffer(id);
-
         return res.status(409).json({
           success: false,
           message: "Your 30-second offer has expired.",
@@ -1556,18 +1519,8 @@ const declineAvailableJob = async (req, res) => {
 // GET AVAILABLE JOBS - TECHNICIAN
 // ==========================================================
 
-
-// ==========================================================
-// GET AVAILABLE JOBS
-// ==========================================================
-
-
 const getAvailableJobs = async (req, res) => {
   try {
-    // ==========================================
-    // GET LOGGED-IN TECHNICIAN
-    // ==========================================
-
     const technicianId = req.user?._id || req.user?.id;
 
     console.log("\n========== TECHNICIAN CHECK ==========");
@@ -1583,35 +1536,8 @@ const getAvailableJobs = async (req, res) => {
       });
     }
 
-    const now = new Date();
-
-    // ==========================================
-    // PROCESS EXPIRED OFFERS
-    // ==========================================
-
-    const expiredBookings = await Booking.find({
-      status: "Pending",
-      technician: null,
-      currentOfferTechnician: { $ne: null },
-      currentOfferExpiresAt: { $lte: now },
-    }).select("_id bookingId");
-
-    for (const expiredBooking of expiredBookings) {
-      try {
-        await advanceExpiredOffer(expiredBooking._id);
-      } catch (error) {
-        console.error(
-          "Failed to advance expired offer:",
-          expiredBooking.bookingId,
-          error.message
-        );
-      }
-    }
-
-    // ==========================================
-    // FETCH ONLY THIS TECHNICIAN'S OFFER
-    // ==========================================
-
+    // Timeout processing is handled by server.js only.
+    // Fetch only this technician's active offer.
     const bookings = await Booking.find({
       status: "Pending",
       technician: null,
@@ -1622,16 +1548,11 @@ const getAvailableJobs = async (req, res) => {
       .populate("service", "name category price")
       .sort({ createdAt: -1 });
 
-    // ==========================================
-    // DEBUG INFORMATION
-    // ==========================================
-
     console.log("\n========== AVAILABLE JOBS DEBUG ==========");
     console.log(
       "Logged-in Technician ID:",
       technicianId.toString()
     );
-
     console.log("Bookings returned:", bookings.length);
 
     bookings.forEach((booking) => {
@@ -1656,21 +1577,13 @@ const getAvailableJobs = async (req, res) => {
 
     console.log("==========================================\n");
 
-    // ==========================================
-    // SEND RESPONSE
-    // ==========================================
-
     return res.status(200).json({
       success: true,
       count: bookings.length,
       bookings,
     });
-
   } catch (error) {
-    console.error(
-      "Get Available Jobs Error:",
-      error
-    );
+    console.error("Get Available Jobs Error:", error);
 
     return res.status(500).json({
       success: false,
@@ -1678,7 +1591,6 @@ const getAvailableJobs = async (req, res) => {
     });
   }
 };
-
 
 // ==========================================================
 // GET ACTIVE BOOKING
@@ -1731,12 +1643,8 @@ const getActiveBooking = async (req, res) => {
       success: true,
       booking,
     });
-
   } catch (error) {
-    console.error(
-      "Get Active Booking Error:",
-      error
-    );
+    console.error("Get Active Booking Error:", error);
 
     return res.status(500).json({
       success: false,
@@ -1744,7 +1652,6 @@ const getActiveBooking = async (req, res) => {
     });
   }
 };
-
 
 // ==========================================================
 // GET TECHNICIAN AVAILABILITY
@@ -2065,36 +1972,12 @@ const markCashReceived = async (req, res) => {
     });
   }
 };
-// ==========================================================
-// PROCESS EXPIRED TECHNICIAN OFFERS
-// ==========================================================
 
-const processExpiredOffers = async () => {
-  if (mongoose.connection.readyState !== 1) {
-    return;
-  }
-
-  const now = new Date();
-
-  const expiredBookings = await Booking.find({
-    status: "Pending",
-    technician: null,
-    currentOfferTechnician: { $ne: null },
-    currentOfferExpiresAt: { $lte: now },
-  })
-    .select("_id")
-    .limit(100);
-
-  for (const booking of expiredBookings) {
-    await advanceExpiredOffer(booking._id);
-  }
-};
 // ==========================================================
 // EXPORT CONTROLLER FUNCTIONS
 // ==========================================================
 
 module.exports = {
-  // Keep all your existing exports.
   createBooking,
   getAllBookings,
   getMyBookings,
@@ -2120,6 +2003,4 @@ module.exports = {
   removeCompletedJob,
   getBookedTimeSlots,
   markCashReceived,
-
-  processExpiredOffers,
 };
