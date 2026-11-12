@@ -1,5 +1,5 @@
 
-const getOpenAIClient = require("../config/openai");
+const getGeminiClient = require("../config/gemini");
 
 const chatWithFixi = async (req, res) => {
   try {
@@ -14,7 +14,11 @@ const chatWithFixi = async (req, res) => {
     const { message, history = [] } = req.body;
 
     // Validate message
-    if (!message || typeof message !== "string" || !message.trim()) {
+    if (
+      !message ||
+      typeof message !== "string" ||
+      !message.trim()
+    ) {
       return res.status(400).json({
         success: false,
         message: "Please enter a message.",
@@ -48,21 +52,29 @@ const chatWithFixi = async (req, res) => {
       )
       .slice(-10);
 
-    // Prepare conversation for the AI
-    const conversation = [
-      ...validHistory,
-      {
-        role: "user",
-        content: message.trim(),
-      },
-    ];
+    // Gemini uses "model" instead of "assistant"
+    const conversation = validHistory.map((item) => ({
+      role: item.role === "assistant" ? "model" : "user",
+      parts: [{ text: item.content }],
+    }));
 
-    const openai = getOpenAIClient();
+    // Add current customer message
+    conversation.push({
+      role: "user",
+      parts: [{ text: message.trim() }],
+    });
 
-    const response = await openai.responses.create({
-      model: process.env.OPENAI_MODEL || "gpt-5.5",
+    // Initialize Gemini
+    const gemini = getGeminiClient();
 
-      instructions: `
+    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+
+    const response = await gemini.models.generateContent({
+      model,
+      contents: conversation,
+
+      config: {
+        systemInstruction: `
 You are Fixi, the official AI customer assistant of Fixora.
 
 ABOUT FIXORA:
@@ -99,13 +111,11 @@ RULES:
 
 Your name is Fixi. You represent Fixora.
 `,
-
-      input: conversation,
-      max_output_tokens: 350,
-      store: false,
+        maxOutputTokens: 350,
+      },
     });
 
-    const reply = response.output_text?.trim();
+    const reply = response.text?.trim();
 
     if (!reply) {
       return res.status(502).json({
@@ -119,7 +129,7 @@ Your name is Fixi. You represent Fixora.
       reply,
     });
   } catch (error) {
-    console.error("Fixi Chatbot Error:", error.message);
+    console.error("Fixi Gemini Error:", error.message);
 
     return res.status(500).json({
       success: false,
