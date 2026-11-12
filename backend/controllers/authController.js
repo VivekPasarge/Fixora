@@ -135,7 +135,24 @@ const login = async (req, res) => {
       });
     }
 
-    // Verify technician approval.
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Reject blocked accounts after verifying the password.
+    if (user.isActive === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked. Contact the administrator.",
+      });
+    }
+
+    // Verify technician approval after password verification.
     if (loginType === "technician") {
       const partner = await Partner.findOne({ email: user.email });
 
@@ -159,15 +176,6 @@ const login = async (req, res) => {
           message: "Your application has been rejected",
         });
       }
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
     }
 
     if (!process.env.JWT_SECRET) {
@@ -693,6 +701,14 @@ const googleLogin = async (req, res) => {
 
     let user = await User.findOne({ email });
     let isNewUser = false;
+
+    // Reject an existing blocked account before linking or creating a session.
+    if (user && user.isActive === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked. Contact the administrator.",
+      });
+    }
 
     if (user && user.role !== "customer") {
       return res.status(403).json({

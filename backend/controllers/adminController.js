@@ -1,3 +1,5 @@
+
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const Booking = require("../models/Booking");
 
@@ -29,9 +31,7 @@ const getAdminDashboardStats = async (req, res) => {
       Booking.countDocuments({ status: "In Progress" }),
     ]);
 
-    // ------------------------------------------------------
     // VERIFIED PAYMENT REVENUE
-    // ------------------------------------------------------
 
     const revenueResult = await Booking.aggregate([
       {
@@ -133,11 +133,129 @@ const getAdminDashboardStats = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch admin dashboard statistics",
-      error: error.message,
+    });
+  }
+};
+
+// ==========================================================
+// GET ALL CUSTOMERS AND TECHNICIANS
+// ==========================================================
+
+const getAdminUsers = async (req, res) => {
+  try {
+    const { role } = req.query;
+
+    const filter = {
+      role: { $in: ["customer", "technician"] },
+    };
+
+    if (role) {
+      if (!["customer", "technician"].includes(role)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid user role",
+        });
+      }
+
+      filter.role = role;
+    }
+
+    const users = await User.find(filter)
+      .select(
+        "_id name email phone role isActive profileCompleted createdAt"
+      )
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      count: users.length,
+      users,
+    });
+  } catch (error) {
+    console.error("ADMIN GET USERS ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+    });
+  }
+};
+
+// ==========================================================
+// BLOCK / UNBLOCK USER
+// ==========================================================
+
+const updateUserStatus = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { isActive } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
+
+    if (typeof isActive !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "isActive must be true or false",
+      });
+    }
+
+    // Prevent admin from blocking their own account.
+    if (req.user.id === userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You cannot change your own account status",
+      });
+    }
+
+    // Only customer and technician accounts can be managed here.
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: userId,
+        role: { $in: ["customer", "technician"] },
+      },
+      {
+        $set: { isActive },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).select(
+      "_id name email phone role isActive"
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Customer or technician account not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: isActive
+        ? "User account unblocked successfully"
+        : "User account blocked successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("ADMIN UPDATE USER STATUS ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update user account status",
     });
   }
 };
 
 module.exports = {
   getAdminDashboardStats,
+  getAdminUsers,
+  updateUserStatus,
 };

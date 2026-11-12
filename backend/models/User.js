@@ -91,6 +91,15 @@ const userSchema = new mongoose.Schema(
     },
 
     // ==========================================
+// ACCOUNT SECURITY STATUS
+// ==========================================
+
+isActive: {
+  type: Boolean,
+  default: true,
+},
+
+    // ==========================================
     // PROFESSIONAL INFORMATION
     // ==========================================
 

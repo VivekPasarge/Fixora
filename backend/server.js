@@ -1,8 +1,8 @@
-
 require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const http = require("http");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
@@ -25,6 +25,7 @@ const adminBookingRoutes = require("./routes/adminBookingRoutes");
 const adminWalletRoutes = require("./routes/adminWalletRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const walletRoutes = require("./routes/walletRoutes");
+const chatbotRoutes = require("./routes/chatbotRoutes");
 
 const app = express();
 
@@ -59,11 +60,17 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
+// Trust one proxy hop when deployed behind Render.
+app.set("trust proxy", 1);
+
+// Add standard HTTP security headers.
+app.use(helmet());
+
 app.use(cors(corsOptions));
 
 // BODY PARSING
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 
 // HEALTH CHECK
 app.get("/", (req, res) => {
@@ -85,6 +92,7 @@ app.use("/api/admin/wallet", adminWalletRoutes);
 
 app.use("/api/payment", paymentRoutes);
 app.use("/api/wallet", walletRoutes);
+app.use("/api/chatbot", chatbotRoutes);
 
 // HTTP SERVER
 const server = http.createServer(app);
@@ -128,11 +136,16 @@ io.use(async (socket, next) => {
     }
 
     const user = await User.findById(userId).select(
-      "_id name email role isAvailable availability"
+      "_id name email role isActive isAvailable availability"
     );
 
     if (!user) {
       return next(new Error("User account not found"));
+    }
+
+    // Reject blocked accounts from new socket connections.
+    if (user.isActive === false) {
+      return next(new Error("Your account has been blocked"));
     }
 
     socket.user = user;
@@ -247,8 +260,7 @@ const assignNextTechnician = async (bookingId, expectedIndex) => {
 
       return;
     }
-
-    const nextTechnician = queue[nextIndex].technician;
+        const nextTechnician = queue[nextIndex].technician;
 
     // Atomically offer the booking to one technician.
     const offered = await Booking.findOneAndUpdate(
@@ -365,6 +377,7 @@ const notifyActiveOffers = async () => {
 
   for (const booking of activeOffers) {
     const technicianId = booking.currentOfferTechnician?.toString();
+
     if (!technicianId) continue;
 
     const offerKey = [
@@ -374,6 +387,7 @@ const notifyActiveOffers = async () => {
     ].join(":");
 
     activeKeys.add(offerKey);
+
     if (notifiedOfferKeys.has(offerKey)) continue;
 
     notifiedOfferKeys.add(offerKey);
@@ -397,10 +411,11 @@ const notifyActiveOffers = async () => {
   }
 
   for (const key of notifiedOfferKeys) {
-    if (!activeKeys.has(key)) notifiedOfferKeys.delete(key);
+    if (!activeKeys.has(key)) {
+      notifiedOfferKeys.delete(key);
+    }
   }
 };
-
 
 // Prevent overlapping worker executions.
 const runMatchingWorker = async () => {
@@ -570,8 +585,7 @@ io.on("connection", (socket) => {
       console.error("Join Booking Error:", error.message);
     }
   });
-
-  // SEND TECHNICIAN LOCATION FOR ACTIVE BOOKING
+    // SEND TECHNICIAN LOCATION FOR ACTIVE BOOKING
   socket.on("send-location", async (data) => {
     try {
       if (user.role !== "technician") {
