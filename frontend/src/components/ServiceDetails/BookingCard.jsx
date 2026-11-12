@@ -1,5 +1,7 @@
+
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+
 import {
   FiClock,
   FiShield,
@@ -11,106 +13,97 @@ import {
 import "./BookingCard.css";
 
 const BookingCard = ({ service }) => {
+  const arrivalTime = service.arrivalTime || "Within 45 mins";
+  const experience = service.technician?.experience || "5+ Years";
+  const rating =
+    service.technician?.rating || service.rating || 4.8;
+
   return (
     <motion.aside
-      initial={{ opacity: 0, x: 40 }}
-      whileInView={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-      className="booking-card"
+      transition={{ duration: 0.4 }}
+      className="service-booking-card"
     >
       {/* Price */}
-      <p className="booking-subtitle">
-        Starting From
-      </p>
-
-      <h2 className="booking-price">
-        ₹{service.price}
-      </h2>
-
-      {/* Details */}
-      <div className="booking-details">
-
-        <div className="booking-detail-item">
-
-          <div className="booking-detail-left">
-            <FiClock className="detail-icon blue" />
-            <span>Arrival Time</span>
-          </div>
-
-          <span className="booking-detail-value">
-            {service.arrivalTime || "Within 45 mins"}
+      <div className="service-price-header">
+        <div>
+          <span className="service-price-label">
+            Starting from
           </span>
 
+          <h2 className="service-price-value">
+            ₹{service.price}
+          </h2>
         </div>
 
-        <div className="booking-detail-item">
+        <span className="service-price-tag">
+          Fixora Service
+        </span>
+      </div>
 
-          <div className="booking-detail-left">
-            <FiUser className="detail-icon blue" />
+      {/* Service information */}
+      <div className="service-booking-info">
+        <div className="service-info-row">
+          <div className="service-info-icon blue">
+            <FiClock />
+          </div>
+
+          <div className="service-info-text">
+            <span>Arrival time</span>
+            <strong>{arrivalTime}</strong>
+          </div>
+        </div>
+
+        <div className="service-info-row">
+          <div className="service-info-icon blue">
+            <FiUser />
+          </div>
+
+          <div className="service-info-text">
             <span>Experience</span>
+            <strong>{experience}</strong>
+          </div>
+        </div>
+
+        <div className="service-info-row">
+          <div className="service-info-icon yellow">
+            <FiStar />
           </div>
 
-          <span className="booking-detail-value">
-            {service.technician?.experience || "5+ Years"}
-          </span>
-
-        </div>
-
-        <div className="booking-detail-item">
-
-          <div className="booking-detail-left">
-            <FiStar className="detail-icon yellow" />
-            <span>Rating</span>
+          <div className="service-info-text">
+            <span>Customer rating</span>
+            <strong>{rating} / 5</strong>
           </div>
-
-          <span className="booking-detail-value">
-            {service.technician?.rating || service.rating || 4.8}
-          </span>
-
         </div>
-
       </div>
 
-      {/* Divider */}
-      <div className="booking-divider"></div>
-
-      {/* Benefits */}
-      <div className="booking-benefits">
-
-        <div className="benefit-item">
-          <FiCheckCircle className="detail-icon green" />
-          <span>Verified Professional</span>
+      {/* Trust information */}
+      <div className="service-booking-trust">
+        <div>
+          <FiCheckCircle />
+          <span>Verified professionals</span>
         </div>
 
-        <div className="benefit-item">
-          <FiCheckCircle className="detail-icon green" />
-          <span>Transparent Pricing</span>
+        <div>
+          <FiShield />
+          <span>Transparent pricing</span>
         </div>
-
-        <div className="benefit-item">
-          <FiShield className="detail-icon green" />
-          <span>30-Day Service Warranty</span>
-        </div>
-
       </div>
 
-      {/* Buttons */}
-      <div className="booking-buttons">
+      {/* Booking button */}
+      <Link
+        to={`/booking/${service._id}`}
+        className="service-booking-button"
+      >
+        Book This Service
+        <span aria-hidden="true">→</span>
+      </Link>
 
-        <Link
-          to={`/booking/${service._id}`}
-          className="book-btn"
-        >
-          Book Service Now
-        </Link>
-
-        <button className="support-btn">
-          Contact Support
-        </button>
-
-      </div>
-
+      <p className="service-booking-note">
+        Simple booking. Reliable home service.
+      </p>
     </motion.aside>
   );
 };

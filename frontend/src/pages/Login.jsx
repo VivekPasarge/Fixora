@@ -1,7 +1,11 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 
 import {
@@ -20,8 +24,71 @@ import api from "../api/axios";
 import socket from "../socket";
 import "./Login.css";
 
+// =========================================
+// GET EXISTING USER SESSION
+// =========================================
+
+const getStoredSession = () => {
+  try {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    if (!token || !storedUser) {
+      return null;
+    }
+
+    const user = JSON.parse(storedUser);
+
+    if (!user?.role) {
+      return null;
+    }
+
+    return user;
+  } catch {
+    return null;
+  }
+};
+
+// =========================================
+// ROLE-BASED DASHBOARD PATH
+// =========================================
+
+const getDashboardPath = (user) => {
+  const role = String(user?.role || "").toLowerCase();
+
+  switch (role) {
+    case "customer":
+      return "/customer-dashboard";
+
+    case "technician":
+      return user.profileCompleted
+        ? "/technician-dashboard"
+        : "/complete-profile";
+
+    case "admin":
+      return "/admin-dashboard";
+
+    default:
+      return "/";
+  }
+};
+
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Welcome page can explicitly request the login screen.
+  const forceLogin = location.state?.forceLogin === true;
+
+  // =========================================
+  // EXISTING SESSION
+  // =========================================
+
+  const [existingUser] = useState(getStoredSession);
+
+  // =========================================
+  // FORM STATES
+  // =========================================
 
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState("customer");
@@ -36,7 +103,22 @@ const Login = () => {
     password: "",
   });
 
-  // Handle input changes
+  // =========================================
+  // REDIRECT ALREADY LOGGED-IN USER
+  // =========================================
+
+  useEffect(() => {
+    if (existingUser && !forceLogin) {
+      navigate(getDashboardPath(existingUser), {
+        replace: true,
+      });
+    }
+  }, [existingUser, forceLogin, navigate]);
+
+  // =========================================
+  // HANDLE INPUT CHANGES
+  // =========================================
+
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -46,19 +128,24 @@ const Login = () => {
     }));
   };
 
-  // Save session, connect authenticated socket and redirect
-  const saveSessionAndRedirect = (token, user, message = "") => {
+  // =========================================
+  // SAVE SESSION AND REDIRECT
+  // =========================================
+
+  const saveSessionAndRedirect = (
+    token,
+    user,
+    message = ""
+  ) => {
     if (!token || !user) {
       throw new Error("Invalid login response from server.");
     }
-
-    const role = String(user.role || "").toLowerCase();
 
     // Save authentication details
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
 
-    // Connect Socket.IO using the JWT token
+    // Connect authenticated Socket.IO
     socket.auth = { token };
 
     if (socket.connected) {
@@ -71,47 +158,28 @@ const Login = () => {
       ? { authMessage: message }
       : {};
 
-    // Admin dashboard
-    if (role === "admin") {
-      navigate("/admin", {
-        replace: true,
-        state: navigationState,
-      });
-      return;
+    // Navigate according to role
+    const dashboardPath = getDashboardPath(user);
+
+    if (dashboardPath === "/") {
+      socket.disconnect();
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      throw new Error("Your account role is not recognized.");
     }
 
-    // Technician dashboard
-    if (role === "technician") {
-      navigate(
-        user.profileCompleted
-          ? "/technician-home"
-          : "/complete-profile",
-        {
-          replace: true,
-          state: navigationState,
-        }
-      );
-      return;
-    }
-
-    // Customer dashboard
-    if (role === "customer") {
-      navigate("/customer-dashboard", {
-        replace: true,
-        state: navigationState,
-      });
-      return;
-    }
-
-    // Invalid role
-    socket.disconnect();
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    throw new Error("Your account role is not recognized.");
+    navigate(dashboardPath, {
+      replace: true,
+      state: navigationState,
+    });
   };
 
-  // Normal email and password login
+  // =========================================
+  // NORMAL EMAIL AND PASSWORD LOGIN
+  // =========================================
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
@@ -161,7 +229,10 @@ const Login = () => {
     }
   };
 
-  // Google login for customers
+  // =========================================
+  // GOOGLE LOGIN FOR CUSTOMERS
+  // =========================================
+
   const handleGoogleSuccess = async (credentialResponse) => {
     setError("");
 
@@ -223,6 +294,18 @@ const Login = () => {
     }
   };
 
+  // =========================================
+  // ALREADY LOGGED IN
+  // =========================================
+
+  if (existingUser && !forceLogin) {
+    return null;
+  }
+
+  // =========================================
+  // LOGIN PAGE UI
+  // =========================================
+
   return (
     <>
       <Navbar />
@@ -232,6 +315,7 @@ const Login = () => {
           <div className="login-wrapper">
 
             {/* LEFT SECTION */}
+
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -255,6 +339,7 @@ const Login = () => {
                 </p>
 
                 <div className="feature-list">
+
                   <div className="feature-item">
                     <div className="feature-icon">
                       <FiShield size={26} />
@@ -287,11 +372,13 @@ const Login = () => {
                       <p>Premium home service experience.</p>
                     </div>
                   </div>
+
                 </div>
               </div>
             </motion.div>
 
             {/* RIGHT SECTION */}
+
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -309,6 +396,7 @@ const Login = () => {
                 </p>
 
                 {/* ERROR MESSAGE */}
+
                 {error && (
                   <p
                     role="alert"
@@ -322,10 +410,12 @@ const Login = () => {
                 )}
 
                 {/* LOGIN TYPE */}
+
                 <div className="login-type">
                   <label>Login As</label>
 
                   <div className="login-type-options">
+
                     <button
                       type="button"
                       className={
@@ -364,10 +454,12 @@ const Login = () => {
                     >
                       Admin
                     </button>
+
                   </div>
                 </div>
 
                 {/* EMAIL */}
+
                 <div>
                   <label
                     className="form-label"
@@ -394,6 +486,7 @@ const Login = () => {
                 </div>
 
                 {/* PASSWORD */}
+
                 <div>
                   <label
                     className="form-label"
@@ -433,6 +526,7 @@ const Login = () => {
                 </div>
 
                 {/* REMEMBER AND FORGOT PASSWORD */}
+
                 <div className="remember-row">
                   <label className="remember-label">
                     <input type="checkbox" />
@@ -448,6 +542,7 @@ const Login = () => {
                 </div>
 
                 {/* LOGIN BUTTON */}
+
                 <button
                   type="submit"
                   className="login-btn"
@@ -458,6 +553,7 @@ const Login = () => {
                 </button>
 
                 {/* GOOGLE LOGIN */}
+
                 {loginType === "customer" && (
                   <>
                     <div className="divider">
@@ -496,6 +592,7 @@ const Login = () => {
                 )}
 
                 {/* TECHNICIAN INFORMATION */}
+
                 {loginType === "technician" && (
                   <p
                     style={{
@@ -510,6 +607,7 @@ const Login = () => {
                 )}
 
                 {/* ADMIN INFORMATION */}
+
                 {loginType === "admin" && (
                   <p
                     style={{
@@ -524,6 +622,7 @@ const Login = () => {
                 )}
 
                 {/* REGISTER LINK */}
+
                 {loginType === "customer" && (
                   <p className="register-text">
                     Don't have an account?{" "}
@@ -547,6 +646,7 @@ const Login = () => {
                     </Link>
                   </p>
                 )}
+
               </form>
             </motion.div>
 

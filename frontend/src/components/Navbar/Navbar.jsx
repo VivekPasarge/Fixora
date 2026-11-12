@@ -1,104 +1,197 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+
 import {
   HiOutlineMenuAlt3,
   HiOutlineX,
   HiOutlineUser,
 } from "react-icons/hi";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+
+import {
+  Link,
+  NavLink,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
 import logo from "../../assets/logo/fixora-logo.png";
-import navLinks, {
+
+import {
   customerNavLinks,
   technicianNavLinks,
 } from "./navLinks";
+
 import "./Navbar.css";
 
+// =========================================
+// READ USER FROM LOCAL STORAGE
+// =========================================
+
+const getStoredUser = () => {
+  try {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    if (!token || !storedUser) return null;
+
+    return JSON.parse(storedUser);
+  } catch {
+    return null;
+  }
+};
+
 const Navbar = () => {
+  const [user, setUser] = useState(getStoredUser);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
 
+  const role = String(user?.role || "").toLowerCase();
+
+  // =========================================
+  // HIDE NAVBAR ON LOGIN PAGE
+  // =========================================
+
+  const isLoginPage = location.pathname === "/login";
+
+  // =========================================
+  // SYNC USER WHEN ROUTE CHANGES
+  // =========================================
+
   useEffect(() => {
-    const readUser = () => {
-      try {
-        const token = localStorage.getItem("token");
-        const storedUser = localStorage.getItem("user");
-
-        setUser(token && storedUser ? JSON.parse(storedUser) : null);
-      } catch {
-        setUser(null);
-      }
-    };
-
-    readUser();
-    window.addEventListener("storage", readUser);
-
-    return () => window.removeEventListener("storage", readUser);
+    setUser(getStoredUser());
   }, [location.pathname]);
 
-  const role = String(user?.role || "").toLowerCase();
+  // =========================================
+  // SYNC USER BETWEEN BROWSER TABS
+  // =========================================
+
+  useEffect(() => {
+    const syncUser = () => {
+      setUser(getStoredUser());
+    };
+
+    window.addEventListener("storage", syncUser);
+
+    return () => {
+      window.removeEventListener("storage", syncUser);
+    };
+  }, []);
+
+  // =========================================
+  // ROLE-BASED DASHBOARD
+  // =========================================
+
+  const getHomePath = () => {
+    if (!user || !localStorage.getItem("token")) {
+      return "/";
+    }
+
+    switch (role) {
+      case "customer":
+        return "/customer-dashboard";
+
+      case "technician":
+        return user.profileCompleted
+          ? "/technician-dashboard"
+          : "/complete-profile";
+
+      case "admin":
+        return "/admin-dashboard";
+
+      default:
+        return "/";
+    }
+  };
+
+  // =========================================
+  // NAVIGATION LINKS
+  // =========================================
 
   const activeNavLinks =
     role === "technician"
       ? technicianNavLinks
-      : customerNavLinks || navLinks;
+      : customerNavLinks;
 
-  const getDashboardPath = () => {
-    if (role === "admin") return "/admin-dashboard";
-
-    if (role === "technician") {
-      return user?.profileCompleted
-        ? "/technician-dashboard"
-        : "/complete-profile";
+  const getNavPath = (item) => {
+    if (item.title?.trim().toLowerCase() === "home") {
+      return getHomePath();
     }
 
-    if (role === "customer") return "/customer-dashboard";
-
-    return "/login";
+    return item.path;
   };
 
-  const getHomePath = () => {
-    if (role === "technician") {
-      return user?.profileCompleted
-        ? "/technician-home"
-        : "/complete-profile";
-    }
+  // =========================================
+  // DASHBOARD PATH
+  // =========================================
 
-    if (role === "admin") return "/admin-dashboard";
+  const getDashboardPath = () => getHomePath();
 
-    return "/";
+  // =========================================
+  // PROFILE PATH
+  // =========================================
+
+  const profilePath =
+    role === "technician"
+      ? "/technician-profile"
+      : "/profile";
+
+  // =========================================
+  // CLOSE MENUS
+  // =========================================
+
+  const closeMenus = () => {
+    setMenuOpen(false);
+    setProfileOpen(false);
   };
+
+  // =========================================
+  // LOGOUT
+  // =========================================
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
     setUser(null);
-    setProfileOpen(false);
-    setMenuOpen(false);
+    closeMenus();
 
     navigate("/", { replace: true });
   };
 
+  // =========================================
+  // SCROLL EFFECT
+  // =========================================
+
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
 
     handleScroll();
+
     window.addEventListener("scroll", handleScroll);
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
+  // =========================================
+  // CLOSE MENUS ON NAVIGATION
+  // =========================================
+
   useEffect(() => {
-    setMenuOpen(false);
-    setProfileOpen(false);
+    closeMenus();
   }, [location.pathname]);
+
+  // =========================================
+  // PREVENT BODY SCROLL
+  // =========================================
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -108,43 +201,45 @@ const Navbar = () => {
     };
   }, [menuOpen]);
 
-  const closeMenus = () => {
-    setMenuOpen(false);
-    setProfileOpen(false);
-  };
+  // =========================================
+  // HIDE COMPLETE NAVBAR ON LOGIN
+  // =========================================
 
-  const profilePath =
-    role === "technician" ? "/technician-profile" : "/profile";
+  if (isLoginPage) {
+    return null;
+  }
+
+  // =========================================
+  // NAVBAR UI
+  // =========================================
 
   return (
     <motion.header
-      initial={{ y: -80 }}
+      initial={{ y: -60 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.45, ease: "easeOut" }}
+      transition={{ duration: 0.4 }}
       className={`navbar ${scrolled ? "navbar-scrolled" : ""}`}
     >
+      {/* LOGO */}
+
       <Link
         to={getHomePath()}
         className="navbar-logo"
-        aria-label="Fixora Home"
         onClick={closeMenus}
+        aria-label="Fixora Home"
       >
         <img src={logo} alt="Fixora" />
       </Link>
 
-      <nav className="navbar-menu" aria-label="Primary Navigation">
+      {/* DESKTOP NAVIGATION */}
+
+      <nav className="navbar-menu">
         {activeNavLinks.map((item) => (
           <NavLink
             key={item.id}
-            to={item.path}
+            to={getNavPath(item)}
             className={({ isActive }) =>
-              `navbar-link ${
-                isActive ||
-                (item.path === "/technician-home" &&
-                  location.pathname === "/technician-dashboard")
-                  ? "active"
-                  : ""
-              }`
+              `navbar-link ${isActive ? "active" : ""}`
             }
             onClick={closeMenus}
           >
@@ -153,28 +248,32 @@ const Navbar = () => {
         ))}
       </nav>
 
+      {/* RIGHT SIDE */}
+
       <div className="navbar-buttons">
         {user ? (
           <>
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => setProfileOpen((previous) => !previous)}
+              onClick={() =>
+                setProfileOpen((previous) => !previous)
+              }
               aria-expanded={profileOpen}
               aria-haspopup="true"
             >
-              <HiOutlineUser size={19} style={{ marginRight: "8px" }} />
-              <span>{user.name || "You"}</span>
-              <span style={{ marginLeft: "6px", fontSize: "12px" }}>
-                ▼
-              </span>
+              <HiOutlineUser size={19} />
+              <span>{user.name || "My Account"}</span>
+              <span>▼</span>
             </button>
+
+            {/* PROFILE DROPDOWN */}
 
             {profileOpen && (
               <div className="profile-dropdown">
                 <div className="navbar-profile-header">
                   <h4>{user.name || "User"}</h4>
-                  <p>{user.email || "No email available"}</p>
+                  <p>{user.email || ""}</p>
                 </div>
 
                 <Link
@@ -184,6 +283,16 @@ const Navbar = () => {
                 >
                   Dashboard
                 </Link>
+
+                {role === "customer" && (
+                  <Link
+                    to="/my-bookings"
+                    className="dropdown-item"
+                    onClick={closeMenus}
+                  >
+                    My Bookings
+                  </Link>
+                )}
 
                 {role === "technician" && (
                   <>
@@ -202,42 +311,18 @@ const Navbar = () => {
                     >
                       Assigned Jobs
                     </Link>
-
-                    <Link
-                      to="/technician-dashboard#active-job"
-                      className="dropdown-item"
-                      onClick={closeMenus}
-                    >
-                      Active Job
-                    </Link>
-
-                    <Link
-                      to="/technician/wallet"
-                      className="dropdown-item"
-                      onClick={closeMenus}
-                    >
-                      Earnings
-                    </Link>
                   </>
                 )}
 
-                {role === "customer" && (
+                {role !== "admin" && (
                   <Link
-                    to="/my-bookings"
+                    to={profilePath}
                     className="dropdown-item"
                     onClick={closeMenus}
                   >
-                    My Bookings
+                    Profile
                   </Link>
                 )}
-
-                <Link
-                  to={profilePath}
-                  className="dropdown-item"
-                  onClick={closeMenus}
-                >
-                  Profile
-                </Link>
 
                 <button
                   type="button"
@@ -255,39 +340,46 @@ const Navbar = () => {
               Login
             </Link>
 
-            <Link to="/choose-account" className="btn btn-primary">
+            <Link
+              to="/choose-account"
+              className="btn btn-primary"
+            >
               Register
             </Link>
           </>
         )}
 
+        {/* MOBILE MENU BUTTON */}
+
         <button
           type="button"
           className="mobile-menu-btn"
-          onClick={() => setMenuOpen((previous) => !previous)}
-          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+          onClick={() =>
+            setMenuOpen((previous) => !previous)
+          }
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
-          aria-controls="mobile-menu"
         >
           {menuOpen ? <HiOutlineX /> : <HiOutlineMenuAlt3 />}
         </button>
       </div>
 
+      {/* MOBILE NAVIGATION */}
+
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            id="mobile-menu"
             className="mobile-menu"
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.2 }}
           >
             <div className="mobile-menu-content">
               {activeNavLinks.map((item) => (
                 <NavLink
                   key={item.id}
-                  to={item.path}
+                  to={getNavPath(item)}
                   className={({ isActive }) =>
                     `mobile-link ${isActive ? "active" : ""}`
                   }
@@ -309,34 +401,6 @@ const Navbar = () => {
                     Dashboard
                   </Link>
 
-                  {role === "technician" && (
-                    <>
-                      <Link
-                        to="/technician-dashboard#available-jobs"
-                        className="btn btn-secondary btn-block"
-                        onClick={closeMenus}
-                      >
-                        Available Jobs
-                      </Link>
-
-                      <Link
-                        to="/technician-dashboard#assigned-jobs"
-                        className="btn btn-secondary btn-block"
-                        onClick={closeMenus}
-                      >
-                        Assigned Jobs
-                      </Link>
-
-                      <Link
-                        to="/technician/wallet"
-                        className="btn btn-secondary btn-block"
-                        onClick={closeMenus}
-                      >
-                        Earnings
-                      </Link>
-                    </>
-                  )}
-
                   {role === "customer" && (
                     <Link
                       to="/my-bookings"
@@ -347,13 +411,15 @@ const Navbar = () => {
                     </Link>
                   )}
 
-                  <Link
-                    to={profilePath}
-                    className="btn btn-secondary btn-block"
-                    onClick={closeMenus}
-                  >
-                    Profile
-                  </Link>
+                  {role !== "admin" && (
+                    <Link
+                      to={profilePath}
+                      className="btn btn-secondary btn-block"
+                      onClick={closeMenus}
+                    >
+                      Profile
+                    </Link>
+                  )}
 
                   <button
                     type="button"

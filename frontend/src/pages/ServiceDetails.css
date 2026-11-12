@@ -1,25 +1,36 @@
 
-/* Service Details Page */
+/* =========================================
+   FIXORA - SERVICE DETAILS PAGE
+========================================= */
 
 .service-details-page {
   min-height: 100vh;
   padding-top: 88px;
-  background: #f8fafc;
+  background: #f6f8fc;
   color: #172033;
 }
 
-/* Main Section */
+/* =========================================
+   MAIN LAYOUT
+========================================= */
 
 .service-details-section {
-  padding: 56px 24px 80px;
+  padding: 48px 24px 80px;
+  background:
+    radial-gradient(
+      circle at 10% 5%,
+      rgba(37, 99, 235, 0.035),
+      transparent 30%
+    ),
+    #f6f8fc;
 }
 
 .service-details-container {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.8fr);
-  gap: 36px;
+  grid-template-columns: minmax(0, 1.65fr) minmax(290px, 0.8fr);
+  gap: 30px;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1160px;
   margin: 0 auto;
   align-items: start;
 }
@@ -27,7 +38,7 @@
 .service-details-left {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
   min-width: 0;
 }
 
@@ -37,66 +48,99 @@
   top: 110px;
 }
 
-/* Common Content Cards */
-
-.service-details-left > *,
-.service-details-right > * {
-  border-radius: 18px;
-}
-
-.service-details-left > * {
-  min-width: 0;
-}
-
-/* Service Overview */
+/* =========================================
+   SERVICE OVERVIEW
+========================================= */
 
 .service-overview {
-  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  padding: 30px;
   background: #ffffff;
-  border: 1px solid #e5eaf2;
-  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.04);
+  border: 1px solid #e8edf5;
+  border-radius: 18px;
+  box-shadow: 0 5px 20px rgba(15, 23, 42, 0.035);
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.service-overview::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    #2563eb,
+    #60a5fa
+  );
+}
+
+.service-overview:hover {
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+  transform: translateY(-2px);
 }
 
 .service-overview h2 {
-  margin: 0 0 16px;
+  margin: 0 0 17px;
   color: #14213d;
   font-size: 25px;
-  font-weight: 750;
-  line-height: 1.35;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+  line-height: 1.3;
 }
 
 .service-overview p {
-  margin: 0 0 14px;
+  margin: 0 0 13px;
   color: #64748b;
-  font-size: 15px;
-  line-height: 1.8;
+  font-size: 14px;
+  line-height: 1.9;
 }
 
 .service-overview p:last-child {
   margin-bottom: 0;
 }
 
-/* Included Services */
+/* =========================================
+   INCLUDED SERVICES
+========================================= */
 
 .included-services {
-  padding: 28px;
+  padding: 30px;
   background: #ffffff;
-  border: 1px solid #e5eaf2;
-  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.04);
+  border: 1px solid #e8edf5;
+  border-radius: 18px;
+  box-shadow: 0 5px 20px rgba(15, 23, 42, 0.035);
 }
 
 .included-services h2,
 .included-services h3 {
-  margin: 0 0 20px;
+  position: relative;
+  margin: 0 0 22px;
   color: #14213d;
   font-size: 23px;
-  font-weight: 750;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.included-services h2::after,
+.included-services h3::after {
+  content: "";
+  display: block;
+  width: 38px;
+  height: 3px;
+  margin-top: 10px;
+  border-radius: 10px;
+  background: #2563eb;
 }
 
 .included-services ul {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px 18px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -104,75 +148,122 @@
 
 .included-services li {
   position: relative;
-  padding: 13px 14px 13px 38px;
-  border: 1px solid #e5eaf2;
-  border-radius: 12px;
-  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 11px 12px 11px 42px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: #f4f7fc;
   color: #475569;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .included-services li::before {
   content: "✓";
   position: absolute;
-  left: 14px;
-  top: 13px;
-  color: #2563eb;
-  font-weight: 800;
+  left: 13px;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 900;
+  transform: translateY(-50%);
 }
 
-/* Booking Card */
+.included-services li:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  transform: translateY(-2px);
+}
+
+/* =========================================
+   BOOKING PANEL
+========================================= */
 
 .booking-card {
-  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  padding: 27px;
   background: #ffffff;
-  border: 1px solid #e5eaf2;
-  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e1e8f2;
+  border-radius: 18px;
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.075);
+}
+
+.booking-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    #2563eb,
+    #60a5fa
+  );
 }
 
 .booking-card h2,
 .booking-card h3 {
   margin: 0 0 16px;
   color: #14213d;
-  font-size: 23px;
-  font-weight: 750;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
 }
 
 .booking-card p {
   color: #64748b;
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: 13px;
+  line-height: 1.75;
 }
 
 .booking-card label {
   display: block;
   margin-bottom: 8px;
   color: #334155;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .booking-card input,
 .booking-card select,
 .booking-card textarea {
   width: 100%;
-  min-height: 46px;
+  min-height: 45px;
   padding: 11px 13px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #dbe3ef;
   border-radius: 10px;
-  background: #ffffff;
+  background: #f9fbfe;
   color: #172033;
   font: inherit;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .booking-card input:focus,
 .booking-card select:focus,
 .booking-card textarea:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.11);
 }
 
 .booking-card button,
@@ -181,48 +272,71 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 48px;
+  min-height: 47px;
   margin-top: 16px;
   padding: 12px 18px;
   border: none;
-  border-radius: 11px;
+  border-radius: 10px;
   background: #2563eb;
   color: #ffffff;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 750;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .booking-card button:hover,
 .booking-card a:hover {
   background: #1d4ed8;
-  transform: translateY(-1px);
+  box-shadow: 0 7px 18px rgba(37, 99, 235, 0.2);
+  transform: translateY(-2px);
 }
 
 .booking-card button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
-/* Technician Notice */
+/* =========================================
+   TECHNICIAN NOTICE
+========================================= */
 
 .technician-service-notice {
-  padding: 26px;
-  border: 1px solid #bfdbfe;
+  position: relative;
+  overflow: hidden;
+  padding: 27px;
+  border: 1px solid #dbeafe;
   border-radius: 18px;
-  background: linear-gradient(145deg, #eff6ff, #ffffff);
-  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.07);
+  background: linear-gradient(
+    145deg,
+    #eff6ff,
+    #ffffff 75%
+  );
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.06);
+}
+
+.technician-service-notice::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: #2563eb;
 }
 
 .technician-service-notice h3 {
   margin: 0 0 12px;
   color: #1e3a8a;
   font-size: 21px;
-  font-weight: 750;
+  font-weight: 800;
   line-height: 1.4;
 }
 
@@ -247,23 +361,29 @@
   font-weight: 700;
   text-align: center;
   text-decoration: none;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .technician-service-notice a:hover {
   background: #1d4ed8;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
-/* Links and Focus */
+/* =========================================
+   ACCESSIBILITY
+========================================= */
 
 .service-details-page a:focus-visible,
 .service-details-page button:focus-visible {
-  outline: 3px solid rgba(37, 99, 235, 0.45);
+  outline: 3px solid rgba(37, 99, 235, 0.4);
   outline-offset: 3px;
 }
 
-/* Tablet */
+/* =========================================
+   TABLET
+========================================= */
 
 @media (max-width: 900px) {
   .service-details-page {
@@ -271,12 +391,12 @@
   }
 
   .service-details-section {
-    padding: 40px 20px 60px;
+    padding: 38px 20px 60px;
   }
 
   .service-details-container {
     grid-template-columns: minmax(0, 1fr);
-    gap: 26px;
+    gap: 25px;
   }
 
   .service-details-right {
@@ -284,7 +404,9 @@
   }
 }
 
-/* Mobile */
+/* =========================================
+   MOBILE
+========================================= */
 
 @media (max-width: 600px) {
   .service-details-page {
@@ -292,22 +414,22 @@
   }
 
   .service-details-section {
-    padding: 28px 14px 44px;
+    padding: 26px 14px 42px;
   }
 
   .service-details-container {
-    gap: 20px;
+    gap: 19px;
   }
 
   .service-details-left {
-    gap: 20px;
+    gap: 19px;
   }
 
   .service-overview,
   .included-services,
   .booking-card,
   .technician-service-notice {
-    padding: 20px;
+    padding: 21px 19px;
     border-radius: 14px;
   }
 
@@ -316,15 +438,38 @@
   .included-services h3,
   .booking-card h2,
   .booking-card h3 {
-    font-size: 21px;
+    font-size: 20px;
+  }
+
+  .service-overview p {
+    font-size: 13px;
+    line-height: 1.8;
   }
 
   .included-services ul {
     grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
+    gap: 9px;
+  }
+
+  .included-services li {
+    min-height: 44px;
   }
 
   .technician-service-notice h3 {
     font-size: 19px;
+  }
+}
+
+/* =========================================
+   REDUCED MOTION
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .service-details-page *,
+  .service-details-page *::before,
+  .service-details-page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }

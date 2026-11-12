@@ -22,6 +22,12 @@ const FixoraWelcome = () => {
     { label: "Cleaning", icon: <FiCheck /> },
   ];
 
+  const handleLoginClick = () => {
+    navigate("/login", {
+      state: { forceLogin: true },
+    });
+  };
+
   return (
     <main className="fixora-splash">
       <div className="fixora-splash-background" />
@@ -44,13 +50,16 @@ const FixoraWelcome = () => {
               strokeLinecap="round"
               strokeLinejoin="round"
             />
+
             <rect x="43" y="39" width="12" height="12" rx="2" fill="currentColor" />
             <rect x="62" y="39" width="12" height="12" rx="2" fill="currentColor" />
             <rect x="43" y="56" width="12" height="10" rx="2" fill="currentColor" />
             <rect x="62" y="56" width="12" height="10" rx="2" fill="currentColor" />
           </svg>
 
-          <span>fixora<span className="fixora-logo-dot">.</span></span>
+          <span>
+            fixora<span className="fixora-logo-dot">.</span>
+          </span>
         </div>
 
         <h1 className="fixora-splash-tagline">
@@ -68,11 +77,12 @@ const FixoraWelcome = () => {
         <button
           type="button"
           className="fixora-splash-login"
-          onClick={() => navigate("/login")}
+          onClick={handleLoginClick}
         >
           <span className="fixora-splash-arrow">
             <FiArrowRight />
           </span>
+
           <span>Please Login to Continue</span>
         </button>
 
@@ -81,7 +91,10 @@ const FixoraWelcome = () => {
         </p>
       </section>
 
-      <div className="fixora-splash-services" aria-label="Available services">
+      <div
+        className="fixora-splash-services"
+        aria-label="Available services"
+      >
         {services.map((service) => (
           <div
             className="fixora-splash-service"

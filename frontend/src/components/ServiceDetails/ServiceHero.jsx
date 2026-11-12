@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -27,7 +28,7 @@ const ServiceHero = ({ service }) => {
 
         <div className="hero-content">
 
-          {/* Left */}
+          {/* Service Information */}
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
@@ -50,13 +51,16 @@ const ServiceHero = ({ service }) => {
               {service.description}
             </p>
 
+            {/* Service Information */}
             <div className="service-info">
 
               <div className="info-item">
                 <FiStar className="star-icon" />
+
                 <span className="info-value">
                   {service.rating || 4.8}
                 </span>
+
                 <span className="info-text">
                   ({service.reviews || 120} Reviews)
                 </span>
@@ -64,6 +68,7 @@ const ServiceHero = ({ service }) => {
 
               <div className="info-item">
                 <FiClock className="clock-icon" />
+
                 <span>
                   {service.arrivalTime || "Within 45 mins"}
                 </span>
@@ -71,66 +76,14 @@ const ServiceHero = ({ service }) => {
 
               <div className="info-item">
                 <FiMapPin className="location-icon" />
+
                 <span>Available Near You</span>
               </div>
 
             </div>
           </motion.div>
 
-          {/* Right */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="hero-right"
-          >
-            <div className="price-card">
-
-              <p className="price-label">
-                Starting From
-              </p>
-
-              <h2 className="price-value">
-                ₹{service.price}
-              </h2>
-
-              <div className="price-details">
-
-                <div className="price-row">
-                  <span>Arrival</span>
-                  <strong>
-                    {service.arrivalTime || "Within 45 mins"}
-                  </strong>
-                </div>
-
-                <div className="price-row">
-                  <span>Duration</span>
-                  <strong>
-                    {service.duration || "30-60 mins"}
-                  </strong>
-                </div>
-
-                <div className="price-row">
-                  <span>Service Warranty</span>
-                  <strong className="warranty">
-                    30 Days
-                  </strong>
-                </div>
-
-              </div>
-
-              <Link
-                to={`/booking/${service._id}`}
-                className="book-service-btn"
-              >
-                Book Service
-              </Link>
-
-            </div>
-          </motion.div>
-
         </div>
-
       </div>
     </section>
   );

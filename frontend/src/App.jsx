@@ -2,22 +2,31 @@
 import { Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 
-// Public pages
+// =========================================
+// PUBLIC PAGES
+// =========================================
+
 import Home from "./pages/Home";
 import Services from "./pages/Services";
 import ServiceDetails from "./pages/ServiceDetails";
 import Contact from "./components/Contact/Contact";
-import About from "./components/About/About";
+import About from "./pages/About";
 import BecomePartner from "./pages/BecomePartner";
 
-// Authentication
+// =========================================
+// AUTHENTICATION
+// =========================================
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ChooseAccount from "./pages/ChooseAccount";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
-// Customer pages
+// =========================================
+// CUSTOMER PAGES
+// =========================================
+
 import CustomerDashboard from "./pages/CustomerDashboard";
 import Booking from "./pages/Booking";
 import BookingSuccess from "./pages/BookingSuccess";
@@ -27,7 +36,10 @@ import BookingDetails from "./pages/BookingDetails";
 import Payment from "./pages/Payment";
 import Review from "./pages/Review";
 
-// Technician pages
+// =========================================
+// TECHNICIAN PAGES
+// =========================================
+
 import TechnicianTrack from "./pages/TechnicianTrack";
 import TechnicianDashboard from "./pages/TechnicianDashboard";
 import TechnicianHome from "./pages/TechnicianHome";
@@ -37,7 +49,10 @@ import TechnicianWithdrawals from "./pages/TechnicianWithdrawals";
 import TechnicianReviews from "./pages/TechnicianReviews";
 import CompleteProfile from "./pages/CompleteProfile";
 
-// Admin pages
+// =========================================
+// ADMIN PAGES
+// =========================================
+
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminWelcome from "./pages/AdminWelcome";
 import AdminWithdrawals from "./pages/AdminWithdrawals";
@@ -46,17 +61,26 @@ import CustomerManagement from "./pages/CustomerManagement";
 import BookingManagement from "./pages/BookingManagement";
 import ServiceManagement from "./pages/ServiceManagement";
 
-// Shared pages and components
+// =========================================
+// SHARED PAGES AND COMPONENTS
+// =========================================
+
 import Profile from "./pages/Profile";
 import TrackBooking from "./pages/TrackBooking";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
-// Other components
+// =========================================
+// OTHER COMPONENTS
+// =========================================
+
 import FixoraWelcome from "./pages/FixoraWelcome";
 import FixiChat from "./components/FixiChat/FixiChat";
 
-// Socket
+// =========================================
+// SOCKET
+// =========================================
+
 import socket from "./socket";
 
 function App() {
@@ -79,17 +103,22 @@ function App() {
   return (
     <>
       <Routes>
-        {/* PUBLIC PAGES */}
-        {/* <Route path="/" element={<Home />} /> */}
+
+        {/* =====================================
+            PUBLIC PAGES
+        ===================================== */}
+
         <Route path="/" element={<FixoraWelcome />} />
 
         <Route path="/services" element={<Services />} />
+
         <Route
           path="/services/:id"
           element={<ServiceDetails />}
         />
 
         <Route path="/about" element={<About />} />
+
         <Route path="/contact" element={<Contact />} />
 
         <Route
@@ -102,8 +131,12 @@ function App() {
           element={<BecomePartner />}
         />
 
-        {/* AUTHENTICATION */}
+        {/* =====================================
+            AUTHENTICATION
+        ===================================== */}
+
         <Route path="/login" element={<Login />} />
+
         <Route path="/register" element={<Register />} />
 
         <Route
@@ -121,7 +154,10 @@ function App() {
           element={<ForgotPassword />}
         />
 
-        {/* PROFILE COMPLETION */}
+        {/* =====================================
+            TECHNICIAN PROFILE COMPLETION
+        ===================================== */}
+
         <Route
           path="/complete-profile"
           element={
@@ -131,7 +167,10 @@ function App() {
           }
         />
 
-        {/* CUSTOMER DASHBOARD */}
+        {/* =====================================
+            CUSTOMER DASHBOARD
+        ===================================== */}
+
         <Route
           path="/customer"
           element={
@@ -150,7 +189,10 @@ function App() {
           }
         />
 
-        {/* CUSTOMER BOOKING PAGES */}
+        {/* =====================================
+            CUSTOMER BOOKING PAGES
+        ===================================== */}
+
         <Route
           path="/booking/:id"
           element={
@@ -214,7 +256,10 @@ function App() {
           }
         />
 
-        {/* TECHNICIAN PAGES */}
+        {/* =====================================
+            TECHNICIAN PAGES
+        ===================================== */}
+
         <Route
           path="/technician-home"
           element={
@@ -278,22 +323,34 @@ function App() {
           }
         />
 
-        {/* TRACKING PAGES */}
-        <Route path="/track" element={<TrackBooking />} />
+        {/* =====================================
+            TRACKING PAGES
+        ===================================== */}
+
+        <Route
+          path="/track"
+          element={<TrackBooking />}
+        />
+
         <Route
           path="/track-booking"
           element={<TrackBooking />}
         />
+
         <Route
           path="/track-booking/:id"
           element={<TrackBooking />}
         />
+
         <Route
           path="/track/:id"
           element={<TrackBooking />}
         />
 
-        {/* ADMIN PAGES */}
+        {/* =====================================
+            ADMIN PAGES
+        ===================================== */}
+
         <Route
           path="/admin"
           element={
@@ -357,7 +414,10 @@ function App() {
           }
         />
 
-        {/* SHARED PROFILE */}
+        {/* =====================================
+            SHARED PROFILE
+        ===================================== */}
+
         <Route
           path="/profile"
           element={
@@ -369,14 +429,24 @@ function App() {
           }
         />
 
-        {/* WELCOME PAGE */}
+        {/* =====================================
+            WELCOME PAGE
+        ===================================== */}
+
         <Route
           path="/welcome"
           element={<FixoraWelcome />}
         />
 
-        {/* 404 PAGE */}
-        <Route path="*" element={<NotFound />} />
+        {/* =====================================
+            404 PAGE
+        ===================================== */}
+
+        <Route
+          path="*"
+          element={<NotFound />}
+        />
+
       </Routes>
 
       {/* FLOATING FIXI CHATBOT */}
