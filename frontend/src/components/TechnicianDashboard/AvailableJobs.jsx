@@ -7,6 +7,10 @@ const AvailableJobs = () => {
 
   const [loading, setLoading] = useState(true);
 
+  // Rapido-style active offer popup
+  const [offerJob, setOfferJob] = useState(null);
+  const [offerSeconds, setOfferSeconds] = useState(0);
+
   const [isOnline, setIsOnline] = useState(true);
 
   const [acceptingJobId, setAcceptingJobId] =
@@ -67,6 +71,7 @@ const AvailableJobs = () => {
 
       if (!online) {
         setJobs([]);
+        setOfferJob(null);
       }
     };
 
@@ -97,9 +102,10 @@ const AvailableJobs = () => {
 
     fetchJobs();
 
+    // Poll every 2 seconds to detect offers promptly.
     const interval = setInterval(() => {
       fetchJobs(true);
-    }, 5000);
+    }, 2000);
 
     return () => {
       clearInterval(interval);
@@ -153,13 +159,33 @@ const AvailableJobs = () => {
         response.data?.bookings ||
         [];
 
-      setJobs(
-        Array.isArray(
-          availableJobs
-        )
-          ? availableJobs
-          : []
-      );
+      const safeJobs = Array.isArray(availableJobs)
+        ? availableJobs
+        : [];
+
+      setJobs(safeJobs);
+
+      // Open the popup only for an offer with a live backend expiry.
+      const now = Date.now();
+      const activeOffer = safeJobs.find((job) => {
+        const expiry = job.currentOfferExpiresAt
+          ? new Date(job.currentOfferExpiresAt).getTime()
+          : 0;
+
+        return job.currentOfferExpiresAt &&
+          Number.isFinite(expiry) &&
+          expiry > now;
+      });
+
+      if (activeOffer) {
+        setOfferJob((current) =>
+          current?._id === activeOffer._id
+            ? { ...current, ...activeOffer }
+            : activeOffer
+        );
+      } else {
+        setOfferJob(null);
+      }
 
     } catch (error) {
 
@@ -168,7 +194,7 @@ const AvailableJobs = () => {
         error
       );
 
-      setJobs([]);
+      // Preserve the last known offer during temporary network errors.
 
     } finally {
 
@@ -176,6 +202,79 @@ const AvailableJobs = () => {
         setLoading(false);
       }
 
+    }
+  };
+
+  // ==========================================
+  // SERVER-SYNCHRONIZED OFFER COUNTDOWN
+  // ==========================================
+
+  useEffect(() => {
+    if (!offerJob?.currentOfferExpiresAt) {
+      setOfferSeconds(0);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const expiry = new Date(offerJob.currentOfferExpiresAt).getTime();
+      const remaining = Math.max(0, Math.ceil((expiry - Date.now()) / 1000));
+      setOfferSeconds(remaining);
+
+      if (remaining <= 0) {
+        setOfferJob(null);
+        fetchJobs(true);
+      }
+    };
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 250);
+    return () => clearInterval(timer);
+  }, [offerJob?._id, offerJob?.currentOfferExpiresAt]);
+
+  // ==========================================
+  // DECLINE FROM THE OFFER POPUP
+  // ==========================================
+
+  const handleDeclineOffer = async () => {
+    if (!offerJob || cancellingJobId) return;
+
+    const bookingId = offerJob._id;
+
+    try {
+      setCancellingJobId(bookingId);
+      const token = localStorage.getItem("token");
+
+      await api.put(
+        `/bookings/${bookingId}/decline`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setOfferJob(null);
+      setJobs((current) =>
+        current.filter((job) => job._id !== bookingId)
+      );
+
+      window.dispatchEvent(
+        new CustomEvent("technicianBookingChanged", {
+          detail: { bookingId, status: "Declined" },
+        })
+      );
+
+      fetchJobs(true);
+    } catch (error) {
+      console.error("Offer decline error:", error);
+      alert(
+        error.response?.data?.message ||
+          "Could not decline this offer. Please try again."
+      );
+      fetchJobs(true);
+    } finally {
+      setCancellingJobId(null);
     }
   };
 
@@ -682,6 +781,8 @@ const AvailableJobs = () => {
         response.data
       );
 
+      setOfferJob(null);
+
       setJobs(
         (currentJobs) =>
           currentJobs.filter(
@@ -808,7 +909,88 @@ const AvailableJobs = () => {
 
   return (
 
-    <section className="available-jobs-section">
+        <section className="available-jobs-section">
+
+      {/* AUTOMATIC RAPIDO-STYLE JOB OFFER */}
+      {offerJob && offerSeconds > 0 && (
+        <div className="job-offer-overlay">
+          <div
+            className="job-offer-popup"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="job-offer-title"
+          >
+            <div className="job-offer-heading">
+              <span>NEW SERVICE REQUEST</span>
+              <h2 id="job-offer-title">You have a new job!</h2>
+              <p>Respond before this offer expires</p>
+            </div>
+
+            <div className="job-offer-timer">
+              <strong>{String(offerSeconds).padStart(2, "0")}</strong>
+              <span>SECONDS LEFT</span>
+            </div>
+
+            <div className="job-offer-service">
+              <h3>{offerJob.service?.name || "Home Service"}</h3>
+              <p>Booking ID: {offerJob.bookingId || offerJob._id}</p>
+            </div>
+
+            <div className="job-offer-details">
+              <div className="job-offer-detail">
+                <span>Customer</span>
+                <strong>{offerJob.customer?.name || "Customer"}</strong>
+              </div>
+              <div className="job-offer-detail">
+                <span>Phone</span>
+                <strong>{offerJob.customer?.phone || "Not provided"}</strong>
+              </div>
+              <div className="job-offer-detail">
+                <span>Address</span>
+                <strong>{offerJob.address || "Not provided"}</strong>
+              </div>
+              <div className="job-offer-detail">
+                <span>Service date</span>
+                <strong>{formatServiceDate(offerJob.bookingDate)}</strong>
+              </div>
+              <div className="job-offer-detail">
+                <span>Service time</span>
+                <strong>{offerJob.bookingTime || "Not provided"}</strong>
+              </div>
+              <div className="job-offer-detail">
+                <span>Service amount</span>
+                <strong className="job-offer-price">₹{offerJob.price ?? 0}</strong>
+              </div>
+            </div>
+
+            <div className="job-offer-actions">
+              <button
+                type="button"
+                className="job-offer-decline"
+                onClick={handleDeclineOffer}
+                disabled={
+                  cancellingJobId === offerJob._id ||
+                  acceptingJobId === offerJob._id
+                }
+              >
+                {cancellingJobId === offerJob._id ? "Declining..." : "Decline"}
+              </button>
+              <button
+                type="button"
+                className="job-offer-accept"
+                onClick={() => handleAccept(offerJob._id)}
+                disabled={
+                  acceptingJobId === offerJob._id ||
+                  cancellingJobId === offerJob._id
+                }
+              >
+                {acceptingJobId === offerJob._id ? "Accepting..." : "Accept Job"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
 
       {/* ==========================================
