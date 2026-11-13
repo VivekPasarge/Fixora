@@ -1,0 +1,132 @@
+
+/* ==========================================
+   FIXORA - GLOBAL RESPONSIVE STYLES
+   Mobile, Tablet and Desktop
+========================================== */
+
+/* Global overflow protection */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  max-width: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+img,
+video,
+iframe,
+svg {
+  max-width: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  max-width: 100%;
+}
+
+input,
+select,
+textarea {
+  min-width: 0;
+}
+
+/* Flexible media */
+
+img {
+  height: auto;
+}
+
+/* Prevent long text from breaking layouts */
+
+p,
+h1,
+h2,
+h3,
+h4,
+span,
+strong {
+  overflow-wrap: break-word;
+}
+
+/* Tablet */
+
+@media screen and (max-width: 1024px) {
+  .container,
+  .section-container {
+    max-width: 100%;
+  }
+}
+
+/* Mobile */
+
+@media screen and (max-width: 768px) {
+  .container,
+  .section-container {
+    width: 94%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  button,
+  input,
+  select {
+    min-height: 40px;
+  }
+
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Small smartphones */
+
+@media screen and (max-width: 480px) {
+  .container,
+  .section-container {
+    width: 96%;
+  }
+
+  h1 {
+    font-size: clamp(23px, 7vw, 30px);
+  }
+}
+
+/* Extra-small smartphones */
+
+@media screen and (max-width: 360px) {
+  .container,
+  .section-container {
+    width: 97%;
+  }
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
