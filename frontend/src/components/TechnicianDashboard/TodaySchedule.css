@@ -1,676 +1,403 @@
-/* =========================================================
-   TODAY'S SCHEDULE
-========================================================= */
+
+/* ==========================================
+   FIXORA - TODAY'S SCHEDULE
+========================================== */
 
 .schedule-card {
   width: 100%;
-
-  padding: 26px;
-
+  min-width: 0;
+  padding: 25px;
+  border: 1px solid #e8edf5;
+  border-radius: 20px;
   background: #ffffff;
+  color: #172033;
+  box-shadow: 0 6px 22px rgba(15, 23, 42, 0.045);
+  overflow: hidden;
+}
 
-  border: 1px solid #e2e8f0;
-
-  border-radius: 22px;
-
-  box-shadow:
-    0 10px 30px rgba(15, 23, 42, 0.06);
-
+.schedule-card * {
   box-sizing: border-box;
 }
 
-
-/* =========================================================
-   HEADER
-========================================================= */
+/* Header */
 
 .schedule-header {
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
-  gap: 20px;
-
-  padding-bottom: 20px;
-
-  margin-bottom: 20px;
-
-  border-bottom: 1px solid #e2e8f0;
+  gap: 16px;
+  margin-bottom: 24px;
 }
-
 
 .schedule-title-row {
   display: flex;
-
   align-items: center;
-
-  gap: 10px;
+  gap: 11px;
 }
-
 
 .schedule-title {
   margin: 0;
-
-  color: #0f172a;
-
-  font-size: 24px;
-
-  line-height: 1.2;
-
+  color: #172033;
+  font-size: 21px;
   font-weight: 800;
-
-  letter-spacing: -0.4px;
+  letter-spacing: -0.5px;
 }
 
+.schedule-title-icon {
+  color: #2563eb;
+  font-size: 20px;
+}
 
 .schedule-subtitle {
   margin: 7px 0 0;
-
   color: #64748b;
-
   font-size: 13px;
-
-  line-height: 1.5;
+  line-height: 1.6;
 }
-
-
-/* =========================================================
-   JOB COUNT
-========================================================= */
 
 .schedule-count {
-  min-width: 48px;
-
-  height: 48px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
-  padding: 0 12px;
-
-  border-radius: 14px;
-
-  background: #eff6ff;
-
-  border: 1px solid #dbeafe;
-
-  color: #2563eb;
-
-  font-size: 20px;
-
-  font-weight: 800;
-
-  box-sizing: border-box;
-
   flex-shrink: 0;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 13px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 16px;
+  font-weight: 800;
 }
 
-
-/* =========================================================
-   JOB LIST
-========================================================= */
+/* Job list */
 
 .schedule-list {
   display: flex;
-
   flex-direction: column;
-
-  gap: 12px;
+  gap: 13px;
 }
-
-
-/* =========================================================
-   INDIVIDUAL JOB
-========================================================= */
 
 .schedule-item {
-  padding: 18px;
-
-  border: 1px solid #e2e8f0;
-
-  border-radius: 17px;
-
-  background: #f8fafc;
-
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
-
-  box-sizing: border-box;
+  min-width: 0;
+  padding: 19px;
+  border: 1px solid #e8edf5;
+  border-radius: 15px;
+  background: #ffffff;
+  transition: border-color 0.2s ease, transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
-
 
 .schedule-item:hover {
   transform: translateY(-2px);
-
-  background: #ffffff;
-
   border-color: #bfdbfe;
-
-  box-shadow:
-    0 8px 22px rgba(15, 23, 42, 0.07);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.045);
 }
-
-
-/* =========================================================
-   JOB HEADER
-========================================================= */
 
 .schedule-item-header {
   display: flex;
-
   align-items: flex-start;
-
   justify-content: space-between;
-
-  gap: 20px;
+  gap: 18px;
 }
-
-
-/* =========================================================
-   JOB INFORMATION
-========================================================= */
 
 .schedule-job-info {
-  min-width: 0;
-
   flex: 1;
+  min-width: 0;
 }
-
 
 .schedule-service {
-  margin: 0;
-
-  color: #0f172a;
-
+  margin: 0 0 6px;
+  color: #172033;
   font-size: 16px;
-
-  font-weight: 750;
-
-  line-height: 1.35;
+  font-weight: 800;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
-
 
 .schedule-customer {
-  margin: 4px 0 12px;
-
+  margin: 0 0 14px;
   color: #64748b;
-
   font-size: 13px;
-
-  font-weight: 500;
+  font-weight: 600;
 }
-
-
-/* =========================================================
-   INFO ROW
-========================================================= */
 
 .schedule-info {
   display: flex;
-
-  align-items: center;
-
-  gap: 7px;
-
-  margin-top: 7px;
-
-  color: #475569;
-
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 9px;
+  color: #64748b;
   font-size: 12px;
-
-  line-height: 1.4;
+  line-height: 1.6;
 }
-
 
 .schedule-info svg {
-  width: 15px;
-  height: 15px;
-
   flex-shrink: 0;
-
+  margin-top: 2px;
   color: #2563eb;
+  font-size: 15px;
 }
 
+.schedule-info span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 
-/* =========================================================
-   RIGHT SIDE
-========================================================= */
+/* Right side */
 
 .schedule-right {
   display: flex;
-
-  flex-direction: column;
-
-  align-items: flex-end;
-
-  justify-content: flex-start;
-
-  gap: 12px;
-
   flex-shrink: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 13px;
 }
-
-
-/* =========================================================
-   STATUS
-========================================================= */
 
 .schedule-status {
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
-
-  min-height: 28px;
-
-  padding: 0 11px;
-
-  border-radius: 999px;
-
-  font-size: 11px;
-
-  font-weight: 700;
-
-  white-space: nowrap;
-
-  box-sizing: border-box;
-}
-
-
-/* =========================================================
-   STATUS COLORS
-========================================================= */
-
-.schedule-status.completed {
-  color: #15803d;
-
-  background: #dcfce7;
-
-  border: 1px solid #bbf7d0;
-}
-
-
-.schedule-status.active {
+  max-width: 150px;
+  padding: 7px 11px;
+  border: 1px solid #dbeafe;
+  border-radius: 30px;
+  background: #eff6ff;
   color: #1d4ed8;
-
-  background: #dbeafe;
-
-  border: 1px solid #bfdbfe;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
-
-
-.schedule-status.upcoming {
-  color: #b45309;
-
-  background: #fef3c7;
-
-  border: 1px solid #fde68a;
-}
-
 
 .schedule-status.accepted {
+  border-color: #bfdbfe;
+  background: #eff6ff;
   color: #1d4ed8;
-
-  background: #dbeafe;
-
-  border: 1px solid #bfdbfe;
 }
-
 
 .schedule-status.on-the-way {
-  color: #7c3aed;
-
-  background: #ede9fe;
-
-  border: 1px solid #ddd6fe;
+  border-color: #bae6fd;
+  background: #f0f9ff;
+  color: #0369a1;
 }
-
 
 .schedule-status.in-progress {
-  color: #0369a1;
-
-  background: #e0f2fe;
-
-  border: 1px solid #bae6fd;
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #b45309;
 }
 
+.schedule-status.completed {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
 
 .schedule-status.cancelled {
-  color: #b91c1c;
-
-  background: #fee2e2;
-
-  border: 1px solid #fecaca;
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
 }
 
+.schedule-status.upcoming {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+}
 
-/* =========================================================
-   DETAILS BUTTON
-========================================================= */
+/* Details button */
 
 .details-btn {
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
-
-  gap: 5px;
-
-  padding: 7px 10px;
-
-  border: none;
-
-  border-radius: 9px;
-
-  background: transparent;
-
+  gap: 7px;
+  min-height: 37px;
+  padding: 9px 13px;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  background: #ffffff;
   color: #2563eb;
-
   font-family: inherit;
-
   font-size: 12px;
-
-  font-weight: 700;
-
+  font-weight: 750;
   cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
+  transition: all 0.2s ease;
 }
-
 
 .details-btn:hover {
+  border-color: #2563eb;
   background: #eff6ff;
-
-  color: #1d4ed8;
-
-  transform: translateX(2px);
 }
 
-
-.details-btn svg {
-  width: 14px;
-  height: 14px;
+.details-btn svg,
+.schedule-view-all svg {
+  font-size: 15px;
+  transition: transform 0.2s ease;
 }
 
+.details-btn:hover svg,
+.schedule-view-all:hover svg {
+  transform: translateX(3px);
+}
 
-/* =========================================================
-   DATE
-========================================================= */
+/* Date */
 
 .schedule-date {
   display: flex;
-
   align-items: center;
-
-  gap: 7px;
-
-  margin-top: 14px;
-
-  padding-top: 12px;
-
-  border-top: 1px solid #e2e8f0;
-
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 13px;
+  border-top: 1px solid #eef2f7;
   color: #64748b;
-
   font-size: 11px;
-
-  font-weight: 600;
+  font-weight: 650;
 }
-
 
 .schedule-date svg {
-  width: 14px;
-  height: 14px;
-
   color: #2563eb;
+  font-size: 14px;
 }
 
-
-/* =========================================================
-   VIEW ALL BUTTON
-========================================================= */
+/* View all */
 
 .schedule-view-all {
-  width: 100%;
-
-  height: 46px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
-  gap: 7px;
-
-  margin-top: 18px;
-
+  gap: 9px;
+  width: 100%;
+  min-height: 46px;
+  margin-top: 19px;
+  padding: 12px 16px;
   border: 1px solid #dbeafe;
-
   border-radius: 12px;
-
-  background: #f8fbff;
-
-  color: #2563eb;
-
+  background: #eff6ff;
+  color: #1d4ed8;
   font-family: inherit;
-
   font-size: 13px;
-
-  font-weight: 700;
-
+  font-weight: 750;
   cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
+  transition: all 0.2s ease;
 }
-
 
 .schedule-view-all:hover {
-  background: #eff6ff;
-
-  border-color: #bfdbfe;
-
-  transform: translateY(-1px);
+  border-color: #2563eb;
+  background: #dbeafe;
 }
 
-
-.schedule-view-all svg {
-  width: 15px;
-  height: 15px;
-}
-
-
-/* =========================================================
-   EMPTY STATE
-========================================================= */
+/* Empty state */
 
 .schedule-empty {
   display: flex;
-
   flex-direction: column;
-
   align-items: center;
-
   justify-content: center;
-
+  padding: 36px 18px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 15px;
+  background: #f8fafc;
   text-align: center;
-
-  padding: 35px 20px;
 }
-
 
 .schedule-empty-icon {
-  width: 52px;
-  height: 52px;
-
   display: flex;
-
   align-items: center;
-
   justify-content: center;
-
-  margin-bottom: 14px;
-
-  border-radius: 15px;
-
+  width: 58px;
+  height: 58px;
+  margin-bottom: 16px;
+  border-radius: 17px;
   background: #eff6ff;
-
   color: #2563eb;
+  font-size: 25px;
 }
-
-
-.schedule-empty-icon svg {
-  width: 23px;
-  height: 23px;
-}
-
 
 .schedule-empty h3 {
-  margin: 0;
-
-  color: #0f172a;
-
+  margin: 0 0 8px;
+  color: #172033;
   font-size: 16px;
-
-  font-weight: 750;
+  font-weight: 800;
 }
-
 
 .schedule-empty p {
-  max-width: 320px;
-
-  margin: 7px 0 0;
-
+  max-width: 340px;
+  margin: 0;
   color: #64748b;
-
   font-size: 13px;
-
-  line-height: 1.5;
+  line-height: 1.7;
 }
 
-
-.schedule-empty .schedule-view-all {
-  width: auto;
-
-  min-width: 180px;
-
-  padding: 0 18px;
-}
-
-
-/* =========================================================
-   LOADING
-========================================================= */
-
-.schedule-loading {
-  min-height: 150px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  color: #64748b;
-
-  font-size: 13px;
-
-  font-weight: 600;
-}
-
-
-/* =========================================================
-   ERROR
-========================================================= */
+/* Error */
 
 .schedule-error {
   display: flex;
-
-  align-items: center;
-
-  gap: 9px;
-
-  padding: 14px 16px;
-
-  border-radius: 12px;
-
-  background: #fef2f2;
-
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 17px;
+  padding: 13px 15px;
   border: 1px solid #fecaca;
-
+  border-radius: 12px;
+  background: #fef2f2;
   color: #b91c1c;
-
   font-size: 13px;
-
-  font-weight: 600;
+  line-height: 1.6;
 }
-
 
 .schedule-error svg {
-  width: 17px;
-  height: 17px;
-
   flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 16px;
 }
 
+/* Loading */
 
-/* =========================================================
-   TABLET
-========================================================= */
+.schedule-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  border: 1px dashed #dbe3ef;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+/* Focus */
+
+.schedule-card button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.3);
+  outline-offset: 3px;
+}
+
+/* Tablet */
 
 @media (max-width: 900px) {
-
   .schedule-card {
-    padding: 22px;
+    padding: 21px;
   }
-
-  .schedule-title {
-    font-size: 22px;
-  }
-
 }
 
-
-/* =========================================================
-   MOBILE
-========================================================= */
+/* Mobile */
 
 @media (max-width: 600px) {
-
   .schedule-card {
-    padding: 18px;
-
-    border-radius: 18px;
+    padding: 18px 14px;
+    border-radius: 17px;
   }
 
   .schedule-header {
-    align-items: flex-start;
-
-    gap: 15px;
-
-    padding-bottom: 16px;
-
-    margin-bottom: 16px;
+    margin-bottom: 19px;
   }
 
   .schedule-title {
-    font-size: 21px;
+    font-size: 18px;
   }
 
   .schedule-subtitle {
@@ -678,68 +405,45 @@
   }
 
   .schedule-count {
-    min-width: 42px;
-
-    height: 42px;
-
-    font-size: 17px;
-
-    border-radius: 12px;
+    min-width: 37px;
+    height: 37px;
+    border-radius: 11px;
   }
 
   .schedule-item {
-    padding: 16px;
-  }
-
-  .schedule-item-header {
-    gap: 15px;
-  }
-
-}
-
-
-/* =========================================================
-   SMALL MOBILE
-========================================================= */
-
-@media (max-width: 450px) {
-
-  .schedule-card {
-    padding: 15px;
+    padding: 15px 13px;
   }
 
   .schedule-item-header {
     flex-direction: column;
-
-    align-items: stretch;
-
-    gap: 15px;
+    gap: 14px;
   }
 
   .schedule-right {
+    align-items: flex-start;
     flex-direction: row;
-
-    align-items: center;
-
+    flex-wrap: wrap;
     justify-content: space-between;
-
     width: 100%;
   }
 
-  .schedule-service {
-    font-size: 15px;
-  }
-
-  .schedule-customer {
-    font-size: 12px;
-  }
-
-  .schedule-info {
-    font-size: 11px;
+  .schedule-status {
+    max-width: 100%;
   }
 
   .schedule-date {
-    font-size: 10px;
+    margin-top: 13px;
   }
 
+  .schedule-empty {
+    padding: 28px 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .schedule-card *,
+  .schedule-card *::before,
+  .schedule-card *::after {
+    transition: none !important;
+  }
 }

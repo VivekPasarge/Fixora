@@ -1,40 +1,159 @@
-.tech-stats{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-gap:24px;
-margin:35px 0;
+
+/* ==========================================
+   FIXORA - TECHNICIAN STATISTICS
+========================================== */
+
+.tech-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
+  margin: 0 0 30px;
 }
 
-.tech-stat-card{
-background:#fff;
-border-radius:20px;
-padding:28px;
-box-shadow:0 12px 30px rgba(15,23,42,.08);
-border:1px solid #e2e8f0;
-transition:all .3s ease;
-text-align:center;
+.tech-stat-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 0;
+  min-height: 165px;
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid #e8edf5;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.035);
+  text-align: left;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.tech-stat-card:hover{
-transform:translateY(-6px);
-box-shadow:0 20px 45px rgba(37,99,235,.15);
+.tech-stat-card::after {
+  position: absolute;
+  right: -28px;
+  bottom: -38px;
+  width: 115px;
+  height: 115px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.045);
+  content: "";
+  pointer-events: none;
 }
 
-.tech-icon{
-font-size:42px;
-color:#2563eb;
-margin-bottom:18px;
+.tech-stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 13px 30px rgba(15, 23, 42, 0.075);
 }
 
-.tech-stat-card h3{
-font-size:15px;
-font-weight:600;
-color:#64748b;
-margin-bottom:12px;
+.tech-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 17px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 23px;
 }
 
-.tech-stat-card h2{
-font-size:34px;
-font-weight:700;
-color:#0f172a;
+.tech-stat-card:nth-child(2) .tech-icon {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.tech-stat-card:nth-child(3) .tech-icon {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.tech-stat-card:nth-child(4) .tech-icon {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.tech-stat-card h3 {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 9px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.tech-stat-card h2 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: #172033;
+  font-size: clamp(25px, 2.2vw, 32px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+  overflow-wrap: anywhere;
+}
+
+/* Tablet */
+
+@media (max-width: 1050px) {
+  .tech-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .tech-stat-card {
+    min-height: 155px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .tech-stats {
+    gap: 12px;
+    margin-bottom: 23px;
+  }
+
+  .tech-stat-card {
+    min-height: 145px;
+    padding: 17px;
+    border-radius: 16px;
+  }
+
+  .tech-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 13px;
+    padding: 10px;
+    font-size: 20px;
+  }
+
+  .tech-stat-card h3 {
+    font-size: 12px;
+    margin-bottom: 7px;
+  }
+
+  .tech-stat-card h2 {
+    font-size: 25px;
+  }
+}
+
+@media (max-width: 360px) {
+  .tech-stat-card {
+    padding: 13px;
+  }
+
+  .tech-stat-card h2 {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tech-stat-card {
+    transition: none;
+  }
 }

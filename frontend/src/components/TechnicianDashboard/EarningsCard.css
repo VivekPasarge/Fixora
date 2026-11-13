@@ -272,3 +272,209 @@ font-size:20px;
     flex-direction: column;
   }
 }
+
+
+/* ==========================================
+   PREMIUM RECENT PAYMENT DESIGN
+========================================== */
+
+.recent-payments-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.recent-payments-header .recent-title {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0;
+  font-size: 25px;
+  font-weight: 750;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+
+.recent-payments-header .recent-title::before {
+  content: " ";
+  display: block;
+  width: 5px;
+  height: 27px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #2563eb, #60a5fa);
+}
+
+.view-all-payments-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px 19px;
+  border: 1px solid #2563eb;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.view-all-payments-btn::after {
+  content: "→";
+  font-size: 18px;
+  transition: transform 0.25s ease;
+}
+
+.view-all-payments-btn:hover {
+  background: #2563eb;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 7px 18px rgba(37, 99, 235, 0.18);
+}
+
+.view-all-payments-btn:hover::after {
+  transform: translateX(4px);
+}
+
+/* Payment receipt card */
+
+.payment-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  padding: 25px 28px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border: 1px solid #dce5f1;
+  border-radius: 21px;
+  background: linear-gradient(110deg, #ffffff 60%, #f5fff9 100%);
+  box-shadow: 0 9px 25px rgba(15, 23, 42, 0.045);
+  transition: all 0.3s ease;
+}
+
+.payment-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(180deg, #16a34a, #86efac);
+}
+
+.payment-row:hover {
+  transform: translateY(-3px);
+  border-color: #86efac;
+  box-shadow: 0 14px 30px rgba(22, 163, 74, 0.09);
+}
+
+/* Booking information */
+
+.payment-details {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  padding-left: 8px;
+}
+
+.payment-details span {
+  color: #172033;
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.payment-details small {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Successful payment amount */
+
+.payment-row strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+  padding: 10px 15px;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  background: #f0fdf4;
+  color: #15803d;
+  font-size: 22px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.payment-row strong::before {
+  content: "✓";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+/* Empty payment state */
+
+.no-payment {
+  padding: 35px 20px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 18px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .recent-payments-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .recent-payments-header .recent-title {
+    font-size: 22px;
+  }
+
+  .view-all-payments-btn {
+    width: 100%;
+  }
+
+  .payment-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 17px;
+    padding: 21px 17px;
+  }
+
+  .payment-details span {
+    font-size: 15px;
+  }
+
+  .payment-row strong {
+    font-size: 19px;
+  }
+}
