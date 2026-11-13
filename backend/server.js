@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 
 const express = require("express");
@@ -11,7 +12,7 @@ const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 const Booking = require("./models/Booking");
 const User = require("./models/User");
-
+const { setIO } = require("./config/socket");
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const serviceRoutes = require("./routes/serviceRoutes");
@@ -26,6 +27,7 @@ const adminWalletRoutes = require("./routes/adminWalletRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const walletRoutes = require("./routes/walletRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
@@ -93,11 +95,13 @@ app.use("/api/admin/wallet", adminWalletRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // HTTP SERVER
 const server = http.createServer(app);
 
 // SOCKET.IO
+
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
@@ -112,6 +116,10 @@ const io = new Server(server, {
     credentials: true,
   },
 });
+
+// Make the existing Socket.IO instance available to other files
+setIO(io);
+
 
 // SOCKET.IO JWT AUTHENTICATION
 io.use(async (socket, next) => {
@@ -260,7 +268,8 @@ const assignNextTechnician = async (bookingId, expectedIndex) => {
 
       return;
     }
-        const nextTechnician = queue[nextIndex].technician;
+
+    const nextTechnician = queue[nextIndex].technician;
 
     // Atomically offer the booking to one technician.
     const offered = await Booking.findOneAndUpdate(
@@ -585,7 +594,8 @@ io.on("connection", (socket) => {
       console.error("Join Booking Error:", error.message);
     }
   });
-    // SEND TECHNICIAN LOCATION FOR ACTIVE BOOKING
+
+  // SEND TECHNICIAN LOCATION FOR ACTIVE BOOKING
   socket.on("send-location", async (data) => {
     try {
       if (user.role !== "technician") {

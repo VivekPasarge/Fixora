@@ -38,6 +38,32 @@ const Register = () => {
     confirmPassword: "",
   });
 
+  // Password strength calculation
+  const password = formData.password;
+
+  const passwordChecks = [
+    password.length >= 8,
+    /[A-Z]/.test(password),
+    /[a-z]/.test(password),
+    /[0-9]/.test(password),
+    /[^A-Za-z0-9]/.test(password),
+  ];
+
+  const strengthScore = passwordChecks.filter(Boolean).length;
+
+  const passwordStrength = !password
+    ? ""
+    : strengthScore <= 2
+    ? "weak"
+    : strengthScore <= 4
+    ? "medium"
+    : "strong";
+
+  // Confirm password validation
+  const passwordsMatch =
+    formData.confirmPassword.length > 0 &&
+    formData.password === formData.confirmPassword;
+
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,6 +74,7 @@ const Register = () => {
     }));
 
     setError("");
+    setSuccess("");
   };
 
   // Normal registration
@@ -65,7 +92,6 @@ const Register = () => {
       confirmPassword,
     } = formData;
 
-    // Validate fields
     if (
       !name.trim() ||
       !email.trim() ||
@@ -77,7 +103,6 @@ const Register = () => {
       return;
     }
 
-    // Validate password
     if (password.length < 8) {
       setError("Password must contain at least 8 characters.");
       return;
@@ -101,7 +126,7 @@ const Register = () => {
 
       setSuccess(
         response.data?.message ||
-        "Account created successfully!"
+          "Account created successfully!"
       );
 
       setFormData({
@@ -112,7 +137,9 @@ const Register = () => {
         confirmPassword: "",
       });
 
-      // Redirect to login
+      setShowPassword(false);
+      setShowConfirm(false);
+
       setTimeout(() => {
         navigate("/login", { replace: true });
       }, 1500);
@@ -122,7 +149,7 @@ const Register = () => {
 
       setError(
         err.response?.data?.message ||
-        "Registration failed. Please try again."
+          "Registration failed. Please try again."
       );
 
     } finally {
@@ -153,18 +180,15 @@ const Register = () => {
         throw new Error("Invalid Google authentication response.");
       }
 
-      // Google authentication is for customers only
       if (user.role !== "customer") {
         throw new Error(
           "Google authentication is available for customers only."
         );
       }
 
-      // Save authentication details
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      // Redirect to customer dashboard
       navigate("/customer-dashboard", {
         replace: true,
       });
@@ -174,8 +198,8 @@ const Register = () => {
 
       setError(
         err.response?.data?.message ||
-        err.message ||
-        "Google registration failed. Please try again."
+          err.message ||
+          "Google registration failed. Please try again."
       );
 
     } finally {
@@ -205,19 +229,14 @@ const Register = () => {
           Create your Fixora account.
         </p>
 
-        {/* Error message */}
         {error && (
-          <p
-            className="error-message"
-            role="alert"
-          >
+          <p className="error-message" role="alert">
             {error}
           </p>
         )}
 
-        {/* Success message */}
         {success && (
-          <p className="success-message">
+          <p className="success-message" role="status">
             {success}
           </p>
         )}
@@ -226,7 +245,7 @@ const Register = () => {
 
           {/* Full Name */}
           <div>
-            <label className="form-label">
+            <label className="form-label" htmlFor="register-name">
               Full Name
             </label>
 
@@ -234,6 +253,7 @@ const Register = () => {
               <FiUser className="input-icon" />
 
               <input
+                id="register-name"
                 type="text"
                 name="name"
                 placeholder="John Doe"
@@ -248,7 +268,7 @@ const Register = () => {
 
           {/* Email */}
           <div>
-            <label className="form-label">
+            <label className="form-label" htmlFor="register-email">
               Email
             </label>
 
@@ -256,6 +276,7 @@ const Register = () => {
               <FiMail className="input-icon" />
 
               <input
+                id="register-email"
                 type="email"
                 name="email"
                 placeholder="john@example.com"
@@ -270,7 +291,7 @@ const Register = () => {
 
           {/* Phone Number */}
           <div>
-            <label className="form-label">
+            <label className="form-label" htmlFor="register-phone">
               Phone Number
             </label>
 
@@ -278,6 +299,7 @@ const Register = () => {
               <FiPhone className="input-icon" />
 
               <input
+                id="register-phone"
                 type="tel"
                 name="phone"
                 placeholder="+91 9876543210"
@@ -292,7 +314,7 @@ const Register = () => {
 
           {/* Password */}
           <div>
-            <label className="form-label">
+            <label className="form-label" htmlFor="register-password">
               Password
             </label>
 
@@ -300,6 +322,7 @@ const Register = () => {
               <FiLock className="input-icon" />
 
               <input
+                id="register-password"
                 type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Enter password"
@@ -324,11 +347,41 @@ const Register = () => {
                 {showPassword ? <FiEyeOff /> : <FiEye />}
               </button>
             </div>
+
+            {/* Password Strength */}
+            {formData.password && (
+              <div className="password-strength">
+                <div className="strength-bars">
+                  {[1, 2, 3, 4, 5].map((bar) => (
+                    <span
+                      key={bar}
+                      className={
+                        bar <= strengthScore
+                          ? `strength-bar ${passwordStrength}`
+                          : "strength-bar"
+                      }
+                    />
+                  ))}
+                </div>
+
+                <p className={`strength-text ${passwordStrength}`}>
+                  Password strength: {passwordStrength.toUpperCase()}
+                </p>
+
+                <p className="password-hint">
+                  Use at least 8 characters, uppercase and lowercase
+                  letters, a number and a special character.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Confirm Password */}
           <div>
-            <label className="form-label">
+            <label
+              className="form-label"
+              htmlFor="register-confirm-password"
+            >
               Confirm Password
             </label>
 
@@ -336,6 +389,7 @@ const Register = () => {
               <FiLock className="input-icon" />
 
               <input
+                id="register-confirm-password"
                 type={showConfirm ? "text" : "password"}
                 name="confirmPassword"
                 placeholder="Confirm password"
@@ -361,6 +415,22 @@ const Register = () => {
                 {showConfirm ? <FiEyeOff /> : <FiEye />}
               </button>
             </div>
+
+            {/* Password Match Feedback */}
+            {formData.confirmPassword && (
+              <p
+                className={
+                  passwordsMatch
+                    ? "password-match success"
+                    : "password-match error"
+                }
+                role="status"
+              >
+                {passwordsMatch
+                  ? "✓ Passwords match"
+                  : "✕ Passwords do not match"}
+              </p>
+            )}
           </div>
 
           {/* Terms and Conditions */}
@@ -372,20 +442,11 @@ const Register = () => {
 
             <span>
               I agree to the{" "}
-
-              <Link
-                to="#"
-                className="terms-link"
-              >
+              <Link to="#" className="terms-link">
                 Terms & Conditions
               </Link>
-
               {" "}and{" "}
-
-              <Link
-                to="#"
-                className="terms-link"
-              >
+              <Link to="#" className="terms-link">
                 Privacy Policy
               </Link>
             </span>
@@ -421,21 +482,19 @@ const Register = () => {
             {googleLoading ? (
               <p>Connecting to Google...</p>
             ) : (
-            <GoogleLogin
-  onSuccess={handleGoogleSuccess}
-  onError={() => {
-    setError("Google login failed. Please try again.");
-  }}
-  text="continue_with"
-  size="medium"
-  shape="rectangular"
-  theme="outline"
-  width="300"
-/>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                text="continue_with"
+                size="medium"
+                shape="rectangular"
+                theme="outline"
+                width="300"
+              />
             )}
           </div>
 
-          {/* Google information */}
+          {/* Google Information */}
           <p
             style={{
               fontSize: "12px",

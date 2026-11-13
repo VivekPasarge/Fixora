@@ -311,3 +311,198 @@
     font-size: 13px;
   }
 }
+
+
+
+/* ==========================================
+   FIX: SINGLE BORDER INPUT DESIGN
+   Apply to Login and Register
+========================================== */
+
+.input-box {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 62px;
+  padding: 0 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 15px;
+  background: #ffffff;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.input-box:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* Remove the inner input border completely */
+
+.input-box > input.form-input {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 58px;
+  margin: 0;
+  padding: 0 12px;
+
+  border: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+
+  color: #0f172a;
+  font-size: 16px;
+  font-family: inherit;
+  appearance: none;
+}
+
+/* Input placeholder */
+
+.input-box > input.form-input::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+/* Browser autofill */
+
+.input-box > input.form-input:-webkit-autofill,
+.input-box > input.form-input:-webkit-autofill:hover,
+.input-box > input.form-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Icons */
+
+.input-box > .input-icon {
+  flex-shrink: 0;
+  color: #94a3b8;
+  font-size: 20px;
+}
+
+/* Password visibility button */
+
+.input-box > .password-toggle {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 19px;
+  cursor: pointer;
+}
+
+.input-box > .password-toggle:hover {
+  color: #2563eb;
+}
+
+.input-box > .password-toggle:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 5px;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .input-box {
+    min-height: 56px;
+    border-radius: 13px;
+  }
+
+  .input-box > input.form-input {
+    height: 52px;
+    font-size: 15px;
+  }
+}
+
+
+
+/* ==========================================
+   PASSWORD STRENGTH INDICATOR
+========================================== */
+
+.password-strength {
+  margin-top: 12px;
+}
+
+.strength-bars {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.strength-bar {
+  flex: 1;
+  height: 5px;
+  border-radius: 10px;
+  background: #e2e8f0;
+  transition: background 0.25s ease;
+}
+
+.strength-bar.weak {
+  background: #ef4444;
+}
+
+.strength-bar.medium {
+  background: #f59e0b;
+}
+
+.strength-bar.strong {
+  background: #16a34a;
+}
+
+.strength-text {
+  margin: 8px 0 4px;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.strength-text.weak {
+  color: #dc2626;
+}
+
+.strength-text.medium {
+  color: #d97706;
+}
+
+.strength-text.strong {
+  color: #15803d;
+}
+
+.password-hint {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* ==========================================
+   CONFIRM PASSWORD FEEDBACK
+========================================== */
+
+.password-match {
+  margin: 9px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.password-match.success {
+  color: #16a34a;
+}
+
+.password-match.error {
+  color: #dc2626;
+}

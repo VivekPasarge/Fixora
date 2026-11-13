@@ -2,6 +2,8 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
+import Navbar from "../components/Navbar/Navbar";
+
 import DashboardHero from "../components/TechnicianDashboard/DashboardHero";
 import TechnicianStats from "../components/TechnicianDashboard/TechnicianStats";
 import ActiveJob from "../components/TechnicianDashboard/ActiveJob";
@@ -12,9 +14,9 @@ import ReviewsCard from "../components/TechnicianDashboard/ReviewsCard";
 import WalletCard from "../components/TechnicianDashboard/WalletCard";
 import AvailableJobs from "../components/TechnicianDashboard/AvailableJobs";
 import AssignedJobs from "../components/TechnicianDashboard/AssignedJobs";
-//import TechnicianLocationTracker from "../../components/TechnicianDashboard/TechnicianLocationTracker";
-import "./TechnicianDashboard.css";
 import TechnicianLocationTracker from "../components/TechnicianDashboard/TechnicianLocationTracker";
+
+import "./TechnicianDashboard.css";
 
 const TechnicianDashboard = () => {
   const location = useLocation();
@@ -40,7 +42,6 @@ const TechnicianDashboard = () => {
         return;
       }
 
-      // Retry briefly if the section has not rendered yet.
       if (attempts < 10) {
         attempts += 1;
         frameId = requestAnimationFrame(scrollToSection);
@@ -55,50 +56,53 @@ const TechnicianDashboard = () => {
   }, [location.key, location.hash, location.state]);
 
   return (
-    <main className="technician-dashboard">
-      <DashboardHero />
+    <>
+      {/* EXISTING FIXORA NAVBAR */}
+      <Navbar />
 
-      <TechnicianStats />
+      <main className="technician-dashboard">
+        <DashboardHero />
 
-      <section
-        id="active-job"
-        className="dashboard-section"
-        style={{ scrollMarginTop: "100px" }}
-      >
-        <ActiveJob />
-      </section>
+        <TechnicianStats />
 
-      <section className="dashboard-overview">
-        <TodaySchedule />
-        <EarningsCard />
-      </section>
+        <section
+          id="active-job"
+          className="dashboard-section"
+          style={{ scrollMarginTop: "100px" }}
+        >
+          <ActiveJob />
+        </section>
 
-      <AvailabilityCard />
+        <section className="dashboard-overview">
+          <TodaySchedule />
+          <EarningsCard />
+        </section>
 
-      <ReviewsCard />
+        <AvailabilityCard />
 
-      <WalletCard />
+        <ReviewsCard />
 
-      <section
-        id="available-jobs"
-        className="dashboard-section"
-        style={{ scrollMarginTop: "100px" }}
-      >
-        <AvailableJobs />
-      </section>
+        <WalletCard />
 
-      {/* AssignedJobs already has id="assigned-jobs". */}
-      <section
-        className="dashboard-section"
-        style={{ scrollMarginTop: "100px" }}
-      >
-        <AssignedJobs />
+        <section
+          id="available-jobs"
+          className="dashboard-section"
+          style={{ scrollMarginTop: "100px" }}
+        >
+          <AvailableJobs />
+        </section>
 
+        <section
+          id="assigned-jobs"
+          className="dashboard-section"
+          style={{ scrollMarginTop: "100px" }}
+        >
+          <AssignedJobs />
+        </section>
 
-      </section>
-
-      <TechnicianLocationTracker />
-    </main>
+        <TechnicianLocationTracker />
+      </main>
+    </>
   );
 };
 

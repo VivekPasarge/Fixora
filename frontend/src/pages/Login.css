@@ -359,3 +359,259 @@
   color:#fff;
   border-color:#2563eb;
 }
+
+
+/* ==========================================
+   FIX: SINGLE BORDER INPUT DESIGN
+   Apply to Login and Register
+========================================== */
+
+.input-box {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 62px;
+  padding: 0 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 15px;
+  background: #ffffff;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.input-box:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* Remove the inner input border completely */
+
+.input-box > input.form-input {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 58px;
+  margin: 0;
+  padding: 0 12px;
+
+  border: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+
+  color: #0f172a;
+  font-size: 16px;
+  font-family: inherit;
+  appearance: none;
+}
+
+/* Input placeholder */
+
+.input-box > input.form-input::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+/* Browser autofill */
+
+.input-box > input.form-input:-webkit-autofill,
+.input-box > input.form-input:-webkit-autofill:hover,
+.input-box > input.form-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Icons */
+
+.input-box > .input-icon {
+  flex-shrink: 0;
+  color: #94a3b8;
+  font-size: 20px;
+}
+
+/* Password visibility button */
+
+.input-box > .password-toggle {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 19px;
+  cursor: pointer;
+}
+
+.input-box > .password-toggle:hover {
+  color: #2563eb;
+}
+
+.input-box > .password-toggle:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 5px;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .input-box {
+    min-height: 56px;
+    border-radius: 13px;
+  }
+
+  .input-box > input.form-input {
+    height: 52px;
+    font-size: 15px;
+  }
+}
+
+/* ==========================================
+   FIXORA LOGIN - LAYOUT CORRECTIONS
+========================================== */
+
+/* Prevent horizontal page overflow */
+.login-page {
+  width: 100%;
+  overflow-x: clip;
+}
+
+.login-container {
+  width: min(92%, 1300px);
+  margin-inline: auto;
+}
+
+.login-wrapper {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  width: 100%;
+  min-width: 0;
+}
+
+/* Left welcome panel */
+.login-left {
+  min-width: 0;
+  padding: clamp(30px, 4vw, 60px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.login-left-content {
+  width: 100%;
+  max-width: 540px;
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.login-left h1 {
+  max-width: 100%;
+  font-size: clamp(38px, 4vw, 58px);
+  line-height: 1.12;
+  overflow-wrap: break-word;
+}
+
+.login-left p {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+.login-left .feature-list {
+  width: 100%;
+  gap: 28px;
+}
+
+.login-left .feature-item {
+  width: 100%;
+  min-width: 0;
+}
+
+.login-left .feature-item > div:last-child {
+  min-width: 0;
+}
+
+.login-left .feature-item h3,
+.login-left .feature-item p {
+  overflow-wrap: break-word;
+}
+
+/* Right login form */
+.login-right {
+  min-width: 0;
+  padding: clamp(30px, 4vw, 60px);
+}
+
+.login-form {
+  width: 100%;
+  max-width: 450px;
+  min-width: 0;
+  margin-inline: auto;
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  .login-wrapper {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .login-left,
+  .login-right {
+    width: 100%;
+    padding: 40px;
+  }
+
+  .login-left-content {
+    max-width: 600px;
+  }
+
+  .login-left h1 {
+    font-size: 44px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .login-container {
+    width: 94%;
+  }
+
+  .login-wrapper {
+    border-radius: 22px;
+  }
+
+  .login-left,
+  .login-right {
+    padding: 25px 20px;
+  }
+
+  .login-left h1 {
+    font-size: 36px;
+  }
+
+  .login-left > p {
+    font-size: 15px;
+  }
+
+  .login-left .feature-list {
+    margin-top: 30px;
+    gap: 22px;
+  }
+
+  .login-left .feature-icon {
+    width: 45px;
+    height: 45px;
+  }
+
+  .login-form h2 {
+    font-size: 32px;
+  }
+}

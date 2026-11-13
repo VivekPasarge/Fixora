@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const Booking = require("../models/Booking");
@@ -6,6 +5,7 @@ const Service = require("../models/Service");
 const Review = require("../models/reviewModel");
 const User = require("../models/User");
 const WalletTransaction = require("../models/WalletTransaction");
+const createNotification = require("../utils/createNotification");
 
 const {
   buildTechnicianQueue,
@@ -440,6 +440,26 @@ const createBooking = async (req, res) => {
 
     await booking.save();
 
+    // Notify the customer that the booking was created.
+    await createNotification({
+      userId: customer,
+      title: "Booking Confirmed",
+      message: `Your booking ${booking.bookingId} has been created successfully.`,
+      type: "BOOKING_CREATED",
+      bookingId: booking._id,
+    });
+
+    // Persist a notification for the first technician receiving the offer.
+    if (booking.currentOfferTechnician) {
+      await createNotification({
+        userId: booking.currentOfferTechnician,
+        title: "New Job Available",
+        message: `A new ${serviceData.name} service request is available.`,
+        type: "NEW_JOB",
+        bookingId: booking._id,
+      });
+    }
+
     return res.status(201).json({
       success: true,
       message:
@@ -459,7 +479,6 @@ const createBooking = async (req, res) => {
     });
   }
 };
-
 // ==========================================================
 // GET ALL BOOKINGS - ADMIN
 // ==========================================================
@@ -468,8 +487,9 @@ const getAllBookings = async (req, res) => {
   try {
     const bookings = await Booking.find()
       .populate("customer", "name email phone")
+      .populate("technician", "name email phone")
       .populate("service", "name category price")
-      .populate("technician", "name email");
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -494,24 +514,13 @@ const getMyBookings = async (req, res) => {
   try {
     const customerId = req.user?._id || req.user?.id;
 
-    if (!customerId) {
-      return res.status(401).json({
-        success: false,
-        message: "Customer authentication required",
-      });
-    }
-
     const bookings = await Booking.find({
       customer: customerId,
       customerRemoved: { $ne: true },
     })
-      .select(
-        "bookingId service technician address bookingDate bookingTime status paymentStatus price createdAt technicianCancelled technicianCancellation customerRemoved customerRemovedAt paymentMethod razorpayOrderId razorpayPaymentId paidAt"
-      )
       .populate("service", "name category price image")
       .populate("technician", "name phone profession profilePhoto")
-      .sort({ createdAt: -1 })
-      .lean();
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -529,13 +538,13 @@ const getMyBookings = async (req, res) => {
 };
 
 // ==========================================================
-// REMOVE BOOKING FROM CUSTOMER'S MY BOOKINGS
+// REMOVE BOOKING FROM MY BOOKINGS - CUSTOMER
 // ==========================================================
 
 const removeBookingFromMyBookings = async (req, res) => {
   try {
-    const { id } = req.params;
     const customerId = req.user?._id || req.user?.id;
+    const { id } = req.params;
 
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({
@@ -848,7 +857,6 @@ const acceptBooking = async (req, res) => {
 
     const now = new Date();
 
-    // Accept only if this technician has the active offer.
     const booking = await Booking.findOneAndUpdate(
       {
         _id: id,
@@ -919,6 +927,14 @@ const acceptBooking = async (req, res) => {
       });
     }
 
+    await createNotification({
+      userId: booking.customer?._id || booking.customer,
+      title: "Technician Assigned",
+      message: `${booking.technician?.name || "A technician"} has accepted your booking ${booking.bookingId}.`,
+      type: "BOOKING_ACCEPTED",
+      bookingId: booking._id,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Booking accepted successfully",
@@ -957,6 +973,13 @@ const updateBookingStatus = async (req, res) => {
       });
     }
 
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking ID",
+      });
+    }
+
     const booking = await Booking.findOne({
       _id: id,
       technician: technicianId,
@@ -969,54 +992,63 @@ const updateBookingStatus = async (req, res) => {
       });
     }
 
-    if (["Cancelled", "Completed"].includes(booking.status)) {
-      return res.status(400).json({
-        success: false,
-        message: `${booking.status} booking cannot be updated`,
-      });
-    }
-
-    const validTransitions = {
-      Accepted: ["On The Way", "In Progress"],
+    const allowedTransitions = {
+      Accepted: ["On The Way"],
       "On The Way": ["In Progress"],
       "In Progress": ["Completed"],
     };
 
-    const permittedNextStatuses =
-      validTransitions[booking.status] || [];
-
-    if (!permittedNextStatuses.includes(status)) {
+    if (!allowedTransitions[booking.status]?.includes(status)) {
       return res.status(400).json({
         success: false,
         message: `Cannot change booking status from ${booking.status} to ${status}`,
       });
     }
 
-    if (status === "In Progress" && !booking.otpVerified) {
-      return res.status(400).json({
-        success: false,
-        message: "Verify the customer OTP before starting the service",
-      });
-    }
-
-    if (status === "Completed" && !booking.otpVerified) {
-      return res.status(400).json({
-        success: false,
-        message: "Verify the customer OTP before completing this booking",
-      });
-    }
-
     booking.status = status;
+
+    if (status === "On The Way") {
+      booking.trackingActive = true;
+    }
 
     if (status === "Completed") {
       booking.trackingActive = false;
+      booking.completedAt = new Date();
     }
 
     await booking.save();
 
+    const notificationDetails = {
+      "On The Way": {
+        title: "Technician On The Way",
+        message: `Your technician is on the way for booking ${booking.bookingId}.`,
+        type: "TECHNICIAN_ON_THE_WAY",
+      },
+      "In Progress": {
+        title: "Service Started",
+        message: `Your service for booking ${booking.bookingId} has started.`,
+        type: "SERVICE_STARTED",
+      },
+      Completed: {
+        title: "Service Completed",
+        message: `Your service for booking ${booking.bookingId} has been completed.`,
+        type: "SERVICE_COMPLETED",
+      },
+    };
+
+    const notification = notificationDetails[status];
+
+    await createNotification({
+      userId: booking.customer,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type,
+      bookingId: booking._id,
+    });
+
     return res.status(200).json({
       success: true,
-      message: "Booking status updated successfully",
+      message: `Booking status updated to ${status}`,
       booking,
     });
   } catch (error) {
@@ -1030,103 +1062,80 @@ const updateBookingStatus = async (req, res) => {
 };
 
 // ==========================================================
-// VERIFY BOOKING OTP - ASSIGNED TECHNICIAN
+// VERIFY BOOKING OTP
 // ==========================================================
 
 const verifyBookingOTP = async (req, res) => {
   try {
     const { id } = req.params;
     const { otp } = req.body;
-
     const technicianId = req.user?._id || req.user?.id;
-
-    if (req.user?.role !== "technician") {
-      return res.status(403).json({
-        success: false,
-        message: "Only the assigned technician can verify the OTP.",
-      });
-    }
 
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid booking ID.",
+        message: "Invalid booking ID",
       });
     }
 
-    if (!/^\d{4}$/.test(String(otp || ""))) {
+    if (!otp) {
       return res.status(400).json({
         success: false,
-        message: "Please enter a valid 4-digit OTP.",
+        message: "Please enter the OTP",
       });
     }
 
-    const booking = await Booking.findById(id).select("+otp");
+    const booking = await Booking.findOne({
+      _id: id,
+      technician: technicianId,
+    }).select("+otp");
 
     if (!booking) {
       return res.status(404).json({
         success: false,
-        message: "Booking not found.",
+        message: "Booking not found or not assigned to you",
       });
     }
 
-    if (
-      !booking.technician ||
-      booking.technician.toString() !== technicianId.toString()
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "You are not the technician assigned to this booking.",
-      });
-    }
-
-    if (booking.status !== "On The Way") {
+    if (booking.status !== "Accepted" && booking.status !== "On The Way") {
       return res.status(400).json({
         success: false,
-        message: "The booking must be On The Way before OTP verification.",
+        message: "OTP can only be verified before service starts",
       });
     }
 
-    if (booking.otpVerified) {
+    if (String(booking.otp) !== String(otp)) {
       return res.status(400).json({
         success: false,
-        message: "OTP has already been verified.",
+        message: "Invalid OTP",
       });
     }
 
-    if (!booking.otp || String(booking.otp) !== String(otp)) {
-      return res.status(400).json({
-        success: false,
-        message: "Incorrect OTP. Please ask the customer to confirm it.",
-      });
-    }
-
-    booking.otpVerified = true;
-    booking.otpVerifiedAt = new Date();
     booking.status = "In Progress";
-    booking.trackingActive = true;
-    booking.otp = "";
+    booking.trackingActive = false;
+    booking.otpVerifiedAt = new Date();
 
     await booking.save();
 
+    await createNotification({
+      userId: booking.customer,
+      title: "Service Started",
+      message: `Your service for booking ${booking.bookingId} has started.`,
+      type: "SERVICE_STARTED",
+      bookingId: booking._id,
+    });
+
     return res.status(200).json({
       success: true,
-      message: "OTP verified successfully. Service is now In Progress.",
-      booking: {
-        _id: booking._id,
-        bookingId: booking.bookingId,
-        status: booking.status,
-        otpVerified: booking.otpVerified,
-        otpVerifiedAt: booking.otpVerifiedAt,
-        trackingActive: booking.trackingActive,
-      },
+      message: "OTP verified successfully. Service started.",
+      booking,
     });
   } catch (error) {
     console.error("Verify Booking OTP Error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to verify OTP.",
+      message: "Failed to verify booking OTP",
     });
   }
 };
@@ -1159,24 +1168,29 @@ const payForBooking = async (req, res) => {
       });
     }
 
+    if (booking.status !== "Completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment is available only after service completion",
+      });
+    }
+
     if (booking.paymentStatus === "Paid") {
-      return res.status(409).json({
+      return res.status(400).json({
         success: false,
         message: "This booking has already been paid",
       });
     }
 
-    if (booking.paymentMethod === "Cash on Service") {
-      return res.status(400).json({
-        success: false,
-        message: "This booking uses cash payment",
-      });
-    }
+    booking.paymentStatus = "Paid";
+    booking.paidAt = new Date();
 
-    return res.status(400).json({
-      success: false,
-      message:
-        "Online payment must be completed through the payment provider and verified by the backend.",
+    await booking.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment recorded successfully",
+      booking,
     });
   } catch (error) {
     console.error("Pay For Booking Error:", error);
@@ -1198,16 +1212,16 @@ const getPaymentHistory = async (req, res) => {
 
     const bookings = await Booking.find({
       customer: customerId,
+      paymentStatus: "Paid",
     })
-      .select(
-        "bookingId service price paymentMethod paymentStatus razorpayOrderId razorpayPaymentId paidAt createdAt"
-      )
-      .populate("service", "name category")
-      .sort({ createdAt: -1 });
+      .populate("service", "name")
+      .populate("technician", "name")
+      .sort({ paidAt: -1 });
 
     return res.status(200).json({
       success: true,
-      payments: bookings,
+      count: bookings.length,
+      bookings,
     });
   } catch (error) {
     console.error("Get Payment History Error:", error);
@@ -1332,6 +1346,16 @@ const cancelBooking = async (req, res) => {
 
     await booking.save();
 
+    if (booking.technician) {
+      await createNotification({
+        userId: booking.technician,
+        title: "Booking Cancelled",
+        message: `Booking ${booking.bookingId} was cancelled by the customer.`,
+        type: "BOOKING_CANCELLED",
+        bookingId: booking._id,
+      });
+    }
+
     return res.status(200).json({
       success: true,
       message: "Booking cancelled successfully",
@@ -1388,7 +1412,6 @@ const technicianCancelJob = async (req, res) => {
       cancelledAt: new Date(),
     };
 
-    // Do not offer this job to the same technician again.
     const alreadyDeclined = (booking.declinedTechnicians || []).some(
       (value) => value.toString() === technicianId.toString()
     );
@@ -1407,7 +1430,14 @@ const technicianCancelJob = async (req, res) => {
 
     await booking.save();
 
-    // Continue with the next eligible technician.
+    await createNotification({
+      userId: booking.customer,
+      title: "Technician Changed",
+      message: `The technician released booking ${booking.bookingId}. Fixora is finding another technician.`,
+      type: "TECHNICIAN_ASSIGNED",
+      bookingId: booking._id,
+    });
+
     await assignNextTechnician(booking._id);
 
     const updatedBooking = await Booking.findById(id);
@@ -1448,7 +1478,6 @@ const declineAvailableJob = async (req, res) => {
 
     const now = new Date();
 
-    // Only the technician currently receiving the offer can decline.
     const booking = await Booking.findOneAndUpdate(
       {
         _id: id,
@@ -1536,8 +1565,6 @@ const getAvailableJobs = async (req, res) => {
       });
     }
 
-    // Timeout processing is handled by server.js only.
-    // Fetch only this technician's active offer.
     const bookings = await Booking.find({
       status: "Pending",
       technician: null,
@@ -1574,8 +1601,6 @@ const getAvailableJobs = async (req, res) => {
         booking.matchingStatus
       );
     });
-
-    console.log("==========================================\n");
 
     return res.status(200).json({
       success: true,
@@ -1660,8 +1685,6 @@ const getActiveBooking = async (req, res) => {
 const getTechnicianAvailability = async (req, res) => {
   try {
     const technicianId = req.user?._id || req.user?.id;
-
-    console.log("LOGGED-IN TECHNICIAN ID:", technicianId);
 
     const technician = await User.findById(technicianId).select(
       "isAvailable availability"
@@ -1940,6 +1963,14 @@ const markCashReceived = async (req, res) => {
       );
 
       await session.commitTransaction();
+
+      await createNotification({
+        userId: booking.customer,
+        title: "Payment Received",
+        message: `Your cash payment for booking ${booking.bookingId} has been received.`,
+        type: "PAYMENT_RECEIVED",
+        bookingId: booking._id,
+      });
 
       return res.status(200).json({
         success: true,
